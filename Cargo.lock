@@ -2740,6 +2740,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "matlivre-web"
+version = "0.1.4"
+dependencies = [
+ "eframe",
+ "js-sys",
+ "livre-app",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+]
+
+[[package]]
 name = "memchr"
 version = "2.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
