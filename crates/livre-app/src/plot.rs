@@ -406,6 +406,7 @@ pub fn to_png(ctx: &egui::Context, skin: &Skin, fig: &Figure, size: egui::Vec2, 
 }
 
 /// Puts the figure on the system clipboard as an image (rasterised at 2×).
+#[cfg(not(target_arch = "wasm32"))]
 pub fn copy_to_clipboard(ctx: &egui::Context, skin: &Skin, fig: &Figure, size: egui::Vec2) -> Result<(), String> {
     let pm = rasterize(&to_svg(ctx, skin, fig, size), size, 2.0)?;
     let bytes: Vec<u8> = pm

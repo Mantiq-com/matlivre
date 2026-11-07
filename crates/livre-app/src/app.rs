@@ -1,9 +1,16 @@
-use std::collections::{HashMap, HashSet, VecDeque};
+#[cfg(not(target_arch = "wasm32"))]
+use std::collections::VecDeque;
+use std::collections::{HashMap, HashSet};
 use std::hash::{Hash, Hasher};
 use std::ops::Range;
-use std::path::{Path, PathBuf};
+#[cfg(not(target_arch = "wasm32"))]
+use std::path::Path;
+use std::path::PathBuf;
+#[cfg(not(target_arch = "wasm32"))]
 use std::sync::mpsc::{Receiver, Sender};
-use std::time::{Duration, Instant, SystemTime};
+use std::time::Duration;
+#[cfg(not(target_arch = "wasm32"))]
+use std::time::SystemTime;
 
 use eframe::egui::text::{CCursor, LayoutJob, TextFormat};
 use eframe::egui::{
@@ -11,18 +18,32 @@ use eframe::egui::{
     Sense, Stroke, Ui, UiBuilder,
 };
 use livre_doc::{Block, BlockKind, ControlKind, Document};
+#[cfg(not(target_arch = "wasm32"))]
+use livre_lang::clock::Instant;
 use livre_lang::{Figure, OutputKind, VarInfo};
 
+#[cfg(not(target_arch = "wasm32"))]
 use crate::chat::{self, Chat};
+#[cfg(not(target_arch = "wasm32"))]
 use crate::complete::{self, Completer};
 use crate::engine::{Command, Engine, Event, COMMAND_ID};
-use crate::mcp::{self, ToolResult};
+#[cfg(not(target_arch = "wasm32"))]
 use crate::files::FileTree;
+#[cfg(target_arch = "wasm32")]
+use crate::host::{HostLink, HostRequest};
 use crate::icons::{self, Ic};
+#[cfg(not(target_arch = "wasm32"))]
+use crate::mcp::{self, ToolResult};
+#[cfg(not(target_arch = "wasm32"))]
 use crate::os;
-use crate::theme::{semibold, Skin, RADIUS, RADIUS_LARGE, TITLE_BAR_HEIGHT};
+#[cfg(not(target_arch = "wasm32"))]
+use crate::theme::TITLE_BAR_HEIGHT;
+use crate::theme::{semibold, Skin, RADIUS, RADIUS_LARGE};
+#[cfg(not(target_arch = "wasm32"))]
 use crate::transfer;
-use crate::widgets::{self, Caption, MenuEntry};
+#[cfg(not(target_arch = "wasm32"))]
+use crate::widgets::Caption;
+use crate::widgets::{self, MenuEntry};
 use crate::Launch;
 
 const WELCOME: &str = include_str!("../../../examples/welcome.m");
@@ -71,13 +92,16 @@ struct Tab {
     /// The caret in the focused code block, where Insert › Control puts a control.
     caret: Option<(u64, egui::text::CCursorRange)>,
     /// The file as last read or written here, to notice changes made by other programs.
+    #[cfg(not(target_arch = "wasm32"))]
     disk: Option<Disk>,
     /// The file changed on disk while the tab had unsaved changes: the user picks a version.
+    #[cfg(not(target_arch = "wasm32"))]
     conflict: bool,
 }
 
 /// What a file on disk looked like: its time and size are checked often, its content
 /// only when they change.
+#[cfg(not(target_arch = "wasm32"))]
 #[derive(Clone, PartialEq)]
 struct Disk {
     modified: Option<SystemTime>,
@@ -91,6 +115,7 @@ fn hash_bytes(b: &[u8]) -> u64 {
     h.finish()
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 fn disk_state(path: &Path) -> Option<Disk> {
     let meta = std::fs::metadata(path).ok()?;
     let bytes = std::fs::read(path).ok()?;
@@ -98,6 +123,7 @@ fn disk_state(path: &Path) -> Option<Disk> {
 }
 
 /// How a file on disk relates to the tab showing it.
+#[cfg(not(target_arch = "wasm32"))]
 #[derive(Debug, PartialEq)]
 enum DiskChange {
     None,
@@ -107,6 +133,7 @@ enum DiskChange {
     Changed,
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 fn disk_change(known: &Disk, now: &Disk) -> DiskChange {
     if known == now {
         DiskChange::None
@@ -142,16 +169,20 @@ fn hash_text(s: &str) -> u64 {
 struct Completion {
     on: bool,
     ghost: Option<Ghost>,
+    #[cfg(not(target_arch = "wasm32"))]
     seen: Option<Caret>,
     /// When the text last changed; a request goes out after a pause.
+    #[cfg(not(target_arch = "wasm32"))]
     edited_at: Option<Instant>,
     /// The request in flight, the caret it was made at, and the text before and after it.
     asked: Option<(u64, Caret, String, String)>,
+    #[cfg(not(target_arch = "wasm32"))]
     next_key: u64,
     /// Alt+\ asks now, wherever the caret is.
     force: bool,
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 const COMPLETION_PAUSE: Duration = Duration::from_millis(600);
 
 impl Tab {
@@ -210,6 +241,7 @@ fn script_section_of(text: &str, line: usize) -> usize {
 }
 
 /// A tab being dragged by its header.
+#[cfg(not(target_arch = "wasm32"))]
 struct TabDrag {
     id: u64,
     /// The pointer is away from the tab row, so letting go moves the tab to another window.
@@ -226,6 +258,7 @@ enum HistKind {
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Menu {
     New,
+    #[cfg(not(target_arch = "wasm32"))]
     Open,
     Save,
     Insert,
@@ -245,16 +278,21 @@ enum ControlTag {
 enum MenuCmd {
     NewLive,
     NewScript,
+    #[cfg(not(target_arch = "wasm32"))]
     OpenFile,
+    #[cfg(not(target_arch = "wasm32"))]
     OpenFolder,
     Save,
     SaveAs,
+    #[cfg(not(target_arch = "wasm32"))]
     ExportM,
     Insert(BlockKind),
     Control(ControlTag),
     ClearOutput,
     ToggleTheme,
+    #[cfg(not(target_arch = "wasm32"))]
     ToggleCompletions,
+    #[cfg(not(target_arch = "wasm32"))]
     ConnectClaude,
     GettingStarted,
 }
@@ -323,16 +361,21 @@ pub struct App {
     /// Section and line (1-based) of the last run's error.
     last_error: Option<(usize, usize)>,
     notice: Option<(String, bool)>,
+    #[cfg(not(target_arch = "wasm32"))]
     drag: Option<TabDrag>,
+    #[cfg(not(target_arch = "wasm32"))]
     window: Option<os::Window>,
     /// DWM rounds the window and draws its border (Windows 11).
+    #[cfg(not(target_arch = "wasm32"))]
     rounded: bool,
     /// Tabs dropped here from other instances.
+    #[cfg(not(target_arch = "wasm32"))]
     incoming: Option<Receiver<PathBuf>>,
     /// Files opened from Finder or the Dock (macOS).
     #[cfg(target_os = "macos")]
     open_files: Receiver<PathBuf>,
     /// Where the tab headers are, to tell a reorder from a tear-off.
+    #[cfg(not(target_arch = "wasm32"))]
     tab_row: Rect,
     files_open: bool,
     cmd_open: bool,
@@ -340,6 +383,7 @@ pub struct App {
     files_w: f32,
     ws_w: f32,
     cmd_h: f32,
+    #[cfg(not(target_arch = "wasm32"))]
     tree: FileTree,
     hist: Vec<(String, HistKind)>,
     cmd_input: String,
@@ -359,16 +403,28 @@ pub struct App {
     /// The layout last written to the settings file.
     saved_layout: SavedLayout,
     /// This window's MCP server, its tool calls waiting to run, and the one running.
+    #[cfg(not(target_arch = "wasm32"))]
     mcp: Option<mcp::Server>,
+    #[cfg(not(target_arch = "wasm32"))]
     mcp_queue: VecDeque<mcp::Request>,
+    #[cfg(not(target_arch = "wasm32"))]
     mcp_run: Option<(Sender<ToolResult>, mcp::Collector)>,
+    #[cfg(not(target_arch = "wasm32"))]
     chat: Chat,
     chat_open: bool,
     chat_w: f32,
+    #[cfg(not(target_arch = "wasm32"))]
     completer: Completer,
     completion: Completion,
     /// When open files were last compared with the disk.
+    #[cfg(not(target_arch = "wasm32"))]
     watched: Instant,
+    /// The page embedding this editor, when one does: it owns the document's file.
+    #[cfg(target_arch = "wasm32")]
+    host: Option<HostLink>,
+    /// The dirty state last told to the host page.
+    #[cfg(target_arch = "wasm32")]
+    reported_dirty: bool,
 }
 
 /// The window layout remembered between runs (`%APPDATA%\matlivre\settings.txt`, one
@@ -478,7 +534,9 @@ impl App {
         crate::theme::install_fonts(&cc.egui_ctx);
         let skin = Skin::light();
         skin.apply(&cc.egui_ctx);
+        #[cfg(not(target_arch = "wasm32"))]
         let window = os::Window::from_handle(cc);
+        #[cfg(not(target_arch = "wasm32"))]
         let rounded = window.is_some_and(|w| {
             if place {
                 w.place((DEFAULT_SIZE[0], DEFAULT_SIZE[1]), (MIN_SIZE[0], MIN_SIZE[1]));
@@ -486,14 +544,20 @@ impl App {
             w.use_exe_icon();
             w.round_corners(rgb(skin.frame))
         });
+        #[cfg(not(target_arch = "wasm32"))]
         let incoming = transfer::listen(cc.egui_ctx.clone()).map(|(port, rx)| {
             if let Some(w) = &window {
                 w.advertise(port);
             }
             rx
         });
+        #[cfg(target_arch = "wasm32")]
+        let _ = place;
         let layout = SavedLayout::load();
+        #[cfg(not(target_arch = "wasm32"))]
         let tree = FileTree::new(layout.folder.clone());
+        #[cfg(target_arch = "wasm32")]
+        let host = HostLink::connect(cc.egui_ctx.clone());
         let mut app = Self {
             skin,
             tabs: Vec::new(),
@@ -509,12 +573,17 @@ impl App {
             last_run: None,
             last_error: None,
             notice: None,
+            #[cfg(not(target_arch = "wasm32"))]
             drag: None,
+            #[cfg(not(target_arch = "wasm32"))]
             window,
+            #[cfg(not(target_arch = "wasm32"))]
             rounded,
+            #[cfg(not(target_arch = "wasm32"))]
             incoming,
             #[cfg(target_os = "macos")]
             open_files: crate::macos::receive_open_files(&cc.egui_ctx),
+            #[cfg(not(target_arch = "wasm32"))]
             tab_row: Rect::NOTHING,
             files_open: layout.files_open,
             cmd_open: layout.cmd_open,
@@ -522,6 +591,7 @@ impl App {
             files_w: layout.files_w,
             ws_w: layout.ws_w,
             cmd_h: layout.cmd_h,
+            #[cfg(not(target_arch = "wasm32"))]
             tree,
             hist: Vec::new(),
             cmd_input: String::new(),
@@ -537,32 +607,59 @@ impl App {
             figures: Vec::new(),
             confirm: None,
             saved_layout: layout.clone(),
+            #[cfg(not(target_arch = "wasm32"))]
             mcp: mcp::start(cc.egui_ctx.clone()),
+            #[cfg(not(target_arch = "wasm32"))]
             mcp_queue: VecDeque::new(),
+            #[cfg(not(target_arch = "wasm32"))]
             mcp_run: None,
+            #[cfg(not(target_arch = "wasm32"))]
             chat: Chat::new(),
             chat_open: layout.chat_open,
             chat_w: layout.chat_w,
+            #[cfg(not(target_arch = "wasm32"))]
             completer: Completer::new(),
-            completion: Completion { on: layout.completions, ghost: None, seen: None, edited_at: None, asked: None, next_key: 1, force: false },
+            completion: Completion {
+                on: layout.completions,
+                ghost: None,
+                #[cfg(not(target_arch = "wasm32"))]
+                seen: None,
+                #[cfg(not(target_arch = "wasm32"))]
+                edited_at: None,
+                asked: None,
+                #[cfg(not(target_arch = "wasm32"))]
+                next_key: 1,
+                force: false,
+            },
+            #[cfg(not(target_arch = "wasm32"))]
             watched: Instant::now(),
+            #[cfg(target_arch = "wasm32")]
+            host,
+            #[cfg(target_arch = "wasm32")]
+            reported_dirty: false,
         };
         if layout.dark {
             app.set_dark(&cc.egui_ctx, true);
         }
         match launch {
             // Getting started opens once; later launches start with an empty live script (it
-            // stays in the … menu).
+            // stays in the … menu). A page hosting the editor sends the document itself.
             Launch::Welcome => {
-                if first_launch() {
+                if !app.hosted() && first_launch() {
                     app.getting_started();
                 }
             }
+            #[cfg(not(target_arch = "wasm32"))]
             Launch::Open(p) => app.open_path(p),
+            #[cfg(not(target_arch = "wasm32"))]
             Launch::Tab(m) => app.receive(&m),
         }
         if app.tabs.is_empty() {
             app.new_doc(Kind::Live);
+        }
+        #[cfg(target_arch = "wasm32")]
+        if let Some(host) = &app.host {
+            host.ready(env!("CARGO_PKG_VERSION"));
         }
         app
     }
@@ -580,7 +677,10 @@ impl App {
             chat_open: self.chat_open,
             chat_w: self.chat_w,
             completions: self.completion.on,
+            #[cfg(not(target_arch = "wasm32"))]
             folder: self.tree.root().map(Path::to_path_buf),
+            #[cfg(target_arch = "wasm32")]
+            folder: None,
         }
     }
 
@@ -599,6 +699,7 @@ impl App {
     fn set_dark(&mut self, ctx: &egui::Context, dark: bool) {
         self.skin = if dark { Skin::dark() } else { Skin::light() };
         self.skin.apply(ctx);
+        #[cfg(not(target_arch = "wasm32"))]
         if let Some(w) = &self.window {
             w.set_border(rgb(self.skin.frame));
         }
@@ -617,6 +718,7 @@ impl App {
     fn add_tab(&mut self, kind: Kind, doc: Document, path: Option<PathBuf>, name: String, dirty: bool) {
         let id = self.next_tab;
         self.next_tab += 1;
+        #[cfg(not(target_arch = "wasm32"))]
         let disk = path.as_deref().and_then(disk_state);
         self.tabs.push(Tab {
             id,
@@ -630,7 +732,9 @@ impl App {
             current: 0,
             focus_block: None,
             caret: None,
+            #[cfg(not(target_arch = "wasm32"))]
             disk,
+            #[cfg(not(target_arch = "wasm32"))]
             conflict: false,
         });
         self.active = self.tabs.len() - 1;
@@ -733,6 +837,7 @@ impl App {
     }
 
     /// Opens a tab handed over by another window.
+    #[cfg(not(target_arch = "wasm32"))]
     fn receive(&mut self, manifest: &Path) {
         match transfer::read(manifest) {
             Ok(p) => {
@@ -746,6 +851,7 @@ impl App {
     }
 
     /// Where a dragged tab was let go, in screen points, and the window under it.
+    #[cfg(not(target_arch = "wasm32"))]
     fn drop_target(&self, ctx: &egui::Context) -> (Option<Pos2>, os::Under) {
         let ppp = ctx.pixels_per_point();
         match os::cursor_pos() {
@@ -764,6 +870,7 @@ impl App {
     }
 
     /// The pointer relative to the window, also while it is outside it.
+    #[cfg(not(target_arch = "wasm32"))]
     fn pointer_local(&self, ctx: &egui::Context) -> Option<Pos2> {
         let ppp = ctx.pixels_per_point();
         match (os::cursor_pos(), ctx.input(|i| i.viewport().inner_rect)) {
@@ -774,6 +881,7 @@ impl App {
 
     /// Follows a tab drag: reorders within the row, and on release away from it moves the
     /// tab to the MatLivre window under the pointer or to a new one.
+    #[cfg(not(target_arch = "wasm32"))]
     fn drag_tabs(&mut self, ctx: &egui::Context, rects: &[Rect]) {
         let Some(drag) = &self.drag else { return };
         let id = drag.id;
@@ -815,6 +923,7 @@ impl App {
         }
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     fn tear_off(&mut self, ctx: &egui::Context, i: usize) {
         let (at, under) = self.drop_target(ctx);
         // The window's top-left corner, so the pointer ends up over the tab.
@@ -854,6 +963,7 @@ impl App {
 
     // ---- files -------------------------------------------------------------------------
 
+    #[cfg(not(target_arch = "wasm32"))]
     fn open_path(&mut self, p: PathBuf) {
         if let Some(i) = self.tabs.iter().position(|t| t.path.as_deref() == Some(p.as_path())) {
             self.active = i;
@@ -891,6 +1001,7 @@ impl App {
         }
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     fn open_folder_dialog(&mut self) {
         let mut d = rfd::FileDialog::new();
         if let Some(r) = self.tree.root() {
@@ -901,6 +1012,7 @@ impl App {
         }
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     fn open_dialog(&mut self) {
         if let Some(p) = rfd::FileDialog::new()
             .add_filter("Live scripts and scripts", &["mlx", "m"])
@@ -913,6 +1025,7 @@ impl App {
     }
 
     /// Saves the active tab. False if it was not saved (cancelled or failed).
+    #[cfg(not(target_arch = "wasm32"))]
     fn save(&mut self, save_as: bool) -> bool {
         let script = self.tab().kind == Kind::Script;
         let path = match (&self.tab().path, save_as) {
@@ -952,6 +1065,7 @@ impl App {
         }
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     fn export_m(&mut self) {
         let stem = self.tab().title();
         let stem = stem.rsplit_once('.').map_or(stem.as_str(), |(s, _)| s).to_string();
@@ -1126,11 +1240,14 @@ impl App {
     }
 
     fn poll_engine(&mut self, ctx: &egui::Context) {
+        #[cfg(target_arch = "wasm32")]
+        let _ = ctx;
         while let Ok(ev) = self.engine.rx.try_recv() {
             let origin = self.origin;
             match ev {
                 Event::BlockStarted(id) => self.running_block = Some(id),
                 Event::Output(id, out) => {
+                    #[cfg(not(target_arch = "wasm32"))]
                     if let Some((_, c)) = &mut self.mcp_run {
                         c.push(&out);
                     }
@@ -1218,6 +1335,7 @@ impl App {
                 Event::Finished { workspace, ok, elapsed } => {
                     self.workspace = workspace;
                     self.running = false;
+                    #[cfg(not(target_arch = "wasm32"))]
                     if let Some((reply, c)) = self.mcp_run.take() {
                         let _ = reply.send(c.finish(ctx, ok));
                     }
@@ -1247,6 +1365,7 @@ impl App {
     // ---- Claude ------------------------------------------------------------------------
 
     /// Runs code from the Claude panel or a tool call as command-window input.
+    #[cfg(not(target_arch = "wasm32"))]
     fn eval_command(&mut self, code: &str) {
         for (k, l) in code.trim_end().split('\n').enumerate() {
             self.hist.push((format!("{} {l}", if k == 0 { ">>" } else { "  " }), HistKind::Input));
@@ -1257,6 +1376,7 @@ impl App {
     }
 
     /// The tab a tool call names (file name, stem or path), or the active one.
+    #[cfg(not(target_arch = "wasm32"))]
     fn find_tab(&self, args: &serde_json::Value) -> Result<usize, String> {
         let Some(name) = args.get("document").and_then(|d| d.as_str()).map(str::trim).filter(|d| !d.is_empty()) else { return Ok(self.active) };
         let same = |a: &str| a.eq_ignore_ascii_case(name);
@@ -1292,6 +1412,7 @@ impl App {
     }
 
     /// Answers a tool call that does not run code.
+    #[cfg(not(target_arch = "wasm32"))]
     fn mcp_tool(&mut self, name: &str, args: &serde_json::Value) -> ToolResult {
         let arg = |k: &str| args.get(k).and_then(|v| v.as_str()).unwrap_or("").to_string();
         match name {
@@ -1365,6 +1486,7 @@ impl App {
     }
 
     /// Starts a tool call that runs code; its result goes out when the run finishes.
+    #[cfg(not(target_arch = "wasm32"))]
     fn mcp_start(&mut self, r: mcp::Request) {
         if r.tool == "run_code" {
             let code = r.args.get("code").and_then(|c| c.as_str()).unwrap_or("").to_string();
@@ -1400,6 +1522,7 @@ impl App {
     }
 
     /// Tool calls from the MCP server: runs wait their turn, the rest are answered now.
+    #[cfg(not(target_arch = "wasm32"))]
     fn serve_mcp(&mut self) {
         if let Some(s) = &self.mcp {
             self.mcp_queue.extend(s.rx.try_iter());
@@ -1427,6 +1550,7 @@ impl App {
         self.mcp_queue = waiting;
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     fn chat_send(&mut self, ctx: &egui::Context, text: String) {
         let Some(url) = self.mcp.as_ref().map(|m| m.dock_url.clone()) else {
             self.chat.items.push(chat::Item::Error("MatLivre could not start its MCP server, which Claude needs.".into()));
@@ -1446,6 +1570,7 @@ impl App {
         self.chat.send(text, &note, &url, &cwd, ctx);
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     fn chat_panel(&mut self, ui: &mut Ui, rect: Rect) {
         let skin = self.skin.clone();
         let mut ui = Self::card(ui, &skin, rect);
@@ -1501,6 +1626,7 @@ impl App {
 
     /// The text before and after the caret (a live script's other code blocks included) and
     /// the document's name.
+    #[cfg(not(target_arch = "wasm32"))]
     fn completion_context(&self, c: Caret) -> Option<(String, String, String)> {
         let t = self.tabs.iter().find(|t| t.doc.blocks.iter().any(|b| b.id == c.block))?;
         let mut before = String::new();
@@ -1525,6 +1651,7 @@ impl App {
 
     /// Asks for a completion after a pause in typing, and shows the answer while the caret
     /// and the text stay as they were when it was asked.
+    #[cfg(not(target_arch = "wasm32"))]
     fn complete(&mut self, ctx: &egui::Context, caret: Option<Caret>) {
         if let Some((key, text)) = self.completer.poll() {
             if let Some((k, at, before, after)) = self.completion.asked.take() {
@@ -1579,6 +1706,7 @@ impl App {
     // ---- files on disk -----------------------------------------------------------------
 
     /// Puts the file's current content in tab `i`, which then has no unsaved changes.
+    #[cfg(not(target_arch = "wasm32"))]
     fn reload(&mut self, i: usize, now: Disk) {
         let running = self.is_running_tab(self.tabs[i].id);
         let t = &mut self.tabs[i];
@@ -1611,6 +1739,7 @@ impl App {
 
     /// Once a second, compares the open files with the disk, as VS Code and MATLAB do: a tab
     /// without unsaved changes takes the new version; one with changes asks which to keep.
+    #[cfg(not(target_arch = "wasm32"))]
     fn watch_files(&mut self, ctx: &egui::Context) {
         ctx.request_repaint_after(Duration::from_secs(1));
         if self.watched.elapsed() < Duration::from_secs(1) {
@@ -1806,6 +1935,7 @@ impl App {
         if pressed(sc(Modifiers::ALT, Key::Backslash)) {
             self.completion.force = true;
         }
+        #[cfg(not(target_arch = "wasm32"))]
         if pressed(sc(Modifiers::COMMAND, Key::L)) {
             self.chat_open = !self.chat_open;
             if self.chat_open {
@@ -1828,31 +1958,34 @@ impl App {
         if pressed(sc(Modifiers::NONE, Key::F5)) {
             self.run_all();
         }
-        if pressed(sc(Modifiers::COMMAND | Modifiers::SHIFT, Key::S)) {
+        // A hosting page owns the file and shows one document: it names, opens and closes.
+        let hosted = self.hosted();
+        if !hosted && pressed(sc(Modifiers::COMMAND | Modifiers::SHIFT, Key::S)) {
             self.save(true);
         }
         if pressed(sc(Modifiers::COMMAND, Key::S)) {
             self.save(false);
         }
+        #[cfg(not(target_arch = "wasm32"))]
         if pressed(sc(Modifiers::COMMAND, Key::O)) {
             self.open_dialog();
         }
-        if pressed(sc(Modifiers::COMMAND | Modifiers::ALT, Key::N)) {
+        if !hosted && pressed(sc(Modifiers::COMMAND | Modifiers::ALT, Key::N)) {
             self.new_doc(Kind::Script);
         }
-        if pressed(sc(Modifiers::COMMAND, Key::N)) {
+        if !hosted && pressed(sc(Modifiers::COMMAND, Key::N)) {
             self.new_doc(Kind::Live);
         }
         if pressed(sc(Modifiers::CTRL, Key::Backtick)) {
             self.cmd_open = !self.cmd_open;
         }
-        if pressed(sc(Modifiers::CTRL | Modifiers::SHIFT, Key::Tab)) {
+        if !hosted && pressed(sc(Modifiers::CTRL | Modifiers::SHIFT, Key::Tab)) {
             self.active = (self.active + self.tabs.len() - 1) % self.tabs.len();
         }
-        if pressed(sc(Modifiers::CTRL, Key::Tab)) {
+        if !hosted && pressed(sc(Modifiers::CTRL, Key::Tab)) {
             self.active = (self.active + 1) % self.tabs.len();
         }
-        if pressed(sc(Modifiers::COMMAND, Key::W)) {
+        if !hosted && pressed(sc(Modifiers::COMMAND, Key::W)) {
             self.close_tab(ctx, self.active);
         }
         if self.running && pressed(sc(Modifiers::COMMAND, if cfg!(target_os = "macos") { Key::Period } else { Key::C })) && !ctx.wants_keyboard_input() {
@@ -1864,7 +1997,9 @@ impl App {
         match cmd {
             MenuCmd::NewLive => self.new_doc(Kind::Live),
             MenuCmd::NewScript => self.new_doc(Kind::Script),
+            #[cfg(not(target_arch = "wasm32"))]
             MenuCmd::OpenFile => self.open_dialog(),
+            #[cfg(not(target_arch = "wasm32"))]
             MenuCmd::OpenFolder => self.open_folder_dialog(),
             MenuCmd::Save => {
                 self.save(false);
@@ -1872,6 +2007,7 @@ impl App {
             MenuCmd::SaveAs => {
                 self.save(true);
             }
+            #[cfg(not(target_arch = "wasm32"))]
             MenuCmd::ExportM => self.export_m(),
             MenuCmd::Insert(kind) => self.insert_block(kind),
             MenuCmd::Control(tag) => self.insert_control(tag),
@@ -1884,10 +2020,12 @@ impl App {
                 let dark = !self.skin.dark;
                 self.set_dark(ctx, dark);
             }
+            #[cfg(not(target_arch = "wasm32"))]
             MenuCmd::ToggleCompletions => {
                 self.completion.on = !self.completion.on;
                 self.completion.ghost = None;
             }
+            #[cfg(not(target_arch = "wasm32"))]
             MenuCmd::ConnectClaude => {
                 let exe = std::env::current_exe().map(|p| p.display().to_string()).unwrap_or_else(|_| "matlivre".into());
                 ctx.copy_text(format!("claude mcp add matlivre -- \"{exe}\" --mcp"));
@@ -1903,6 +2041,7 @@ impl App {
     // ---- chrome ------------------------------------------------------------------------
 
     /// The title bar: app mark, the document tabs (TabStrip) and the caption buttons.
+    #[cfg(not(target_arch = "wasm32"))]
     fn title_bar(&mut self, ctx: &egui::Context) {
         let skin = self.skin.clone();
         let mut select = None;
@@ -2038,6 +2177,7 @@ impl App {
         let run_label = |s: &'static str| if short_run { "" } else { s };
         let file_label = |s: &'static str| if short_file { "" } else { s };
         let live = self.tab().kind == Kind::Live;
+        let hosted = self.hosted();
         egui::TopBottomPanel::top("commands")
             .exact_height(48.0)
             .frame(egui::Frame::none().fill(skin.window).inner_margin(Margin { left: 12.0, right: 12.0, top: 0.0, bottom: 4.0 }))
@@ -2045,12 +2185,18 @@ impl App {
             .show(ctx, |ui| {
                 ui.horizontal_centered(|ui| {
                     ui.spacing_mut().item_spacing.x = 4.0;
-                    let open = |m: Menu| self.menu.is_some_and(|(o, _)| o == m);
-                    let r = widgets::cmd_button(ui, &skin, Some(Ic::New), file_label("New"), true, true, open(Menu::New)).on_hover_text("New live script or script");
-                    self.toggle_menu(Menu::New, &r);
-                    let open = |m: Menu| self.menu.is_some_and(|(o, _)| o == m);
-                    let r = widgets::cmd_button(ui, &skin, Some(Ic::Open), file_label("Open"), true, true, open(Menu::Open)).on_hover_text(crate::os::keys("Open a file (Ctrl+O) or a folder"));
-                    self.toggle_menu(Menu::Open, &r);
+                    // A hosting page creates and opens the documents itself.
+                    if !hosted {
+                        let open = |m: Menu| self.menu.is_some_and(|(o, _)| o == m);
+                        let r = widgets::cmd_button(ui, &skin, Some(Ic::New), file_label("New"), true, true, open(Menu::New)).on_hover_text("New live script or script");
+                        self.toggle_menu(Menu::New, &r);
+                    }
+                    #[cfg(not(target_arch = "wasm32"))]
+                    {
+                        let open = |m: Menu| self.menu.is_some_and(|(o, _)| o == m);
+                        let r = widgets::cmd_button(ui, &skin, Some(Ic::Open), file_label("Open"), true, true, open(Menu::Open)).on_hover_text(crate::os::keys("Open a file (Ctrl+O) or a folder"));
+                        self.toggle_menu(Menu::Open, &r);
+                    }
                     let open = |m: Menu| self.menu.is_some_and(|(o, _)| o == m);
                     let r = widgets::cmd_button(ui, &skin, Some(Ic::Save), file_label("Save"), true, true, open(Menu::Save)).on_hover_text(crate::os::keys("Save (Ctrl+S), Save as, Export"));
                     self.toggle_menu(Menu::Save, &r);
@@ -2081,6 +2227,7 @@ impl App {
                     ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                         let more = more_button(ui, &skin, self.menu.is_some_and(|(o, _)| o == Menu::More)).on_hover_text("More");
                         self.toggle_menu(Menu::More, &more);
+                        #[cfg(not(target_arch = "wasm32"))]
                         if widgets::cmd_button(ui, &skin, Some(Ic::Chat), "", true, false, self.chat_open).on_hover_text(crate::os::keys("Show or hide Claude (Ctrl+L)")).clicked() {
                             self.chat_open = !self.chat_open;
                         }
@@ -2093,6 +2240,7 @@ impl App {
                         {
                             self.cmd_open = !self.cmd_open;
                         }
+                        #[cfg(not(target_arch = "wasm32"))]
                         if widgets::cmd_button(ui, &skin, Some(Ic::FilesPanel), "", true, false, self.files_open).on_hover_text("Show or hide files").clicked() {
                             self.files_open = !self.files_open;
                         }
@@ -2115,6 +2263,9 @@ impl App {
         let Some((m, anchor)) = self.menu else { return };
         let skin = self.skin.clone();
         let live = self.tab().kind == Kind::Live;
+        #[cfg(target_arch = "wasm32")]
+        let _ = live;
+        let hosted = self.hosted();
         let dark = skin.dark;
         let width = if m == Menu::Insert { 300.0 } else { 240.0 };
         let pos = if m == Menu::More { pos2(anchor.right() - width, anchor.top() + 36.0) } else { pos2(anchor.left(), anchor.top() + 36.0) };
@@ -2132,17 +2283,22 @@ impl App {
                     item(ui, MenuEntry::new(Ic::Mlx, "Live script (.mlx)").shortcut(&crate::os::keys("Ctrl+N")), MenuCmd::NewLive);
                     item(ui, MenuEntry::new(Ic::MFile, "Script (.m)").shortcut(&crate::os::keys("Ctrl+Alt+N")), MenuCmd::NewScript);
                 }
+                #[cfg(not(target_arch = "wasm32"))]
                 Menu::Open => {
                     item(ui, MenuEntry::new(Ic::OpenFile, "File…").shortcut("Ctrl+O"), MenuCmd::OpenFile);
                     item(ui, MenuEntry::new(Ic::OpenFolder, "Folder…"), MenuCmd::OpenFolder);
                 }
                 Menu::Save => {
                     item(ui, MenuEntry::new(Ic::Save, "Save").shortcut(&crate::os::keys("Ctrl+S")), MenuCmd::Save);
-                    item(ui, MenuEntry::new(Ic::SaveAs, "Save as…").shortcut(&crate::os::keys("Ctrl+Shift+S")), MenuCmd::SaveAs);
-                    widgets::menu_separator(ui, &skin);
-                    item(ui, MenuEntry::new(Ic::ExportM, "Export as script (.m)…").enabled(live), MenuCmd::ExportM);
-                    let pdf = widgets::menu_item(ui, &skin, MenuEntry::new(Ic::Pdf, "Export as PDF…").enabled(false), false);
-                    pdf.on_hover_text("PDF export is not available yet.");
+                    // A hosting page names copies and exports itself.
+                    if !hosted {
+                        item(ui, MenuEntry::new(Ic::SaveAs, "Save as…").shortcut(&crate::os::keys("Ctrl+Shift+S")), MenuCmd::SaveAs);
+                        widgets::menu_separator(ui, &skin);
+                        #[cfg(not(target_arch = "wasm32"))]
+                        item(ui, MenuEntry::new(Ic::ExportM, "Export as script (.m)…").enabled(live), MenuCmd::ExportM);
+                        let pdf = widgets::menu_item(ui, &skin, MenuEntry::new(Ic::Pdf, "Export as PDF…").enabled(false), false);
+                        pdf.on_hover_text("PDF export is not available yet.");
+                    }
                 }
                 Menu::Insert => {
                     item(ui, MenuEntry::new(Ic::Text, "Text"), MenuCmd::Insert(BlockKind::Text));
@@ -2166,9 +2322,12 @@ impl App {
                     widgets::menu_separator(ui, &skin);
                     item(ui, MenuEntry::new(Ic::Theme, "Dark theme").checked(dark), MenuCmd::ToggleTheme);
                     widgets::menu_separator(ui, &skin);
-                    item(ui, MenuEntry::new(Ic::Code, "Code completions").checked(self.completion.on).shortcut("Alt+\\"), MenuCmd::ToggleCompletions);
-                    item(ui, MenuEntry::new(Ic::Chat, "Connect Claude Code…"), MenuCmd::ConnectClaude);
-                    widgets::menu_separator(ui, &skin);
+                    #[cfg(not(target_arch = "wasm32"))]
+                    {
+                        item(ui, MenuEntry::new(Ic::Code, "Code completions").checked(self.completion.on).shortcut("Alt+\\"), MenuCmd::ToggleCompletions);
+                        item(ui, MenuEntry::new(Ic::Chat, "Connect Claude Code…"), MenuCmd::ConnectClaude);
+                        widgets::menu_separator(ui, &skin);
+                    }
                     item(ui, MenuEntry::new(Ic::Help, "Getting started"), MenuCmd::GettingStarted);
                 }
             }
@@ -2209,6 +2368,7 @@ impl App {
 
     fn status_bar(&mut self, ctx: &egui::Context) {
         let skin = self.skin.clone();
+        let hosted = self.hosted();
         egui::TopBottomPanel::bottom("status")
             .exact_height(28.0)
             .frame(egui::Frame::none().fill(skin.window).inner_margin(Margin::symmetric(12.0, 0.0)))
@@ -2259,6 +2419,8 @@ impl App {
                                 let parts: Vec<String> = p.iter().rev().take(2).map(|s| s.to_string_lossy().into_owned()).collect();
                                 parts.into_iter().rev().collect::<Vec<_>>().join(std::path::MAIN_SEPARATOR_STR)
                             }
+                            // The hosting page keeps the file; its name is what there is to show.
+                            None if hosted => t.name.clone(),
                             None => "Not saved".into(),
                         };
                         let r = ui.label(small(&path, skin.text_secondary));
@@ -2294,26 +2456,16 @@ impl App {
             .show(ctx, |ui| {
                 let full = ui.max_rect();
                 let min_center = 320.0;
-                let (mut x0, mut x1) = (full.left(), full.right());
-                let mut files_rect = None;
+                let (x0, mut x1) = (full.left(), full.right());
+                #[cfg(not(target_arch = "wasm32"))]
+                let (x0, files_rect) = self.files_column(ui, &skin, full, x0, min_center);
+                #[cfg(not(target_arch = "wasm32"))]
+                let chat_rect = {
+                    let (right, rect) = self.chat_column(ui, &skin, full, x0, x1, min_center);
+                    x1 = right;
+                    rect
+                };
                 let mut ws_rect = None;
-                let mut chat_rect = None;
-                if self.files_open {
-                    let w = self.files_w.min((full.width() - min_center - 12.0).max(160.0));
-                    files_rect = Some(Rect::from_min_max(pos2(x0, full.top()), pos2(x0 + w, full.bottom())));
-                    let split = Rect::from_min_max(pos2(x0 + w, full.top()), pos2(x0 + w + 12.0, full.bottom()));
-                    let d = widgets::splitter(ui, &skin, Id::new("split-files"), split, true);
-                    self.files_w = (self.files_w + d).clamp(160.0, 420.0);
-                    x0 += w + 12.0;
-                }
-                if self.chat_open {
-                    let w = self.chat_w.min((x1 - x0 - min_center - 12.0).max(260.0));
-                    chat_rect = Some(Rect::from_min_max(pos2(x1 - w, full.top()), pos2(x1, full.bottom())));
-                    let split = Rect::from_min_max(pos2(x1 - w - 12.0, full.top()), pos2(x1 - w, full.bottom()));
-                    let d = widgets::splitter(ui, &skin, Id::new("split-chat"), split, true);
-                    self.chat_w = (self.chat_w - d).clamp(280.0, 640.0);
-                    x1 -= w + 12.0;
-                }
                 if self.ws_open {
                     let w = self.ws_w.min((x1 - x0 - min_center - 12.0).max(200.0));
                     ws_rect = Some(Rect::from_min_max(pos2(x1 - w, full.top()), pos2(x1, full.bottom())));
@@ -2332,17 +2484,49 @@ impl App {
                     doc_rect.max.y = split.top();
                     self.command_window(ui, cmd_rect);
                 }
+                #[cfg(not(target_arch = "wasm32"))]
                 if let Some(r) = files_rect {
                     self.files_panel(ui, r);
                 }
                 if let Some(r) = ws_rect {
                     self.workspace_panel(ui, r);
                 }
+                #[cfg(not(target_arch = "wasm32"))]
                 if let Some(r) = chat_rect {
                     self.chat_panel(ui, r);
                 }
                 self.document(ui, doc_rect);
             });
+    }
+
+    /// The Files drawer's column on the left, when it is open: its rectangle and where the
+    /// document starts after it and its splitter.
+    #[cfg(not(target_arch = "wasm32"))]
+    fn files_column(&mut self, ui: &mut Ui, skin: &Skin, full: Rect, x0: f32, min_center: f32) -> (f32, Option<Rect>) {
+        if !self.files_open {
+            return (x0, None);
+        }
+        let w = self.files_w.min((full.width() - min_center - 12.0).max(160.0));
+        let rect = Rect::from_min_max(pos2(x0, full.top()), pos2(x0 + w, full.bottom()));
+        let split = Rect::from_min_max(pos2(x0 + w, full.top()), pos2(x0 + w + 12.0, full.bottom()));
+        let d = widgets::splitter(ui, skin, Id::new("split-files"), split, true);
+        self.files_w = (self.files_w + d).clamp(160.0, 420.0);
+        (x0 + w + 12.0, Some(rect))
+    }
+
+    /// The Claude panel's column on the right, when it is open: its rectangle and where the
+    /// document ends before its splitter.
+    #[cfg(not(target_arch = "wasm32"))]
+    fn chat_column(&mut self, ui: &mut Ui, skin: &Skin, full: Rect, x0: f32, x1: f32, min_center: f32) -> (f32, Option<Rect>) {
+        if !self.chat_open {
+            return (x1, None);
+        }
+        let w = self.chat_w.min((x1 - x0 - min_center - 12.0).max(260.0));
+        let rect = Rect::from_min_max(pos2(x1 - w, full.top()), pos2(x1, full.bottom()));
+        let split = Rect::from_min_max(pos2(x1 - w - 12.0, full.top()), pos2(x1 - w, full.bottom()));
+        let d = widgets::splitter(ui, skin, Id::new("split-chat"), split, true);
+        self.chat_w = (self.chat_w - d).clamp(280.0, 640.0);
+        (x1 - w - 12.0, Some(rect))
     }
 
     fn card(ui: &mut Ui, skin: &Skin, rect: Rect) -> Ui {
@@ -2370,6 +2554,7 @@ impl App {
         });
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     fn files_panel(&mut self, ui: &mut Ui, rect: Rect) {
         let skin = self.skin.clone();
         let mut ui = Self::card(ui, &skin, rect);
@@ -2572,6 +2757,7 @@ impl App {
                 self.notice = None;
             }
         }
+        #[cfg(not(target_arch = "wasm32"))]
         if self.tab().conflict {
             let name = self.tab().title();
             let mut pick = None;
@@ -2656,9 +2842,17 @@ impl App {
         if v.ghost_taken {
             self.completion.ghost = None;
         }
+        #[cfg(not(target_arch = "wasm32"))]
         self.complete(ui.ctx(), v.caret);
     }
 
+    /// The browser build has neither a clipboard nor a file dialog to put a figure in.
+    #[cfg(target_arch = "wasm32")]
+    fn figure_action(&mut self, _ctx: &egui::Context, _fig: &Figure, _action: FigAction, _block: u64) {
+        self.notice = Some(("Copying and saving figures are not available in the browser.".into(), false));
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
     fn figure_action(&mut self, ctx: &egui::Context, fig: &Figure, action: FigAction, block: u64) {
         // Exports use the light skin so they read well in documents.
         let skin = Skin::light();
@@ -2705,6 +2899,7 @@ impl App {
     }
 
     /// Resize handles for the borderless window.
+    #[cfg(not(target_arch = "wasm32"))]
     fn window_edges(&self, ctx: &egui::Context) {
         if cfg!(target_os = "macos") {
             return; // the native window resizes itself
@@ -2748,11 +2943,14 @@ impl eframe::App for App {
                 self.open_path(p);
             }
         }
-        let received: Vec<PathBuf> = self.incoming.as_ref().map(|rx| rx.try_iter().collect()).unwrap_or_default();
-        for m in received {
-            self.receive(&m);
-            ctx.send_viewport_cmd(egui::ViewportCommand::Minimized(false));
-            ctx.send_viewport_cmd(egui::ViewportCommand::Focus);
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let received: Vec<PathBuf> = self.incoming.as_ref().map(|rx| rx.try_iter().collect()).unwrap_or_default();
+            for m in received {
+                self.receive(&m);
+                ctx.send_viewport_cmd(egui::ViewportCommand::Minimized(false));
+                ctx.send_viewport_cmd(egui::ViewportCommand::Focus);
+            }
         }
         // The last tab was closed or moved away; the window is closing.
         if self.tabs.is_empty() {
@@ -2765,26 +2963,36 @@ impl eframe::App for App {
             }
         }
         self.poll_engine(ctx);
-        self.serve_mcp();
-        self.chat.poll();
-        self.watch_files(ctx);
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            self.serve_mcp();
+            self.chat.poll();
+            self.watch_files(ctx);
+        }
+        #[cfg(target_arch = "wasm32")]
+        self.serve_host(ctx);
         self.handle_shortcuts(ctx);
         if self.tabs.is_empty() {
             return;
         }
-        self.title_bar(ctx);
-        if self.tabs.is_empty() {
-            return;
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            self.title_bar(ctx);
+            if self.tabs.is_empty() {
+                return;
+            }
+            ctx.send_viewport_cmd(egui::ViewportCommand::Title(format!("{} - MatLivre", self.tab().title())));
         }
-        ctx.send_viewport_cmd(egui::ViewportCommand::Title(format!("{} - MatLivre", self.tab().title())));
         self.command_bar(ctx);
         self.status_bar(ctx);
         self.body(ctx);
         self.menus(ctx);
         self.figure_windows(ctx);
+        #[cfg(not(target_arch = "wasm32"))]
         self.window_edges(ctx);
         self.confirm_dialog(ctx);
         // The window frame where DWM does not draw it (the window is borderless).
+        #[cfg(not(target_arch = "wasm32"))]
         if !cfg!(target_os = "macos") && !self.rounded && !ctx.input(|i| i.viewport().maximized.unwrap_or(false)) {
             let r = ctx.screen_rect();
             ctx.layer_painter(egui::LayerId::new(egui::Order::Foreground, Id::new("border")))
@@ -2793,6 +3001,320 @@ impl eframe::App for App {
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
+impl App {
+    /// The desktop program owns its files; no page hosts it.
+    fn hosted(&self) -> bool {
+        false
+    }
+}
+
+// ---- the hosting page ------------------------------------------------------------------------
+
+#[cfg(target_arch = "wasm32")]
+impl App {
+    /// Whether a page embeds the editor and owns the document's file.
+    fn hosted(&self) -> bool {
+        self.host.is_some()
+    }
+
+    /// Answers the host page's requests, and tells it when the document's dirty state changes.
+    fn serve_host(&mut self, ctx: &egui::Context) {
+        let requests = match &self.host {
+            Some(host) => host.take(),
+            None => return,
+        };
+        for request in requests {
+            match request {
+                HostRequest::Open { name, bytes } => {
+                    if let Err(e) = self.open_bytes(&name, &bytes) {
+                        self.notice = Some((format!("Could not open {name}: {e}"), true));
+                    }
+                }
+                HostRequest::Request { id, method, params } => {
+                    let reply = self.host_request(ctx, &method, &params);
+                    if let Some(host) = &self.host {
+                        host.respond(id, reply);
+                    }
+                }
+            }
+        }
+        let dirty = self.tabs.get(self.active).is_some_and(|t| t.dirty);
+        if dirty != self.reported_dirty {
+            self.reported_dirty = dirty;
+            if let Some(host) = &self.host {
+                host.dirty(dirty);
+            }
+        }
+    }
+
+    fn host_request(&mut self, ctx: &egui::Context, method: &str, params: &serde_json::Value) -> Result<serde_json::Value, String> {
+        match method {
+            "document.inspect" => Ok(self.inspect()),
+            "engine.commands" => Ok(host_commands()),
+            "engine.execute" => {
+                let command = params.get("command").and_then(serde_json::Value::as_str).ok_or_else(|| "The call names no command.".to_string())?;
+                let params = params.get("params").cloned().unwrap_or(serde_json::Value::Null);
+                self.execute_host_command(ctx, command, &params)
+            }
+            other => Err(format!("Unknown method {other}.")),
+        }
+    }
+
+    /// Runs one command of the host protocol on the open document.
+    fn execute_host_command(&mut self, ctx: &egui::Context, command: &str, p: &serde_json::Value) -> Result<serde_json::Value, String> {
+        let text = |key: &str| p.get(key).and_then(serde_json::Value::as_str).map(str::to_string).ok_or_else(|| format!("The command needs `{key}`."));
+        let index = |key: &str| p.get(key).and_then(serde_json::Value::as_u64).map(|i| i as usize).ok_or_else(|| format!("The command needs `{key}`."));
+        let done = || Ok::<serde_json::Value, String>(serde_json::json!({ "ok": true }));
+        match command {
+            "file.new" => {
+                let name = self.untitled_name(Kind::Live);
+                self.replace_document(Kind::Live, blank_live_doc(), name);
+                done()
+            }
+            "file.save" => {
+                self.host_save(None, false)?;
+                done()
+            }
+            "file.saveAs" => {
+                // With `keepSource` the copy is an export: the open document keeps its name.
+                let keep_source = p.get("keepSource").and_then(serde_json::Value::as_bool).unwrap_or(false);
+                self.host_save(Some(text("path")?), keep_source)?;
+                done()
+            }
+            "file.info" => {
+                let t = self.tab();
+                Ok(serde_json::json!({ "name": t.title(), "kind": kind_name(t.kind), "dirty": t.dirty }))
+            }
+            "ui.hostTheme" => {
+                let dark = p.get("appearance").and_then(serde_json::Value::as_str) == Some("dark");
+                self.set_dark(ctx, dark);
+                done()
+            }
+            "block.setText" | "block.insert" | "block.delete" | "text.set" | "text.replaceAll" => {
+                if self.is_running_tab(self.tab().id) {
+                    return Err("The document is running; try again when it has finished.".into());
+                }
+                let tab = &mut self.tabs[self.active];
+                match command {
+                    "block.setText" => {
+                        let (i, new) = (index("index")?, text("text")?);
+                        let block = tab.doc.blocks.get_mut(i).ok_or_else(|| format!("There is no block {i}."))?;
+                        let old = std::mem::replace(&mut block.text, new.replace("\r\n", "\n"));
+                        if !block.controls.is_empty() {
+                            block.reanchor_controls(&old);
+                        }
+                        tab.dirty = true;
+                        done()
+                    }
+                    "block.insert" => {
+                        if tab.kind != Kind::Live {
+                            return Err("A script is one code block; use text.set.".into());
+                        }
+                        let at = index("at")?.min(tab.doc.blocks.len());
+                        let kind = block_kind(&text("kind")?)?;
+                        let body = p.get("text").and_then(serde_json::Value::as_str).unwrap_or("").replace("\r\n", "\n");
+                        tab.doc.insert(at, kind, &body);
+                        tab.current = at;
+                        tab.dirty = true;
+                        done()
+                    }
+                    "block.delete" => {
+                        let i = index("index")?;
+                        if i >= tab.doc.blocks.len() {
+                            return Err(format!("There is no block {i}."));
+                        }
+                        let b = tab.doc.blocks.remove(i);
+                        tab.outputs.remove(&b.id);
+                        if tab.doc.blocks.is_empty() {
+                            tab.doc.push(BlockKind::Code, "");
+                        }
+                        tab.current = tab.current.min(tab.doc.blocks.len() - 1);
+                        tab.dirty = true;
+                        done()
+                    }
+                    "text.set" => {
+                        Self::set_doc_text(tab, &text("text")?);
+                        done()
+                    }
+                    _ => {
+                        let (from, to) = (text("text")?, text("with")?);
+                        if from.is_empty() {
+                            return Err("The text to replace is empty.".into());
+                        }
+                        let current = Self::doc_text(tab);
+                        let count = current.matches(from.as_str()).count();
+                        if count > 0 {
+                            Self::set_doc_text(tab, &current.replace(from.as_str(), &to));
+                        }
+                        Ok(serde_json::json!({ "replaced": count }))
+                    }
+                }
+            }
+            other => Err(format!("Unknown command {other}.")),
+        }
+    }
+
+    /// The document as the host's assistant reads it: its blocks in order.
+    fn inspect(&self) -> serde_json::Value {
+        let t = self.tab();
+        let blocks: Vec<serde_json::Value> =
+            t.doc.blocks.iter().enumerate().map(|(i, b)| serde_json::json!({ "index": i, "kind": block_kind_name(b.kind), "text": b.text })).collect();
+        serde_json::json!({ "name": t.title(), "kind": kind_name(t.kind), "blocks": blocks })
+    }
+
+    /// Shows the document the host sent, in place of whatever was open.
+    fn open_bytes(&mut self, name: &str, bytes: &[u8]) -> Result<(), String> {
+        let (kind, doc) = if is_script_name(name) {
+            (Kind::Script, script_doc(&String::from_utf8_lossy(bytes).replace("\r\n", "\n")))
+        } else {
+            let mut doc = livre_doc::read_mlx_bytes(bytes).map_err(|e| e.to_string())?;
+            if doc.blocks.is_empty() {
+                doc.push(BlockKind::Code, "");
+            }
+            (Kind::Live, doc)
+        };
+        self.replace_document(kind, doc, name.to_string());
+        self.notice = None;
+        Ok(())
+    }
+
+    /// One document at a time: the new one takes the place of the old, whose run is stopped.
+    fn replace_document(&mut self, kind: Kind, doc: Document, name: String) {
+        if self.running {
+            self.engine.stop();
+        }
+        self.tabs.clear();
+        self.add_tab(kind, doc, None, name, false);
+        self.last_run = None;
+        self.last_error = None;
+    }
+
+    /// Hands the document to the host under `new_name`, or under its current name. An
+    /// export (`keep_source`) leaves the document as it is: its name, and its unsaved
+    /// changes, which the copy carries but the document still has to save.
+    fn host_save(&mut self, new_name: Option<String>, keep_source: bool) -> Result<(), String> {
+        if self.host.is_none() {
+            return Err("No page hosts this editor.".into());
+        }
+        let name = new_name.clone().unwrap_or_else(|| self.tab().title());
+        let bytes = self.document_bytes(&name)?;
+        let adopts = new_name.is_some() && !keep_source;
+        if let Some(host) = &self.host {
+            host.save(&name, &bytes, adopts);
+        }
+        if keep_source {
+            return Ok(());
+        }
+        let t = self.tab_mut();
+        t.name = name;
+        t.dirty = false;
+        Ok(())
+    }
+
+    /// The document as the file `name` holds it: `.m` text, or a `.mlx` package.
+    fn document_bytes(&self, name: &str) -> Result<Vec<u8>, String> {
+        if is_script_name(name) {
+            Ok(Self::doc_text(self.tab()).into_bytes())
+        } else {
+            livre_doc::write_mlx_bytes(&self.tab().doc).map_err(|e| e.to_string())
+        }
+    }
+
+    /// Saves to the host page; the browser build has no file dialogs of its own.
+    fn save(&mut self, _save_as: bool) -> bool {
+        match self.host_save(None, false) {
+            Ok(()) => true,
+            Err(e) => {
+                self.notice = Some((e, true));
+                false
+            }
+        }
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+fn is_script_name(name: &str) -> bool {
+    name.rsplit('.').next().is_some_and(|e| e.eq_ignore_ascii_case("m"))
+}
+
+#[cfg(target_arch = "wasm32")]
+fn kind_name(kind: Kind) -> &'static str {
+    match kind {
+        Kind::Live => "live",
+        Kind::Script => "script",
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+fn block_kind_name(kind: BlockKind) -> &'static str {
+    match kind {
+        BlockKind::Title => "title",
+        BlockKind::Heading => "heading",
+        BlockKind::Heading2 => "heading2",
+        BlockKind::Text => "text",
+        BlockKind::Code => "code",
+        BlockKind::SectionBreak => "sectionBreak",
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+fn block_kind(name: &str) -> Result<BlockKind, String> {
+    Ok(match name {
+        "title" => BlockKind::Title,
+        "heading" => BlockKind::Heading,
+        "heading2" => BlockKind::Heading2,
+        "text" => BlockKind::Text,
+        "code" => BlockKind::Code,
+        "sectionBreak" => BlockKind::SectionBreak,
+        other => return Err(format!("Unknown block kind {other}; use title, heading, heading2, text, code or sectionBreak.")),
+    })
+}
+
+/// A new live script as the desktop's New makes it: an empty title, text and code block.
+#[cfg(target_arch = "wasm32")]
+fn blank_live_doc() -> Document {
+    let mut doc = Document::new();
+    doc.push(BlockKind::Title, "");
+    doc.push(BlockKind::Text, "");
+    doc.push(BlockKind::Code, "");
+    doc
+}
+
+/// The commands the host's assistant may run, in the shape `engine.commands` lists them.
+#[cfg(target_arch = "wasm32")]
+fn host_commands() -> serde_json::Value {
+    let text = |name: &str| serde_json::json!({ name: { "type": "string" } });
+    serde_json::json!([
+        {
+            "id": "block.setText",
+            "label": "Replace the text of one block",
+            "params": { "type": "object", "properties": { "index": { "type": "integer" }, "text": { "type": "string" } }, "required": ["index", "text"] }
+        },
+        {
+            "id": "block.insert",
+            "label": "Insert a block (title, heading, heading2, text, code or sectionBreak) at an index",
+            "params": { "type": "object", "properties": { "at": { "type": "integer" }, "kind": { "type": "string" }, "text": { "type": "string" } }, "required": ["at", "kind"] }
+        },
+        {
+            "id": "block.delete",
+            "label": "Delete one block",
+            "params": { "type": "object", "properties": { "index": { "type": "integer" } }, "required": ["index"] }
+        },
+        {
+            "id": "text.set",
+            "label": "Replace the whole document, written as a script (.m text)",
+            "params": { "type": "object", "properties": text("text"), "required": ["text"] }
+        },
+        {
+            "id": "text.replaceAll",
+            "label": "Replace every occurrence of a text in the document's script form",
+            "params": { "type": "object", "properties": { "text": { "type": "string" }, "with": { "type": "string" } }, "required": ["text", "with"] }
+        }
+    ])
+}
+
+#[cfg(not(target_arch = "wasm32"))]
 fn rgb(c: Color32) -> [u8; 3] {
     [c.r(), c.g(), c.b()]
 }
@@ -2891,6 +3413,7 @@ fn style_scroll_bar(ui: &mut Ui, skin: &Skin) {
 }
 
 /// The MatLivre icon at 18 px, from its 16 px variant.
+#[cfg(not(target_arch = "wasm32"))]
 fn app_logo(ui: &mut Ui, skin: &Skin) {
     let (r, _) = ui.allocate_exact_size(vec2(18.0, 18.0), Sense::hover());
     icons::paint(ui, skin, Ic::AppMark, r.center(), 18.0, false);
@@ -3661,6 +4184,7 @@ fn script_view(ui: &mut Ui, tab: &mut Tab, v: &mut View) -> Option<usize> {
 
 /// Whether a pause in typing should bring a suggestion: at the end of a line that has code,
 /// or on a new line below one.
+#[cfg(not(target_arch = "wasm32"))]
 fn wants_completion(before: &str, after: &str) -> bool {
     let rest = after.split('\n').next().unwrap_or("");
     if !rest.trim().is_empty() {
@@ -3715,6 +4239,7 @@ fn paint_ghost(ui: &Ui, skin: &Skin, v: &View, block: u64, galley: &egui::Galley
 
 /// The bar a tab shows when its file changed on disk while it had unsaved changes.
 /// `Some(true)` reloads the file, `Some(false)` keeps the editor's version.
+#[cfg(not(target_arch = "wasm32"))]
 fn conflict_bar(ui: &mut Ui, skin: &Skin, name: &str) -> Option<bool> {
     let mut pick = None;
     egui::Frame::none()
