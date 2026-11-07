@@ -21,6 +21,13 @@ jobs:
       - uses: jetli/wasm-bindgen-action@v0.2.0
       - run: sudo apt-get install --yes binaryen
       - run: apps/matlivre-web/package.sh "${GITHUB_REF_NAME}"
-      - run: gh release create "${GITHUB_REF_NAME}" --title "${GITHUB_REF_NAME}" --notes "Browser bundle ${GITHUB_REF_NAME}" "apps/matlivre-web/pkg/matlivre-web-${GITHUB_REF_NAME}.tar.gz"
+      # A release created by hand from a local build keeps its bundle: an embedding
+      # application may already pin that bundle's checksum, and a rebuild gives other bytes.
+      - run: |
+          if gh release view "${GITHUB_REF_NAME}" > /dev/null 2>&1; then
+            echo "Release ${GITHUB_REF_NAME} already exists; its bundle is kept."
+          else
+            gh release create "${GITHUB_REF_NAME}" --title "${GITHUB_REF_NAME}" --notes "Browser bundle ${GITHUB_REF_NAME}" "apps/matlivre-web/pkg/matlivre-web-${GITHUB_REF_NAME}.tar.gz"
+          fi
         env:
           GH_TOKEN: ${{ github.token }}
