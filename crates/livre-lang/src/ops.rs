@@ -11,25 +11,16 @@ type R<T> = Result<T, LangError>;
 
 /// Elementwise real `f(a, b)` with implicit expansion; result is a real double array.
 pub fn broadcast(a: &Matrix, b: &Matrix, f: impl Fn(f64, f64) -> f64 + Sync + Send) -> R<Matrix> {
-    use rayon::prelude::*;
-    let big = a.numel().max(b.numel()) >= PAR_MIN;
     if a.dims == b.dims {
-        let data = if big {
-            a.data.par_iter().zip(&b.data).map(|(&x, &y)| f(x, y)).collect()
-        } else {
-            a.data.iter().zip(&b.data).map(|(&x, &y)| f(x, y)).collect()
-        };
-        return Ok(Matrix::from_dims(a.dims.clone(), data));
+        return Ok(Matrix::from_dims(a.dims.clone(), zip_slices(&a.data, &b.data, f)));
     }
     if a.is_scalar() {
         let x = a.data[0];
-        let data = if big { b.data.par_iter().map(|&y| f(x, y)).collect() } else { b.data.iter().map(|&y| f(x, y)).collect() };
-        return Ok(Matrix::from_dims(b.dims.clone(), data));
+        return Ok(Matrix::from_dims(b.dims.clone(), map_slice(&b.data, |y| f(x, y))));
     }
     if b.is_scalar() {
         let y = b.data[0];
-        let data = if big { a.data.par_iter().map(|&x| f(x, y)).collect() } else { a.data.iter().map(|&x| f(x, y)).collect() };
-        return Ok(Matrix::from_dims(a.dims.clone(), data));
+        return Ok(Matrix::from_dims(a.dims.clone(), map_slice(&a.data, |x| f(x, y))));
     }
     let (dims, pairs) = nd::broadcast_pairs(&a.dims, &b.dims)?;
     Ok(Matrix::from_dims(dims, pairs.into_iter().map(|(i, j)| f(a.data[i], b.data[j])).collect()))
@@ -468,12 +459,40 @@ fn faer_solve(a: &Matrix, b: &Matrix) -> R<Matrix> {
 /// Threads for blocked products: one per physical core. Two hyperthreads sharing a core
 /// contend for the same FMA units and caches, so using them makes timings worse and erratic.
 fn gemm_par() -> faer::Par {
-    static N: std::sync::OnceLock<usize> = std::sync::OnceLock::new();
-    let n = *N.get_or_init(|| {
-        let logical = std::thread::available_parallelism().map_or(1, |n| n.get());
-        if cfg!(any(target_arch = "x86", target_arch = "x86_64")) && logical >= 4 { logical / 2 } else { logical }
-    });
-    if n <= 1 { faer::Par::Seq } else { faer::Par::rayon(n) }
+    #[cfg(not(feature = "native"))]
+    {
+        faer::Par::Seq
+    }
+    #[cfg(feature = "native")]
+    {
+        static N: std::sync::OnceLock<usize> = std::sync::OnceLock::new();
+        let n = *N.get_or_init(|| {
+            let logical = std::thread::available_parallelism().map_or(1, |n| n.get());
+            if cfg!(any(target_arch = "x86", target_arch = "x86_64")) && logical >= 4 { logical / 2 } else { logical }
+        });
+        if n <= 1 { faer::Par::Seq } else { faer::Par::rayon(n) }
+    }
+}
+
+/// `f` over every element, on several threads when the array is large and threads exist.
+pub(crate) fn map_slice(data: &[f64], f: impl Fn(f64) -> f64 + Sync + Send) -> Vec<f64> {
+    #[cfg(feature = "native")]
+    if data.len() >= PAR_MIN {
+        use rayon::prelude::*;
+        return data.par_iter().map(|&x| f(x)).collect();
+    }
+    data.iter().map(|&x| f(x)).collect()
+}
+
+/// `f` over every pair of elements of two arrays of the same size, on several threads when
+/// they are large and threads exist.
+fn zip_slices(a: &[f64], b: &[f64], f: impl Fn(f64, f64) -> f64 + Sync + Send) -> Vec<f64> {
+    #[cfg(feature = "native")]
+    if a.len() >= PAR_MIN {
+        use rayon::prelude::*;
+        return a.par_iter().zip(b).map(|(&x, &y)| f(x, y)).collect();
+    }
+    a.iter().zip(b).map(|(&x, &y)| f(x, y)).collect()
 }
 
 pub fn matmul(a: &Matrix, b: &Matrix) -> R<Matrix> {

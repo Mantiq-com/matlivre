@@ -200,6 +200,7 @@ fn what(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
 
 // ---- fileattrib ------------------------------------------------------------------------------
 
+#[cfg(any(windows, unix))]
 fn bool_or_nan(b: Option<bool>) -> Value {
     match b {
         Some(b) => Value::bool(b),
@@ -209,6 +210,9 @@ fn bool_or_nan(b: Option<bool>) -> Value {
 
 fn attributes(p: &Path) -> std::io::Result<StructArray> {
     let md = std::fs::metadata(p)?;
+    // Only Windows and Unix read attributes off the metadata below.
+    #[cfg(not(any(windows, unix)))]
+    let _ = &md;
     let abs = std::path::absolute(p).unwrap_or_else(|_| p.to_path_buf());
     let mut s = StructArray::scalar();
     s.set("Name", Value::chars(&abs.display().to_string()));

@@ -28,6 +28,7 @@ mod histogram_bins;
 mod images;
 mod interp_heatmap_sort;
 mod io_more;
+#[cfg(feature = "jit")]
 mod jit;
 mod lang;
 mod language;

@@ -364,7 +364,7 @@ fn timeit(it: &mut Interpreter, a: &[Value]) -> R<Value> {
         None => 1,
     };
     let once = |it: &mut Interpreter| -> R<f64> {
-        let t = std::time::Instant::now();
+        let t = crate::clock::Instant::now();
         match it.call_value(f, Vec::new(), nout) {
             Ok(_) => {}
             // A function with no outputs is timed with none requested.

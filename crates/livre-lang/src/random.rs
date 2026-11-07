@@ -279,7 +279,7 @@ fn seed_of(v: &Value) -> R<u32> {
 }
 
 fn shuffle_seed() -> u32 {
-    let t = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or(0);
+    let t = crate::clock::SystemTime::now().duration_since(crate::clock::UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or(0);
     (t % 4_294_967_291) as u32
 }
 

@@ -32,6 +32,7 @@ pub mod builtins_validate;
 pub mod builtins_textio;
 pub mod builtins_types;
 pub mod class;
+pub mod clock;
 pub mod cplx;
 pub mod decomp;
 pub mod figfile;
@@ -45,6 +46,7 @@ pub mod graphics;
 pub mod graphs;
 pub mod indexing;
 pub mod interp;
+#[cfg(feature = "jit")]
 pub mod jit;
 pub mod lexer;
 pub mod nd;

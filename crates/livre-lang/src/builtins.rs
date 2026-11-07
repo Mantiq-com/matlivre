@@ -650,9 +650,9 @@ fn name_col(items: Vec<Value>) -> Value {
 }
 
 /// The instant `t = tic` time stamps count from.
-fn tic_epoch() -> std::time::Instant {
-    static START: std::sync::OnceLock<std::time::Instant> = std::sync::OnceLock::new();
-    *START.get_or_init(std::time::Instant::now)
+fn tic_epoch() -> crate::clock::Instant {
+    static START: std::sync::OnceLock<crate::clock::Instant> = std::sync::OnceLock::new();
+    *START.get_or_init(crate::clock::Instant::now)
 }
 
 fn element(v: &Value, k: usize, unwrap_cells: bool) -> R<Value> {
@@ -1899,7 +1899,6 @@ fn call_dense(it: &mut Interpreter, name: &str, args: Vec<Value>, nargout: usize
             // unless both zeros are present (only a stable sort keeps their order).
             let along = m.dims.get(dim - 1).copied().unwrap_or(1);
             if nargout <= 1 && !m.is_complex() && missing == "auto" && method != "abs" && along == m.numel() && !m.data.iter().any(|x| *x == 0.0 && x.is_sign_negative()) {
-                use rayon::slice::ParallelSliceMut;
                 let mut sorted = m;
                 let cmp = |p: &f64, q: &f64| match (p.is_nan(), q.is_nan()) {
                     (true, true) => std::cmp::Ordering::Equal,
@@ -1907,10 +1906,20 @@ fn call_dense(it: &mut Interpreter, name: &str, args: Vec<Value>, nargout: usize
                     (false, true) => std::cmp::Ordering::Less,
                     _ => p.partial_cmp(q).unwrap(),
                 };
+                #[cfg(feature = "native")]
+                {
+                    use rayon::slice::ParallelSliceMut;
+                    if desc {
+                        sorted.data.par_sort_unstable_by(|p, q| cmp(q, p));
+                    } else {
+                        sorted.data.par_sort_unstable_by(cmp);
+                    }
+                }
+                #[cfg(not(feature = "native"))]
                 if desc {
-                    sorted.data.par_sort_unstable_by(|p, q| cmp(q, p));
+                    sorted.data.sort_unstable_by(|p, q| cmp(q, p));
                 } else {
-                    sorted.data.par_sort_unstable_by(cmp);
+                    sorted.data.sort_unstable_by(cmp);
                 }
                 return Ok(Some(vec![Value::Num(sorted)]));
             }
@@ -2725,7 +2734,7 @@ fn call_dense(it: &mut Interpreter, name: &str, args: Vec<Value>, nargout: usize
                 let us = tic_epoch().elapsed().as_micros() as f64 + 1.0;
                 return mat(Matrix::scalar(us).with_kind(Kind::Int(IntClass::U64)));
             }
-            it.tic = std::time::Instant::now();
+            it.tic = crate::clock::Instant::now();
             none()
         }
         "toc" => {
@@ -2749,7 +2758,7 @@ fn call_dense(it: &mut Interpreter, name: &str, args: Vec<Value>, nargout: usize
         "pause" if crate::timers::any_running(it) => {
             if let Some(Ok(n)) = a.first().filter(|v| !v.is_text()).map(|v| v.scalar()) {
                 let n = if n.is_finite() && n > 0.0 { n } else { 0.0 };
-                crate::timers::service(it, Some(std::time::Instant::now() + std::time::Duration::from_secs_f64(n)), None);
+                crate::timers::service(it, Some(crate::clock::Instant::now() + std::time::Duration::from_secs_f64(n)), None);
             }
             none()
         }

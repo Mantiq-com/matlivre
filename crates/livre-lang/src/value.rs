@@ -326,13 +326,7 @@ impl Matrix {
 
     /// Applies `f` to the real parts, producing a real double array of the same shape.
     pub fn map(&self, f: impl Fn(f64) -> f64 + Sync + Send) -> Matrix {
-        use rayon::prelude::*;
-        let data = if self.data.len() >= crate::ops::PAR_MIN {
-            self.data.par_iter().map(|&x| f(x)).collect()
-        } else {
-            self.data.iter().map(|&x| f(x)).collect()
-        };
-        Matrix::from_dims(self.dims.clone(), data)
+        Matrix::from_dims(self.dims.clone(), crate::ops::map_slice(&self.data, f))
     }
 
     pub fn reshaped(mut self, dims: Dims) -> Matrix {

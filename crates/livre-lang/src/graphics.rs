@@ -1,7 +1,7 @@
 //! Figure data model. The interpreter only records what was plotted; the UI renders it so
 //! the chart can follow the application skin.
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum LineStyle {
     Solid,
     Dashed,
@@ -10,7 +10,7 @@ pub enum LineStyle {
     None,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum Marker {
     Circle,
     Square,
@@ -23,7 +23,7 @@ pub enum Marker {
     TriangleDown,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum SeriesKind {
     Line,
     Scatter,
@@ -64,7 +64,7 @@ pub enum SeriesKind {
 
 /// How x values are labeled: plain numbers, wall-clock milliseconds (datetime) or
 /// milliseconds (duration).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 pub enum XAxisKind {
     #[default]
     Numeric,
@@ -72,7 +72,7 @@ pub enum XAxisKind {
     Duration,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Series {
     pub kind: SeriesKind,
     pub x: Vec<f64>,
@@ -120,6 +120,8 @@ pub struct Series {
     pub v: Vec<f64>,
     pub w: Vec<f64>,
     /// The MATLAB class of the object when it differs from its kind's (`polarhistogram`).
+    // Only the engine reads the hint, so it does not travel to a window drawing the figure.
+    #[serde(skip)]
     pub class_hint: Option<&'static str>,
     /// Marker diameter of each point in points (bubble charts); empty = `marker_size`.
     pub sizes: Vec<f32>,
@@ -178,7 +180,7 @@ impl Series {
 }
 
 /// Tick labels: positions, custom labels, a format and the label rotation in degrees.
-#[derive(Debug, Clone, PartialEq, Default)]
+#[derive(Debug, Clone, PartialEq, Default, serde::Serialize, serde::Deserialize)]
 pub struct Ticks {
     pub values: Option<Vec<f64>>,
     pub labels: Option<Vec<String>>,
@@ -189,7 +191,7 @@ pub struct Ticks {
     pub as_char: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Default)]
+#[derive(Debug, Clone, PartialEq, Default, serde::Serialize, serde::Deserialize)]
 pub struct Axes {
     pub title: String,
     pub xlabel: String,
@@ -248,7 +250,7 @@ pub struct Axes {
 }
 
 /// The y axis of one side of `yyaxis` axes.
-#[derive(Debug, Clone, PartialEq, Default)]
+#[derive(Debug, Clone, PartialEq, Default, serde::Serialize, serde::Deserialize)]
 pub struct YySide {
     pub ylim: Option<(f64, f64)>,
     pub yticks: Ticks,
@@ -257,7 +259,7 @@ pub struct YySide {
 }
 
 /// `yyaxis` state: the active side, the inactive side's axis and the colors of both sides.
-#[derive(Debug, Clone, PartialEq, Default)]
+#[derive(Debug, Clone, PartialEq, Default, serde::Serialize, serde::Deserialize)]
 pub struct Yy {
     pub right_active: bool,
     pub other: YySide,
@@ -266,7 +268,7 @@ pub struct Yy {
 
 /// Figure-level objects: a tiled layout or annotations (in normalized figure units, origin at
 /// the bottom left).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum FigObjKind {
     Layout,
     Line,
@@ -298,7 +300,7 @@ impl FigObjKind {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct FigObject {
     pub id: u64,
     pub kind: FigObjKind,
@@ -700,7 +702,7 @@ pub fn bar_spacing(x: &[f64]) -> f64 {
     if d.is_finite() { d } else { 1.0 }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Figure {
     pub id: u32,
     pub name: String,

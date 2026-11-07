@@ -7,9 +7,9 @@ use std::path::PathBuf;
 use std::rc::Rc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use std::time::Instant;
 
 use crate::ast::*;
+use crate::clock::Instant;
 use crate::class::{ClassDef, Object};
 use crate::display::{display_value, summary, NumFormat};
 use crate::error::{rt, LangError};
@@ -21,7 +21,7 @@ use crate::value::*;
 
 type R<T> = Result<T, LangError>;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum OutputKind {
     /// Text printed by `disp`, `fprintf`, …
     Text(String),
@@ -32,14 +32,14 @@ pub enum OutputKind {
     Error(String),
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Output {
     /// 1-based line within the code block of the top-level statement that produced it.
     pub line: usize,
     pub kind: OutputKind,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct VarInfo {
     pub name: String,
     pub class: String,
@@ -120,16 +120,22 @@ pub struct Interpreter {
     pub(crate) last_warning: (String, String),
     /// Event listeners of handle objects (addlistener, listener).
     pub(crate) listeners: Vec<crate::lang_more::Listener>,
+    #[cfg(feature = "jit")]
     jit: Option<crate::jit::Jit>,
+    #[cfg(feature = "jit")]
     jit_enabled: bool,
     /// Compiled kernels by (statement address, variable types); `None` = not compilable.
+    #[cfg(feature = "jit")]
     jit_cache: HashMap<(usize, String), Option<Rc<crate::jit::Kernel>>>,
+    #[cfg(feature = "jit")]
     jit_names: HashMap<usize, Vec<String>>,
     /// Native entries for user functions called with scalar doubles, by (function, arity).
+    #[cfg(feature = "jit")]
     jit_entries: HashMap<(usize, usize), Option<extern "C" fn(*mut crate::jit::Ctx, *const f64, *mut f64) -> i32>>,
     jit_runs: usize,
 }
 
+#[cfg(feature = "jit")]
 static NO_CANCEL: u8 = 0;
 
 impl Default for Interpreter {
@@ -177,19 +183,30 @@ impl Interpreter {
             last_error: (String::new(), String::new()),
             last_warning: (String::new(), String::new()),
             listeners: Vec::new(),
+            #[cfg(feature = "jit")]
             jit: None,
+            #[cfg(feature = "jit")]
             jit_enabled: std::env::var_os("MATLIVRE_NOJIT").is_none(),
+            #[cfg(feature = "jit")]
             jit_cache: HashMap::new(),
+            #[cfg(feature = "jit")]
             jit_names: HashMap::new(),
+            #[cfg(feature = "jit")]
             jit_entries: HashMap::new(),
             jit_runs: 0,
         }
     }
 
     /// Enables or disables native compilation of loops (enabled by default; the
-    /// `MATLIVRE_NOJIT` environment variable disables it).
+    /// `MATLIVRE_NOJIT` environment variable disables it). Without the `jit` feature
+    /// nothing is compiled, whatever is asked.
     pub fn set_jit(&mut self, on: bool) {
-        self.jit_enabled = on;
+        #[cfg(feature = "jit")]
+        {
+            self.jit_enabled = on;
+        }
+        #[cfg(not(feature = "jit"))]
+        let _ = on;
     }
 
     /// Number of loop executions that ran as native code.
@@ -245,6 +262,7 @@ impl Interpreter {
 
     /// Registers local functions (replacing earlier definitions with the same name).
     pub fn define_functions(&mut self, prog: &Program) {
+        #[cfg(feature = "jit")]
         self.jit_entries.clear();
         for f in &prog.functions {
             self.functions.insert(f.name.clone(), f.clone());
@@ -299,11 +317,14 @@ impl Interpreter {
         self.frames.clear();
         self.class_stack.clear();
         // Kernels are keyed by AST addresses, which are only stable within one run.
-        self.jit_cache.clear();
-        self.jit_names.clear();
-        self.jit_entries.clear();
-        if let Some(j) = self.jit.as_mut() {
-            j.reset_functions();
+        #[cfg(feature = "jit")]
+        {
+            self.jit_cache.clear();
+            self.jit_names.clear();
+            self.jit_entries.clear();
+            if let Some(j) = self.jit.as_mut() {
+                j.reset_functions();
+            }
         }
         for s in body {
             let r = self.exec(s);
@@ -2273,6 +2294,7 @@ fn assign_in_place(target: &mut Value, chain: &[Resolved], rhs: Value) -> R<Opti
 
 impl Interpreter {
     /// How a call of `name` resolves, for the compiler (mirrors `call_function`).
+    #[cfg(feature = "jit")]
     fn jit_callee(&mut self, name: &str) -> Option<crate::jit::Callee> {
         use crate::jit::{Callee, INTRINSICS};
         if let Some(f) = self.functions.get(name) {
@@ -2290,6 +2312,7 @@ impl Interpreter {
     /// Environment for compiling code that references `names`: variable types (when
     /// `with_vars`), and how other names resolve as functions, following user functions
     /// transitively. The string identifies the environment for caching.
+    #[cfg(feature = "jit")]
     fn jit_env(&mut self, names: &[String], with_vars: bool) -> (crate::jit::Env, String) {
         use crate::jit::{self as j, Callee, Env};
         let mut env = Env { vars: HashMap::new(), funcs: HashMap::new() };
@@ -2459,6 +2482,12 @@ impl Interpreter {
         Ok(v)
     }
 
+    #[cfg(not(feature = "jit"))]
+    fn try_jit_call(&mut self, _f: &Rc<Function>, _args: &[Value]) -> R<Option<Value>> {
+        Ok(None)
+    }
+
+    #[cfg(feature = "jit")]
     fn try_jit_call(&mut self, f: &Rc<Function>, args: &[Value]) -> R<Option<Value>> {
         use crate::jit::{self as j, Ctx, Runtime, VarType};
         if !self.jit_enabled || args.len() != f.params.len() || f.outputs.len() != 1 {
@@ -2502,7 +2531,13 @@ impl Interpreter {
         Ok(Some(Value::num(out)))
     }
 
+    #[cfg(not(feature = "jit"))]
+    fn try_jit(&mut self, _s: &Stmt) -> R<bool> {
+        Ok(false)
+    }
+
     /// Runs a loop statement as native code when it compiles. Returns false to interpret.
+    #[cfg(feature = "jit")]
     fn try_jit(&mut self, s: &Stmt) -> R<bool> {
         use crate::jit::{self as j, Ctx, Runtime, ScalarHome, Slot, Storage};
         if !self.jit_enabled {
