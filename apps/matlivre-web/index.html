@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>MatLivre</title>
+  <link data-trunk rel="rust" data-bin="matlivre-web" data-wasm-opt="2" />
+  <link data-trunk rel="copy-file" href="engine-worker.js" />
+  <link data-trunk rel="copy-file" href="../../LICENSE" />
+  <style>
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #f3f3f3; }
+    #matlivre_canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+    #matlivre_loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      color: #555; font: 14px system-ui, sans-serif; pointer-events: none; }
+  </style>
+</head>
+<body>
+  <canvas id="matlivre_canvas"></canvas>
+  <div id="matlivre_loading">Loading MatLivre&hellip;</div>
+</body>
+</html>

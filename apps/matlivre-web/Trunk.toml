@@ -1,0 +1,6 @@
+[build]
+target = "index.html"
+dist = "dist"
+# The bundle is served from whatever directory an application installs it in, so every
+# link in the page is relative.
+public_url = "./"

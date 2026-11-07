@@ -1,2 +1,4 @@
 /target
 /Releases/
+/apps/matlivre-web/dist/
+/apps/matlivre-web/pkg/
