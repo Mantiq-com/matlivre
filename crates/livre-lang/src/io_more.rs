@@ -278,6 +278,12 @@ fn loadenv(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
     one(it.call_function("dictionary", vec![keys, vals], 1)?.remove(0))
 }
 
+#[cfg(not(feature = "native"))]
+fn clipboard(_it: &mut Interpreter, _a: &[Value]) -> Ret {
+    Err(LangError::new("The clipboard is not available here.", 0))
+}
+
+#[cfg(feature = "native")]
 fn clipboard(it: &mut Interpreter, a: &[Value]) -> Ret {
     let cmd = arg(a, 0, "clipboard")?.text()?.to_lowercase();
     let mut cb = arboard::Clipboard::new().map_err(|e| LangError::new(format!("The clipboard is not available: {e}"), 0))?;

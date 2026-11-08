@@ -749,9 +749,9 @@ fn name_col(items: Vec<Value>) -> Value {
 }
 
 /// The instant `t = tic` time stamps count from.
-fn tic_epoch() -> std::time::Instant {
-    static START: std::sync::OnceLock<std::time::Instant> = std::sync::OnceLock::new();
-    *START.get_or_init(std::time::Instant::now)
+fn tic_epoch() -> crate::clock::Instant {
+    static START: std::sync::OnceLock<crate::clock::Instant> = std::sync::OnceLock::new();
+    *START.get_or_init(crate::clock::Instant::now)
 }
 
 fn element(v: &Value, k: usize, unwrap_cells: bool) -> R<Value> {
@@ -3004,7 +3004,7 @@ fn call_dense(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) 
                 let us = tic_epoch().elapsed().as_micros() as f64 + 1.0;
                 return mat(Matrix::scalar(us).with_kind(Kind::Int(IntClass::U64)));
             }
-            it.tic = std::time::Instant::now();
+            it.tic = crate::clock::Instant::now();
             none()
         }
         "toc" => {
@@ -3028,7 +3028,7 @@ fn call_dense(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) 
         "pause" if crate::timers::any_running(it) => {
             if let Some(Ok(n)) = a.first().filter(|v| !v.is_text()).map(|v| v.scalar()) {
                 let n = if n.is_finite() && n > 0.0 { n } else { 0.0 };
-                crate::timers::service(it, Some(std::time::Instant::now() + std::time::Duration::from_secs_f64(n)), None);
+                crate::timers::service(it, Some(crate::clock::Instant::now() + std::time::Duration::from_secs_f64(n)), None);
             }
             none()
         }

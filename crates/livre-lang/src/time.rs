@@ -100,7 +100,7 @@ fn parse_tz(name: &str) -> R<(Option<Zone>, String)> {
 }
 
 pub fn now_utc_ms() -> f64 {
-    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as f64).unwrap_or(0.0)
+    crate::clock::SystemTime::now().duration_since(crate::clock::UNIX_EPOCH).map(|d| d.as_millis() as f64).unwrap_or(0.0)
 }
 
 /// The local time zone's offset from UTC now, in milliseconds (unzoned datetimes such as
@@ -109,9 +109,15 @@ pub fn local_offset_ms() -> f64 {
     chrono::Local::now().offset().local_minus_utc() as f64 * 1000.0
 }
 
-/// CPU time used by this process, in seconds (cputime).
+/// CPU time used by this process, in seconds (cputime); 0 where the process clock cannot
+/// be read, as in a browser.
 pub fn process_cpu_seconds() -> f64 {
-    cpu_time::ProcessTime::try_now().map(|t| t.as_duration().as_secs_f64()).unwrap_or(0.0)
+    #[cfg(feature = "native")]
+    {
+        cpu_time::ProcessTime::try_now().map(|t| t.as_duration().as_secs_f64()).unwrap_or(0.0)
+    }
+    #[cfg(not(feature = "native"))]
+    0.0
 }
 
 /// Formats wall-clock ms with a MATLAB/Unicode datetime pattern.

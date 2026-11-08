@@ -708,12 +708,19 @@ pub fn sparse_solve_csc(csc: &crate::value::Csc, b: &Matrix) -> Option<Matrix> {
 /// Threads for blocked products: one per physical core. Two hyperthreads sharing a core
 /// contend for the same FMA units and caches, so using them makes timings worse and erratic.
 fn gemm_par() -> faer::Par {
-    static N: std::sync::OnceLock<usize> = std::sync::OnceLock::new();
-    let n = *N.get_or_init(|| {
-        let logical = std::thread::available_parallelism().map_or(1, |n| n.get());
-        if cfg!(any(target_arch = "x86", target_arch = "x86_64")) && logical >= 4 { logical / 2 } else { logical }
-    });
-    if n <= 1 { faer::Par::Seq } else { faer::Par::rayon(n) }
+    #[cfg(not(feature = "native"))]
+    {
+        faer::Par::Seq
+    }
+    #[cfg(feature = "native")]
+    {
+        static N: std::sync::OnceLock<usize> = std::sync::OnceLock::new();
+        let n = *N.get_or_init(|| {
+            let logical = std::thread::available_parallelism().map_or(1, |n| n.get());
+            if cfg!(any(target_arch = "x86", target_arch = "x86_64")) && logical >= 4 { logical / 2 } else { logical }
+        });
+        if n <= 1 { faer::Par::Seq } else { faer::Par::rayon(n) }
+    }
 }
 
 pub fn matmul(a: &Matrix, b: &Matrix) -> R<Matrix> {

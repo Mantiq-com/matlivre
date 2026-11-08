@@ -10,9 +10,10 @@ use crate::error::{rt, LangError};
 use crate::interp::{Interpreter, OutputKind};
 use crate::value::*;
 use crate::display::NumFormat;
+use crate::clock::Instant;
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 type R<T> = Result<T, LangError>;
 
@@ -352,20 +353,29 @@ pub fn service(it: &mut Interpreter, deadline: Option<Instant>, until: Option<u6
         match next {
             Some((t, id)) if deadline.is_none_or(|d| t <= d) && (t <= now || deadline.is_some() || until.is_some()) => {
                 if t > now {
-                    std::thread::sleep(t - now);
+                    wait(t - now);
                 }
                 fire(it, id);
             }
             _ => {
                 if let Some(d) = deadline {
                     if d > now {
-                        std::thread::sleep(d - now);
+                        wait(d - now);
                     }
                 }
                 return;
             }
         }
     }
+}
+
+/// Lets the time pass. A browser worker cannot block, so there a timer that is due later
+/// fires at once instead.
+fn wait(d: Duration) {
+    #[cfg(not(target_arch = "wasm32"))]
+    std::thread::sleep(d);
+    #[cfg(target_arch = "wasm32")]
+    let _ = d;
 }
 
 /// Whether any timer is running (pause only waits when one is).
