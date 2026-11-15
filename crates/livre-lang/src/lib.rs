@@ -4,6 +4,7 @@
 // mimalloc keeps freed memory mapped. With the system allocator every large array comes back from
 // the OS as untouched pages, and faulting them in cost a third of a 300 x 300 product and about
 // half of a whole-array operation on a few million elements.
+#[cfg(feature = "native")]
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
@@ -42,6 +43,7 @@ pub mod builtins_validate;
 pub mod builtins_textio;
 pub mod builtins_types;
 pub mod class;
+pub mod clock;
 pub mod cplx;
 pub mod decomp;
 pub mod figfile;
@@ -57,6 +59,7 @@ pub mod graphics;
 pub mod graphs;
 pub mod indexing;
 pub mod interp;
+#[cfg(feature = "jit")]
 pub mod jit;
 pub mod lexer;
 pub mod nd;

@@ -159,6 +159,10 @@ without installing anything.
 
 `matlivre-cli script.m` runs a script headless and prints its output.
 
+The editor also runs in a browser, for a web page that embeds it and keeps its files:
+`apps/matlivre-web` builds it with trunk, with the engine in a Web Worker. Its
+[README](apps/matlivre-web/README.md) has the build and the protocol the page speaks.
+
 ### Linux
 
 Install the build dependencies (Ubuntu/Debian) and Rust (via rustup), then build:
@@ -183,7 +187,8 @@ the application menu.
 |---|---|
 | `crates/livre-lang` | Lexer, parser, interpreter and native-code compiler, values and MATLAB display, builtins, classdef, Symbolic Math, figure model |
 | `crates/livre-doc` | Live script document model; `.mlx` (OPC/ZIP + WordprocessingML) and `.m` reader/writer |
-| `crates/livre-app` | The desktop app (eframe/egui): editor, outputs, plots, workspace, command window |
+| `crates/livre-app` | The desktop app (eframe/egui): editor, outputs, plots, workspace, command window; a library too, which the browser build draws |
+| `apps/matlivre-web` | The editor in a browser, for a page that embeds it |
 
 ## Clean-room process
 

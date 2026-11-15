@@ -1,0 +1,15 @@
+[package]
+name = "matlivre-web"
+description = "MatLivre in the browser, for a page that embeds it"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+# Only the WebAssembly target has a browser to run in; natively the program is empty.
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+livre-app = { path = "../../crates/livre-app" }
+eframe = { version = "=0.29.1", default-features = false, features = ["glow", "default_fonts"] }
+js-sys = "0.3"
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+web-sys = { version = "0.3", features = ["console", "Document", "Element", "HtmlCanvasElement", "Location", "Window"] }

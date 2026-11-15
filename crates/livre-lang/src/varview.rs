@@ -17,7 +17,7 @@ const PREVIEW_ROWS: usize = 8;
 const PREVIEW_COLS: usize = 6;
 
 /// A snapshot of one variable.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct VarView {
     pub name: String,
     pub class: String,
@@ -28,7 +28,7 @@ pub struct VarView {
     pub body: VarBody,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum VarBody {
     /// A 2-D numeric or logical array, or its top-left corner, with the session's format.
     Numbers { m: Matrix, format: NumFormat },

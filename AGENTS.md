@@ -31,7 +31,8 @@ Notes for coding agents (and people) working in this repository.
 |---|---|
 | `crates/livre-lang` | Interpreter, builtins, figure model; tests in `tests/` |
 | `crates/livre-doc` | `.mlx` / `.m` document model |
-| `crates/livre-app` | Desktop app (egui), plot rendering |
+| `crates/livre-app` | Desktop app (egui), plot rendering; also the library the browser build draws |
+| `apps/matlivre-web` | The editor in a browser (trunk); the engine runs in a Web Worker |
 | `docs/matlab-coverage.md` | Every MATLAB function and its status (generated) |
 | `benchmarks/` | Language, cold-start and live script benchmarks |
 | `tools/` | Coverage generator, README screenshots |

@@ -5,6 +5,16 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 
+[features]
+default = ["jit", "native"]
+# Native compilation of loops and scalar functions with Cranelift, which cannot run in
+# WebAssembly: without it every statement is interpreted.
+jit = ["dep:cranelift-codegen", "dep:cranelift-frontend", "dep:cranelift-jit", "dep:cranelift-module", "dep:cranelift-native"]
+# The process clock and the clipboard, which a browser does not give a program, faer's own
+# thread pool, and the mimalloc allocator, a C library that does not build for WebAssembly.
+# Rayon is not part of it: where threads cannot start, its pool runs on the calling thread.
+native = ["dep:cpu-time", "dep:arboard", "dep:mimalloc", "faer/rayon"]
+
 [dependencies]
 rayon = "1.12"
 rustfft = "6"
@@ -12,7 +22,7 @@ fancy-regex = "0.14"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 chrono-tz = "0.10"
 iana-time-zone = "0.1"
-cpu-time = "1"
+cpu-time = { version = "1", optional = true }
 serde_json = { version = "1", features = ["preserve_order"] }
 flate2 = "1"
 png = "0.17"
@@ -21,14 +31,16 @@ hound = "3"
 zip = { version = "2", default-features = false, features = ["deflate"] }
 tar = "0.4"
 roxmltree = "0.20"
-serde = "1"
-faer = "0.24"
-mimalloc = { version = "0.1", default-features = false }
-cranelift-codegen = "0.137"
-cranelift-frontend = "0.137"
-cranelift-jit = "0.137"
-cranelift-module = "0.137"
-cranelift-native = "0.137"
+serde = { version = "1", features = ["derive"] }
+# Without its default `rayon` feature faer stays single-threaded, which is what a browser
+# can run; `native` turns the threads back on.
+faer = { version = "0.24", default-features = false, features = ["std", "linalg", "sparse-linalg"] }
+mimalloc = { version = "0.1", default-features = false, optional = true }
+cranelift-codegen = { version = "0.137", optional = true }
+cranelift-frontend = { version = "0.137", optional = true }
+cranelift-jit = { version = "0.137", optional = true }
+cranelift-module = { version = "0.137", optional = true }
+cranelift-native = { version = "0.137", optional = true }
 libm = "0.2"
 num-bigint = "0.4"
 num-integer = "0.1"
@@ -39,4 +51,10 @@ rust_xlsxwriter = "0.102"
 complex-bessel = "0.3"
 num-complex = "0.4"
 geo = "0.33.1"
-arboard = "3.7"
+arboard = { version = "3.7", optional = true }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+# The browser's clocks, where `std::time::Instant::now` and `SystemTime::now` abort; chrono
+# reads the browser's clock and time zone through `wasmbind` for the same reason.
+web-time = "1.1"
+chrono = { version = "0.4", default-features = false, features = ["clock", "wasmbind"] }

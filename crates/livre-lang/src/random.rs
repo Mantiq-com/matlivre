@@ -104,6 +104,7 @@ pub struct Stream {
 }
 
 /// The global stream, for compiled code that draws from it.
+#[cfg(feature = "jit")]
 pub(crate) fn global_stream(s: &mut Streams) -> *mut Stream {
     let g = s.global;
     s.get(g) as *mut Stream
@@ -113,17 +114,20 @@ pub(crate) fn global_stream(s: &mut Streams) -> *mut Stream {
 ///
 /// # Safety
 /// `p` points to a live stream that nothing else uses during the call.
+#[cfg(feature = "jit")]
 pub(crate) unsafe fn uniform_of(p: *mut Stream) -> f64 {
     (*p).uniform()
 }
 
 /// A copy of the global stream's state, and putting it back (a compiled loop that hands
 /// back undoes its draws).
+#[cfg(feature = "jit")]
 pub(crate) fn save_global(s: &mut Streams) -> Stream {
     let g = s.global;
     s.get(g).clone()
 }
 
+#[cfg(feature = "jit")]
 pub(crate) fn restore_global(s: &mut Streams, st: Stream) {
     let g = s.global;
     s.map.insert(g, st);
@@ -305,7 +309,7 @@ fn seed_of(v: &Value) -> R<u32> {
 }
 
 fn shuffle_seed() -> u32 {
-    let t = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or(0);
+    let t = crate::clock::SystemTime::now().duration_since(crate::clock::UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or(0);
     (t % 4_294_967_291) as u32
 }
 

@@ -9,7 +9,7 @@ pub use crate::sym::SymArray;
 pub use crate::table::Table;
 pub use crate::time::TimeArray;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub enum IntClass {
     I8,
     I16,
@@ -65,7 +65,7 @@ impl IntClass {
 }
 
 /// Element class of a numeric-like array.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub enum Kind {
     Double,
     Single,
@@ -136,7 +136,7 @@ impl Kind {
 
 /// An N-D numeric array (column-major), optionally complex. Logical and char arrays share
 /// the representation and differ only in [`Kind`].
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Matrix {
     pub dims: Dims,
     pub data: Vec<f64>,
@@ -149,6 +149,7 @@ pub struct Matrix {
     /// Compressed-column copy of `data`, built on first use by sparse products and solves.
     /// Copies of the matrix start without one; the interpreter clears it before any in-place
     /// change of a variable (`get_var_mut`, `take_var`).
+    #[serde(skip)]
     pub csc: CscCache,
 }
 

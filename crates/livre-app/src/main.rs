@@ -1,41 +1,15 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-mod app;
-mod chat;
-mod claude;
-mod complete;
-mod engine;
-mod files;
-mod highlight;
-mod i18n;
-mod suggest;
-mod icons;
-mod mcp;
-#[cfg(target_os = "macos")]
-mod macos;
-mod os;
-mod plot;
-mod theme;
-mod transfer;
-mod widgets;
-mod updater;
-mod varview;
+#[cfg(not(target_arch = "wasm32"))]
 mod file_types;
+#[cfg(not(target_arch = "wasm32"))]
 mod linux_types;
 
-use std::path::PathBuf;
-
-use eframe::egui;
-
-/// What the window starts with.
-pub enum Launch {
-    Welcome,
-    Open(PathBuf),
-    /// A tab dragged out of another window (a manifest from `transfer::write`).
-    Tab(PathBuf),
-}
-
+#[cfg(not(target_arch = "wasm32"))]
 fn main() -> eframe::Result<()> {
+    use eframe::egui;
+    use livre_app::{app, icons, mcp, updater, App, Launch};
+
     // Velopack's install, update and uninstall hooks: answered and quit before anything else.
     file_types::with_hooks(velopack::VelopackApp::build()).run();
     // Linux: the running AppImage registers the file types it opens for the user (a no-op elsewhere).
@@ -82,5 +56,9 @@ fn main() -> eframe::Result<()> {
     // centred on the screen the pointer is on.
     let place = at.is_none();
     let options = eframe::NativeOptions { viewport, ..Default::default() };
-    eframe::run_native("matlivre", options, Box::new(move |cc| Ok(Box::new(app::App::new(cc, launch, place)))))
+    eframe::run_native("matlivre", options, Box::new(move |cc| Ok(Box::new(App::new(cc, launch, place)))))
 }
+
+/// The desktop program has no WebAssembly build; `apps/matlivre-web` is the browser one.
+#[cfg(target_arch = "wasm32")]
+fn main() {}

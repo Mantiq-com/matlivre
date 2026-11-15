@@ -340,7 +340,11 @@ const MW_CORE_EXT: &str = r#"<?xml version="1.0" encoding="UTF-8" standalone="ye
 
 /// Current UTC time as W3CDTF (`2026-10-28T12:00:00Z`).
 fn utc_now() -> String {
-    let secs = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0) as i64;
+    #[cfg(not(target_arch = "wasm32"))]
+    use std::time::{SystemTime, UNIX_EPOCH};
+    #[cfg(target_arch = "wasm32")]
+    use web_time::{SystemTime, UNIX_EPOCH};
+    let secs = SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0) as i64;
     let days = secs.div_euclid(86_400);
     let sod = secs.rem_euclid(86_400);
     // Civil-from-days (Howard Hinnant).
