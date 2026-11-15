@@ -50,9 +50,11 @@ they do not establish authenticated storage or permissions in a consuming app.
 The native workspace gate is not green. Case 2138 of
 `signal_matlab::signal_functions_match_matlab`, an elliptic high-pass filter,
 differs from the MATLAB fixture in both this fork and the unmodified upstream
-commit. Two ordinary fork runs also aborted with a stack overflow; a debugger
-run completed the language tests with only the filter failure. The overflow's
-cause remains unresolved. No fixture or assertion was changed.
+commit. Three repeated language-suite runs on each revision all abort with a
+stack overflow after reporting that mismatch. An earlier upstream run and a
+fork run under a debugger completed with only the filter failure, so the
+overflow is intermittent and also affects upstream. Its cause remains
+unresolved. No fixture or assertion was changed.
 
 ### Validation of the release-based snapshot
 
