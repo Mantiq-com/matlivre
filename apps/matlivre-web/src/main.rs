@@ -63,7 +63,10 @@ pub mod web {
 
 #[cfg(target_arch = "wasm32")]
 fn main() {
-    web::start();
+    // The engine worker loads this module too, but has no page to draw.
+    if web_sys::window().is_some() {
+        web::start();
+    }
 }
 
 /// Only the WebAssembly target has a browser to run in.

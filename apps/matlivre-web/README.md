@@ -3,6 +3,8 @@
 A build of the editor for a web page, made with [trunk](https://trunkrs.dev) from
 `index.html`. The page draws the editor on a canvas; the engine runs in a Web Worker
 (`engine-worker.js`) that loads the same module, so a long script never freezes the editor.
+The module starts the page UI only in a window; the worker starts the interpreter
+through its exported entry point.
 The interpreter runs without the native compiler, threads, the clipboard, file functions or
 figure export, which a browser does not give a program.
 
@@ -29,11 +31,34 @@ This upstream checkout declares workspace version `0.1.6`. The ready message the
 cannot identify this source revision on its own; identify an installed bundle by its
 source commit and archive checksum as well.
 
+### Validation on the selected master revision
+
+The browser build passes hosted MLX and M creation, editing, Save As, export and
+reopening checks. MLX files pass in both directions with `host-bridge-2`. An export
+keeps the source name and its unsaved changes. Messages from another origin or
+source window are ignored, and disposing the host bridge unloads the frame.
+
+The shared module's entry point now starts the UI only in a window. Loading it in
+a worker previously also attempted to access a page document and panicked; the
+published `host-bridge-2` bundle reproduces that failure. Three fresh worker starts
+with the fix return a calculation without a startup error. The editor's Stop
+control terminates an infinite loop, and its replacement worker runs another
+calculation. A 65,536-point FFT of a vector of ones returns the expected result
+with zero error. These checks use synthetic files and the actual host bridge;
+they do not establish authenticated storage or permissions in a consuming app.
+
+The native workspace gate is not green. Case 2138 of
+`signal_matlab::signal_functions_match_matlab`, an elliptic high-pass filter,
+differs from the MATLAB fixture in both this fork and the unmodified upstream
+commit. Two ordinary fork runs also aborted with a stack overflow; a debugger
+run completed the language tests with only the filter failure. The overflow's
+cause remains unresolved. No fixture or assertion was changed.
+
 ### Validation of the release-based snapshot
 
 The following results apply to the browser adaptation based on upstream v0.1.8,
 commit `53089b98ec340a7c488c0eab00c9a816df4364e3`. They do not qualify the current
-`upstream/master` base, which still needs build and browser checks.
+`upstream/master` base; the checks above apply to that base.
 
 That browser build passed hosted checks for MLX and M opening, edits, creation,
 Save As, export and reopening. A file saved by this build also reopens in
