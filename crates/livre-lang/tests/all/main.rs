@@ -33,6 +33,7 @@ mod io_more;
 mod jit;
 mod lang;
 mod language;
+mod local_functions;
 mod matfun;
 mod math_more;
 mod media;

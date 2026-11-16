@@ -11,11 +11,11 @@ How MatLivre grows to cover the MATLAB Signal Processing Toolbox. The function i
 |---|---:|
 | Functions in scope (R2023b-era, from `signal.tsv`) | 333 |
 | Already in MatLivre before this plan (`xcorr`, `xcov`, `resample`, `rms`, `sinc`, `detrend`, `movmedian`, `movmad`, `isoutlier`, `filloutliers`, `smoothdata`, `islocalmax`, `paddata`, `trimdata`, `resize`, `freqspace`, `ss2tf`) | 17 |
-| Implemented by this plan (`crates/livre-lang/src/signal/`) | 233 |
-| Still to implement and verifiable here | 69 |
+| Implemented by this plan (`crates/livre-lang/src/signal/`) | 234 |
+| Still to implement and verifiable here | 68 |
 | Not verifiable: requires Wavelet/Audio Toolbox, not installed (see below) | 14 |
 
-The 233 are checked against MATLAB: see "How it is tested".
+The 234 are checked against MATLAB: see "How it is tested".
 
 ## Not verifiable: requires Wavelet/Audio Toolbox, not installed
 
@@ -104,8 +104,8 @@ cases in `signal_cases.m` and MATLAB's output recorded as above.
    Done: `levinson`, `ac2rc`, `rc2ac`, `rc2poly`, `poly2rc`, `ac2poly`, `poly2ac`, `rc2is`, `is2rc`,
    `rc2lar`, `lar2rc`, `poly2lsf`, `lsf2poly`, `aryule`, `arburg`, `arcov`, `armcov`,
    `rlevinson`, `schurrc`, `prony`, `lpc`.
-9. **Time-frequency**. Done: `spectrogram`, `xspectrogram`, `iscola`, `stft`, `istft`, `wvd` (not `smoothedPseudo`), `instfreq` (both methods, `tfd,fd,td` input), `instbw`. Not recovered after one round: `xwvd`. `vmd` (explicit ascending `CentralFrequencies` exact; default initialisation not recovered). To do: `xspectrogram`,
-   `hht`, `emd`, `vmd`, `ewt`, `fsst`, `ifsst`, `tfridge`, `kurtogram`,
+9. **Time-frequency**. Done: `spectrogram`, `xspectrogram`, `ifsst`, `iscola`, `stft`, `istft`, `wvd` (not `smoothedPseudo`), `instfreq` (both methods, `tfd,fd,td` input), `instbw`. Not recovered after one round: `xwvd`. `vmd` (explicit ascending `CentralFrequencies` exact; default initialisation not recovered). To do: `xspectrogram`,
+   `hht`, `emd`, `vmd`, `ewt`, `fsst`, `tfridge`, `kurtogram`,
    spectral descriptors (`spectralCrest`, `spectralEntropy`, `spectralFlatness`,
    `spectralKurtosis`, `spectralSkewness`) and the wavelet functions (`cwt`, `modwt`,
    `modwpt`, `wsst`, `wcoherence`, `tqwt`, `cqt`): the last two groups are not verifiable here.
@@ -263,3 +263,6 @@ Exact against MATLAB except the cases in the deviations file. Findings: Kaiser w
 - `filtfilt` with second-order sections: interior samples equal the transfer-function version to 1e-12, the edge samples differ by up to 2.5e-2 from every padding/initial-condition variant tried.
 - Vold-Kalman (`orderwaveform`, `ordertrack`, `rpmtrack`): the coupled real least-squares form (data weight 1, structure weight `r`) with first and second order differences was tried; best fits leave 15-20 % error for any `r`.
 - The lowpass family needs `designfilt` (deferred).
+
+### ifsst (done), fsst (not recovered)
+`ifsst`: `x = (2*Re(sum of the used rows) - Re(DC row) - Re(Nyquist row, even window length)) / (L*g(L/2))` for a one-sided matrix (`nr = floor(L/2)+1`), `sum / (L*g(L/2))` for a two-sided one (`nr = L`), window default `kaiser(256,10)`; a frequency range keeps the rows from the first `f >= lo` through the first `f >= hi`; each ridge column keeps `NumFrequencyBins` (4) rows each side of the ridge index and the columns are independent (nothing is removed between them). `fsst` was taken to the point where 91 % of the cells agree: STFT with the symmetric `kaiser(L,10)` window, hop 1, zero padding, segment starting L/2 before the sample, phase reference at index L/2; frequency estimate `eta + Im(V_g'/V_g)/(2 pi)` with the negated analytic window derivative; all `L` two-sided bins squeezed to `round(L*estimate)` (half away from zero) and the one-sided rows kept. The cells whose estimate is near a rounding boundary (about 9 % of the cells, small-energy ones) still differ, so `fsst` is not shipped.

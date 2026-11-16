@@ -145,6 +145,8 @@ pub struct Function {
     pub body: Vec<Stmt>,
     /// Declarations of the input `arguments` blocks, in order.
     pub args: Vec<ArgDecl>,
+    /// The file the function was loaded from (0: none), which scopes its local functions.
+    pub file: usize,
 }
 
 /// One line of an `arguments` block: `name(.field) (dims) class {validators} = default`.

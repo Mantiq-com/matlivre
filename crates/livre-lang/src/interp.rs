@@ -62,6 +62,8 @@ struct Frame {
     globals: HashSet<String>,
     /// The user function running in this frame (for `mfilename`).
     func: Option<String>,
+    /// The file whose code runs here (0: none), for resolving its local functions.
+    file: usize,
     /// The line of the statement this frame is running (for error stacks).
     line: usize,
 }
@@ -93,6 +95,9 @@ pub struct Interpreter {
     /// The search path the host set, which `restoredefaultpath` returns to.
     default_path: Vec<PathBuf>,
     path_functions: HashMap<String, Rc<Function>>,
+    /// The functions of each loaded file by name, visible only to that file's code.
+    file_locals: HashMap<usize, HashMap<String, Rc<Function>>>,
+    next_file: usize,
     path_scripts: HashMap<String, Rc<Program>>,
     classes: HashMap<String, Rc<ClassDef>>,
     not_on_path: HashSet<String>,
@@ -163,13 +168,15 @@ impl Default for Interpreter {
 impl Interpreter {
     pub fn new() -> Self {
         Self {
-            base: Frame { vars: HashMap::new(), globals: HashSet::new(), func: None, line: 0 },
+            base: Frame { vars: HashMap::new(), globals: HashSet::new(), func: None, file: 0, line: 0 },
             frames: Vec::new(),
             global_vars: HashMap::new(),
             functions: HashMap::new(),
             search_path: Vec::new(),
             default_path: Vec::new(),
             path_functions: HashMap::new(),
+            file_locals: HashMap::new(),
+            next_file: 0,
             path_scripts: HashMap::new(),
             classes: HashMap::new(),
             not_on_path: HashSet::new(),
@@ -265,6 +272,7 @@ impl Interpreter {
 
     pub fn reset_path_cache(&mut self) {
         self.path_functions.clear();
+        self.file_locals.clear();
         self.path_scripts.clear();
         self.classes.clear();
         self.not_on_path.clear();
@@ -582,17 +590,26 @@ impl Interpreter {
         if crate::class::is_classdef(&src) {
             return None;
         }
-        let prog = crate::parser::parse(&src).ok()?;
+        let mut prog = crate::parser::parse(&src).ok()?;
         if prog.functions.is_empty() {
             self.path_scripts.insert(name.to_string(), Rc::new(prog));
             return None;
         }
+        self.next_file += 1;
+        let file_id = self.next_file;
+        for f in prog.functions.iter_mut() {
+            if let Some(m) = Rc::get_mut(f) {
+                m.file = file_id;
+            }
+        }
         let main = prog.functions[0].clone();
+        self.file_locals.insert(file_id, prog.functions.iter().map(|f| (f.name.clone(), f.clone())).collect());
         for f in &prog.functions {
             self.code_sources.entry(f.name.clone()).or_insert_with(|| code.clone());
         }
         self.local_groups.push((true, prog.functions.iter().map(|f| f.name.clone()).collect()));
-        // Subfunctions are visible to the file's main function (registered globally here).
+        // Calls from the file resolve its own functions first (`file_locals`); the global
+        // entry only serves handles to a local function used from another file.
         for f in &prog.functions[1..] {
             self.path_functions.entry(f.name.clone()).or_insert_with(|| f.clone());
         }
@@ -1982,7 +1999,7 @@ impl Interpreter {
     }
 
     fn eval_in_class_scope(&mut self, e: &Expr) -> R<Value> {
-        self.frames.push(Frame { vars: HashMap::new(), globals: HashSet::new(), func: None, line: 0 });
+        self.frames.push(Frame { vars: HashMap::new(), globals: HashSet::new(), func: None, file: 0, line: 0 });
         let r = self.eval(e);
         self.frames.pop();
         r
@@ -2212,7 +2229,18 @@ impl Interpreter {
 
     // ---- calls -------------------------------------------------------------------------
 
+    /// The file whose code is running, for resolving local functions.
+    fn cur_file(&self) -> usize {
+        self.frames.last().map_or(0, |f| f.file)
+    }
+
     pub fn call_function(&mut self, name: &str, args: Vec<Value>, nargout: usize) -> R<Vec<Value>> {
+        let file = self.cur_file();
+        if file != 0 {
+            if let Some(f) = self.file_locals.get(&file).and_then(|m| m.get(name)).cloned() {
+                return self.call_user(&f, args, nargout);
+            }
+        }
         if let Some(f) = self.functions.get(name).cloned() {
             return self.call_user(&f, args, nargout);
         }
@@ -2267,7 +2295,8 @@ impl Interpreter {
                 if has_varargin {
                     vars.insert("varargin".into(), Value::Cell(CellArray::row(rest)));
                 }
-                self.frames.push(Frame { vars, globals: HashSet::new(), func: None, line: 0 });
+                let file = self.cur_file();
+                self.frames.push(Frame { vars, globals: HashSet::new(), func: None, file, line: 0 });
                 let r = self.eval_multi(&f.body, nargout.max(1));
                 self.frames.pop();
                 self.depth -= 1;
@@ -2466,7 +2495,7 @@ impl Interpreter {
         let nargin = nargin + nv_args.len();
         vars.insert("nargin".into(), Value::num(nargin as f64));
         vars.insert("nargout".into(), Value::num(nargout as f64));
-        self.frames.push(Frame { vars, globals: HashSet::new(), func: Some(f.name.clone()), line: 0 });
+        self.frames.push(Frame { vars, globals: HashSet::new(), func: Some(f.name.clone()), file: f.file, line: 0 });
         let r = if f.args.is_empty() { Ok(()) } else { self.check_arguments(f, nv_param.as_deref(), nargin - nv_args.len(), nv_args) };
         let r = match r {
             Ok(()) => self.exec_block(&f.body),
@@ -2563,8 +2592,13 @@ fn assign_in_place(target: &mut Value, chain: &[Resolved], rhs: Value) -> R<Opti
 
 impl Interpreter {
     /// How a call of `name` resolves, for the compiler (mirrors `call_function`).
-    fn jit_callee(&mut self, name: &str) -> Option<crate::jit::Callee> {
+    fn jit_callee(&mut self, name: &str, file: usize) -> Option<crate::jit::Callee> {
         use crate::jit::{Callee, INTRINSICS};
+        if file != 0 {
+            if let Some(f) = self.file_locals.get(&file).and_then(|m| m.get(name)) {
+                return Some(Callee::User(f.clone()));
+            }
+        }
         if let Some(f) = self.functions.get(name) {
             return Some(Callee::User(f.clone()));
         }
@@ -2580,11 +2614,14 @@ impl Interpreter {
     /// Environment for compiling code that references `names`: variable types (when
     /// `with_vars`), and how other names resolve as functions, following user functions
     /// transitively. The string identifies the environment for caching.
-    fn jit_env(&mut self, names: &[String], with_vars: bool) -> (crate::jit::Env, String) {
+    /// `file` is the file the code belongs to; the last result says two files' local functions
+    /// of one name are both reachable, which the compiler's flat namespace cannot tell apart.
+    fn jit_env(&mut self, names: &[String], with_vars: bool, file: usize) -> (crate::jit::Env, String, bool) {
         use crate::jit::{self as j, Callee, Env};
         let mut env = Env { vars: HashMap::new(), funcs: HashMap::new() };
         let mut sig = String::new();
-        let mut queue: Vec<String> = Vec::new();
+        let mut queue: Vec<(String, usize)> = Vec::new();
+        let mut clash = false;
         for n in names {
             match self.get_var(n).filter(|_| with_vars) {
                 Some(v) => {
@@ -2592,29 +2629,32 @@ impl Interpreter {
                     sig.push_str(&format!("{n}:{t:?};"));
                     env.vars.insert(n.clone(), t);
                 }
-                None => queue.push(n.clone()),
+                None => queue.push((n.clone(), file)),
             }
         }
-        let mut seen: HashSet<String> = HashSet::new();
-        while let Some(n) = queue.pop() {
-            if !seen.insert(n.clone()) {
+        let mut seen: HashSet<(String, usize)> = HashSet::new();
+        while let Some((n, nfile)) = queue.pop() {
+            if !seen.insert((n.clone(), nfile)) {
                 continue;
             }
-            if let Some(c) = self.jit_callee(&n) {
+            if let Some(c) = self.jit_callee(&n, nfile) {
                 if let Callee::User(f) = &c {
                     sig.push_str(&format!("{n}@{:p};", Rc::as_ptr(f)));
                     let mut inner = Vec::new();
                     j::referenced_names(&f.body, &mut inner);
                     for m in inner {
                         if !f.params.contains(&m) && !f.outputs.contains(&m) {
-                            queue.push(m);
+                            queue.push((m, f.file));
                         }
+                    }
+                    if let Some(Callee::User(old)) = env.funcs.get(&n) {
+                        clash |= !Rc::ptr_eq(old, f);
                     }
                 }
                 env.funcs.insert(n, c);
             }
         }
-        (env, sig)
+        (env, sig, clash)
     }
 
     /// Calls user function `f` as native code when every argument is a real double scalar
@@ -2768,9 +2808,9 @@ impl Interpreter {
                 let mut names = Vec::new();
                 j::referenced_names(&f.body, &mut names);
                 names.retain(|m| !f.params.contains(m) && !f.outputs.contains(m));
-                let (env, _) = self.jit_env(&names, false);
+                let (env, _, clash) = self.jit_env(&names, false, f.file);
                 let jit = self.jit.get_or_insert_with(j::Jit::new);
-                let e = jit.compile_entry(f, args.len(), &env).ok();
+                let e = if clash { None } else { jit.compile_entry(f, args.len(), &env).ok() };
                 self.jit_entries.insert(key, e);
                 e
             }
@@ -2814,13 +2854,14 @@ impl Interpreter {
                 n
             }
         };
-        let (env, sig) = self.jit_env(&names, true);
+        let file = self.cur_file();
+        let (env, sig, clash) = self.jit_env(&names, true, file);
         let cache_key = (key, sig);
         let kernel = match self.jit_cache.get(&cache_key) {
             Some(k) => k.clone(),
             None => {
                 let jit = self.jit.get_or_insert_with(j::Jit::new);
-                let k = jit.compile_kernel(s, &env).ok().map(Rc::new);
+                let k = if clash { None } else { jit.compile_kernel(s, &env).ok().map(Rc::new) };
                 self.jit_cache.insert(cache_key.clone(), k.clone());
                 k
             }

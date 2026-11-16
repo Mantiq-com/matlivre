@@ -1,0 +1,141 @@
+{
+  "header": {
+    "release": "2023b",
+    "version": "23.2.0.2409890 (R2023b) Update 3",
+    "computer": "PCWIN64",
+    "recorded": "2026-11-16"
+  },
+  "log": "\nn1 =\n\n    40\n\n\nx1 =\n\n   -0.0079\n\n\nxb1 =\n\n   -0.0747\n\n\nxr1 =\n\n    0.0115\n\n",
+  "error": {
+    "identifier": "",
+    "message": ""
+  },
+  "lastwarn": {
+    "message": "",
+    "identifier": ""
+  },
+  "variables": {
+    "n1": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4044000000000000"
+        ]
+      },
+      "display": "\nn1 =\n\n    40\n\n"
+    },
+    "nc": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4044000000000000"
+        ]
+      },
+      "display": "\nnc =\n\n    40\n\n"
+    },
+    "nr": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4022000000000000"
+        ]
+      },
+      "display": "\nnr =\n\n     9\n\n"
+    },
+    "x1": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "bf801b866e43aa7a"
+        ]
+      },
+      "display": "\nx1 =\n\n   -0.0079\n\n"
+    },
+    "xb1": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "bfb320c8cd63cb81"
+        ]
+      },
+      "display": "\nxb1 =\n\n   -0.0747\n\n"
+    },
+    "xr1": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3f877318fc504817"
+        ]
+      },
+      "display": "\nxr1 =\n\n    0.0115\n\n"
+    }
+  },
+  "figures": [],
+  "nfigures": 0
+}
