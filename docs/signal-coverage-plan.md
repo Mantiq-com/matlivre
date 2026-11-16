@@ -11,11 +11,11 @@ How MatLivre grows to cover the MATLAB Signal Processing Toolbox. The function i
 |---|---:|
 | Functions in scope (R2023b-era, from `signal.tsv`) | 333 |
 | Already in MatLivre before this plan (`xcorr`, `xcov`, `resample`, `rms`, `sinc`, `detrend`, `movmedian`, `movmad`, `isoutlier`, `filloutliers`, `smoothdata`, `islocalmax`, `paddata`, `trimdata`, `resize`, `freqspace`, `ss2tf`) | 17 |
-| Implemented by this plan (`crates/livre-lang/src/signal/`) | 228 |
-| Still to implement and verifiable here | 74 |
+| Implemented by this plan (`crates/livre-lang/src/signal/`) | 229 |
+| Still to implement and verifiable here | 73 |
 | Not verifiable: requires Wavelet/Audio Toolbox, not installed (see below) | 14 |
 
-The 228 are checked against MATLAB: see "How it is tested".
+The 229 are checked against MATLAB: see "How it is tested".
 
 ## Not verifiable: requires Wavelet/Audio Toolbox, not installed
 
@@ -250,3 +250,6 @@ Both exact against MATLAB (single-precision `rpmordermap` listed as a deviation)
 - `modalfit`: the least-squares complex exponential fit (Prony on the impulse response) does not reproduce MATLAB's `fn`/`dr` (MATLAB returns approximate values for an exactly 2-mode FRF and NaN padding when `mnum` exceeds the true order); `modalsd` depends on it.
 - `orderwaveform`, `ordertrack`, `rpmtrack`: Vold-Kalman filter. A plain first/second-order structure-equation least-squares solution with one weight `r` leaves a 10-15 % residual against MATLAB for every `r`, so the weighting/bandwidth mapping was not recovered; `rpmtrack` also needs the coarse STFT ridge step.
 - `orderspectrum`: one round earlier (order axis of 122 points, `dO = 0.24819*fs/rpm`); still not recovered.
+
+### pspectrum (done: power and spectrogram types)
+Exact against MATLAB except the cases in the deviations file. Findings: Kaiser window with beta = 40*(1-Leakage); the equivalent noise bandwidth MATLAB uses is not the discrete one (table read from the limits in its error message, 0.01 steps, cubic interpolation between); output grid = linspace over the limits with 4096 points (1024 for spectrograms) or `round(8*fnyq/FR)+1` points when `FrequencyResolution` is given; spectra are DTFTs on that grid (folded FFT), one-sided values doubled at every bin including DC. Power: a single modified periodogram when the target resolution equals `fs*ENBW/N`, else Welch with `L = round(fs*ENBW/(8*df))`, hop `L/(2*ENBW-1)`, `K = ceil((N-L)/hop)+1` segments at `round(linspace(0,N-L,K))`; the default floor on the resolution is `fs/1024`. Spectrogram: `L = ceil(N/d)` with d = 2 (N<64), 8, 16 (N>=2048), 32 (4096), 64 (8192), 128 (16384); hop `ceil(L*(1-ov))`; the last segment is shortened and gets its own window of that length. Not implemented: `persistence`, `Reassign`, nonuniform time vectors, timetable input.
