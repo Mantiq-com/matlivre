@@ -87,7 +87,7 @@ cases in `signal_cases.m` and MATLAB's output recorded as above.
    `isstable`, `impz`, `stepz`, `sgolay`, `fir2`, `firls`, `kaiserord`, `firpm`, `firpmord`, `gaussdesign`, `rcosdesign`, `intfilt`, `impzlength`, `filternorm`, `filtord`,
    `firtype`, `isminphase`, `ismaxphase`, `islinphase`, `isallpass`, `fircls`, `fircls1` (without the WT and
    WP/WS/K options), `zplane` (zeros, poles, multiplicity labels and axes of the plot; not the `digitalFilter` input).
-   `cfirpm` (amplitude vectors and your own response functions; not the predefined `@lowpass` and the other built-in responses).
+   `cfirpm` (amplitude vectors, your own response functions, and the predefined `@lowpass`, `@highpass`, `@bandpass`, `@bandstop`, `@multiband` without a delay, `@differentiator`, `@hilbfilt` and `@invsinc`).
    To do: `designfilt`, `digitalFilter`.
 6. **Filtering and multirate**. Done: `decimate`, `interp`, `latcfilt`, `filtfilt` (transfer function form), `sosfilt`, `filtic`,
    `medfilt1`, `downsample`, `upsample`, `fftfilt`, `upfirdn`, `sgolayfilt`, `hampel`. To do:
@@ -273,3 +273,6 @@ Exact against MATLAB except the cases in the deviations file. Findings: Kaiser w
 ### orderspectrum (done); research queue after one more round
 `orderspectrum`: the order-RPM map of `rpmordermap` (rms, default window) averaged over time: `sqrt(mean(map.^2, 2))` for rms and peak maps, `mean(map, 2)` for a power map; the map syntax gives the same numbers as the signal syntax. Order axis = the map's.
 Not recovered after one more dense round: `wvd(...,'smoothedPseudo')` and `xwvd` (default grids are the plain ones, 2*ceil(N/2) frequencies by 4*ceil(N/2) times; a time-window/frequency-window smoothing of the lag products with Kaiser(beta 20) windows of the documented default lengths did not reproduce the values), `vmd` 'peaks' (starting at the three largest `findpeaks` maxima of the one-sided |FFT| gives imfs within 3e-6 of MATLAB's but not exactly; the true starts are some other function of the spectrum), `rootmusic` powers (the frequencies match to 1e-12, the powers differ at 1e-7: the amplitude system is ill-conditioned, so a different solver is enough to move them).
+
+### cfirpm predefined responses
+`@lowpass`, `@highpass`, `@bandpass`, `@bandstop` and `@multiband` (no delay offset) are exactly the amplitude vectors `[1 1 0 0...]`, `[0 0 1 1]`, `[0 0 1 1 0 0]`, `[1 1 0 0 1 1]` and `a`; with negative band edges `@bandpass`/`@bandstop` swap their bands; `@highpass`/`@bandstop` raise an odd order by one. `@differentiator` is `j*pi*fs*f` with weight `w/|f|`, `@hilbfilt` is `-j*sign(f)`, both odd-symmetric (the coefficients are the antisymmetric half, `delta` is purely imaginary), `@invsinc` is `pi*a*f/sin(pi*a*f)` in the first band and 0 elsewhere (4 or 6 band edges). Not implemented (listed deviations): a group-delay offset `D` (the complex design is not unique and MATLAB's solution differs), `@allpass`, and `@hilbfilt` with negative edges.

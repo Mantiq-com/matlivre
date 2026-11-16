@@ -297,12 +297,20 @@ pub fn call(it: &mut crate::interp::Interpreter, a: &[Value], nargout: usize) ->
         }
         _ => {}
     }
-    if let Some((FuncValue::Named(name), _)) = &resp {
+    let mut predef: Option<(String, Vec<f64>)> = None;
+    if let Some((FuncValue::Named(name), extra)) = &resp {
         if ["lowpass", "highpass", "bandpass", "bandstop", "multiband", "differentiator", "hilbfilt", "allpass", "invsinc"].contains(&name.as_str()) {
-            return rt(format!("cfirpm: the predefined response @{name} is not implemented."));
+            let mut ps: Vec<f64> = vec![];
+            for e in extra {
+                match e {
+                    Value::Num(m) if m.kind != Kind::Char => ps.extend(m.data.iter().cloned()),
+                    _ => return rt("Invalid parameter for the frequency response function."),
+                }
+            }
+            predef = Some((name.clone(), ps));
         }
     }
-    let am = if resp.is_some() { Matrix::from_dims(vec![1, 0], vec![]) } else { match &a[2] {
+    let mut am = if resp.is_some() { Matrix::from_dims(vec![1, 0], vec![]) } else { match &a[2] {
         Value::Num(m) if m.kind == Kind::Char => {
             let name = a[2].text().unwrap_or_default();
             return rt(format!("Undefined function '{name}' for input arguments of type 'double'."));
@@ -353,7 +361,7 @@ pub fn call(it: &mut crate::interp::Interpreter, a: &[Value], nargout: usize) ->
     if nf < 0.0 {
         return rt("Incorrect dimensions for matrix multiplication. Check that the number of columns in the first matrix matches the number of rows in the second matrix. To operate on each element of the matrix individually, use TIMES (.*) for elementwise multiplication.");
     }
-    let n = nf as usize;
+    let mut n = nf as usize;
     // F.
     let f: Vec<f64> = fm.data.clone();
     if f.len() % 2 != 0 {
@@ -366,10 +374,60 @@ pub fn call(it: &mut crate::interp::Interpreter, a: &[Value], nargout: usize) ->
         return rt("Band edges must be monotonically increasing.");
     }
     let has_negative = f.iter().any(|v| *v < 0.0);
-    if resp.is_some() && sym.is_none() {
+    // Predefined responses: the band-type ones without a delay offset are plain amplitude designs.
+    let mut pd_delay = 0.0;
+    if let Some((name, ps)) = &predef {
+        let nbands = f.len() / 2;
+        let amp_pat: Option<Vec<f64>> = match name.as_str() {
+            "lowpass" => Some((0..nbands).map(|b| if b == 0 { 1.0 } else { 0.0 }).collect()),
+            "highpass" => Some((0..nbands).map(|b| if b + 1 == nbands { 1.0 } else { 0.0 }).collect()),
+            "bandpass" => Some((0..nbands).map(|b| if (b % 2 == 1) != has_negative { 1.0 } else { 0.0 }).collect()),
+            "bandstop" => Some((0..nbands).map(|b| if (b % 2 == 0) != has_negative { 1.0 } else { 0.0 }).collect()),
+            _ => None,
+        };
+        pd_delay = match name.as_str() {
+            "lowpass" | "highpass" | "bandpass" | "bandstop" | "allpass" | "hilbfilt" => ps.first().copied().unwrap_or(0.0),
+            "multiband" => ps.get(ps.len().saturating_sub(1).min(f.len().max(1)) .min(ps.len())).copied().filter(|_| ps.len() > f.len()).unwrap_or(0.0),
+            "differentiator" | "invsinc" => ps.get(1).copied().unwrap_or(0.0),
+            _ => 0.0,
+        };
+        let band_vec: Option<Vec<f64>> = match (name.as_str(), &amp_pat) {
+            ("multiband", _) => Some(ps.iter().take(f.len()).cloned().collect()),
+            (_, Some(p)) => Some(p.iter().flat_map(|v| [*v, *v]).collect()),
+            _ => None,
+        };
+        if name == "allpass" {
+            return rt("cfirpm: the predefined response @allpass is not implemented.");
+        }
+        if pd_delay != 0.0 && !matches!(name.as_str(), "differentiator" | "hilbfilt" | "invsinc") {
+            return rt(format!("cfirpm: a group-delay offset for @{name} is not implemented (the design is not unique)."));
+        }
+        if let Some(av) = band_vec {
+            if pd_delay == 0.0 {
+                if matches!(name.as_str(), "highpass" | "bandstop") && n % 2 == 1 {
+                    n += 1;
+                }
+                am = Matrix::from_dims(vec![1, av.len()], av);
+                resp = None;
+                predef = None;
+            }
+        }
+    }
+    let pname = predef.as_ref().map(|p| p.0.clone());
+    let warns = resp.is_some() && sym.is_none() && !matches!(pname.as_deref(), Some("lowpass" | "highpass" | "bandpass" | "bandstop" | "multiband" | "differentiator" | "hilbfilt"));
+    if warns {
         it.emit(crate::interp::OutputKind::Warning("Frequency response function does not support the 'default' symmetry query.  Assuming symmetry='none'".into()));
     }
-    let sym = sym.unwrap_or(if has_negative || resp.is_some() { Sym::None } else { Sym::Even });
+    let pd_default = match pname.as_deref() {
+        Some("differentiator" | "hilbfilt") if !has_negative => Some(Sym::Odd),
+        Some("invsinc") if !has_negative && pd_delay == 0.0 => Some(Sym::Even),
+        Some(_) => Some(Sym::None),
+        None => None,
+    };
+    let sym = sym.unwrap_or(match pd_default {
+        Some(d) => d,
+        None => if has_negative || resp.is_some() { Sym::None } else { Sym::Even },
+    });
     if sym == Sym::None {
         if f.iter().any(|v| v.abs() > 1.0) {
             return rt("Frequency band edges must be in the range [-1,+1] for designs with SYM='none'.");
@@ -456,7 +514,48 @@ pub fn call(it: &mut crate::interp::Interpreter, a: &[Value], nargout: usize) ->
     let mut wts_vec: Vec<f64> = vec![];
     let mut des = vec![(0.0, 0.0); nn];
     let mut fdes: Vec<C> = vec![];
-    if let Some((fv, extra)) = &resp {
+    if let Some((name, ps)) = &predef {
+        let nbands = f.len() / 2;
+        let ph = |gk: f64| -> C { let a = -PI * gk * (half + pd_delay); (a.cos(), a.sin()) };
+        fdes = Vec::with_capacity(nn);
+        for k in 0..nn {
+            let gk = g[k];
+            let b = band_of(&f, gk);
+            let (amp, wgt): (C, f64) = match name.as_str() {
+                "differentiator" => {
+                    let fsv = ps.first().copied().unwrap_or(1.0);
+                    if nbands == 1 && f[0] <= 0.0 && f[1] >= 0.0 || nbands == 2 && !(f[1] < 0.0 && f[2] > 0.0) && !(f[1] <= 0.0 && f[2] >= 0.0) {
+                        return rt("Transition band must include DC for 2-band differentiator designs.");
+                    }
+                    ((0.0, PI * fsv * gk), if gk.abs() > 0.0 { wts[b] / gk.abs() } else { wts[b] })
+                }
+                "hilbfilt" => ((0.0, -gk.signum()), wts[b]),
+                "allpass" => ((1.0, 0.0), wts[b]),
+                "invsinc" => {
+                    if nbands != 2 && nbands != 3 {
+                        return rt("There must be either 4 or 6 band edges for Inverse-Sinc designs.");
+                    }
+                    let a = ps.first().copied().unwrap_or(1.0);
+                    let x = PI * a * gk;
+                    ((if b > 0 { 0.0 } else if x == 0.0 { 1.0 } else { x / x.sin() }, 0.0), wts[b])
+                }
+                _ => {
+                    // Band-type responses with a delay offset.
+                    let av: Vec<f64> = match name.as_str() {
+                        "lowpass" => (0..nbands).flat_map(|b| { let v = if b == 0 { 1.0 } else { 0.0 }; [v, v] }).collect(),
+                        "highpass" => (0..nbands).flat_map(|b| { let v = if b + 1 == nbands { 1.0 } else { 0.0 }; [v, v] }).collect(),
+                        "bandpass" => (0..nbands).flat_map(|b| { let v = if b % 2 == 1 { 1.0 } else { 0.0 }; [v, v] }).collect(),
+                        "bandstop" => (0..nbands).flat_map(|b| { let v = if b % 2 == 0 { 1.0 } else { 0.0 }; [v, v] }).collect(),
+                        _ => ps.iter().take(f.len()).cloned().collect(),
+                    };
+                    let ac: Vec<C> = av.iter().map(|v| (*v, 0.0)).collect();
+                    (amp_at(&f, &ac, gk), wts[b])
+                }
+            };
+            fdes.push(cmul(amp, ph(gk)));
+            wts_vec.push(wgt);
+        }
+    } else if let Some((fv, extra)) = &resp {
         let mut args = vec![scalar_value(n as f64), real_row(f.clone()), real_col(g.clone()), real_row(wts.clone())];
         args.extend(extra.iter().cloned());
         let r = it.call_value(fv, args, 2)?;
@@ -513,7 +612,12 @@ pub fn call(it: &mut crate::interp::Interpreter, a: &[Value], nargout: usize) ->
         }
         Sym::Odd => {
             // MATLAB returns a zero filter for odd designs given by amplitudes.
-            let _ = &x;
+            if resp.is_some() {
+                for k in 0..(n + 1) / 2 {
+                    hr[k] = x[k];
+                    hr[n - k] = -x[k];
+                }
+            }
         }
     }
     // Signed error at the extremal points.
@@ -542,7 +646,8 @@ pub fn call(it: &mut crate::interp::Interpreter, a: &[Value], nargout: usize) ->
     } else {
         Matrix::from_dims(vec![1, n + 1], hr)
     };
-    let mut outs = vec![Value::Num(bm), scalar_value(delta)];
+    let delta_v = if sym == Sym::Odd && resp.is_some() { Value::Num(Matrix::complex(vec![1, 1], vec![0.0], vec![delta])) } else { scalar_value(delta) };
+    let mut outs = vec![Value::Num(bm), delta_v];
     if nargout > 2 {
         let (fg, idx): (Vec<f64>, Vec<usize>) = if sym == Sym::Real {
             let mut fg: Vec<f64> = g.iter().rev().map(|v| -v).collect();

@@ -457,3 +457,13 @@ mfs = 1000; mN = 512; mf = (0:mN/2)'*mfs/mN; mw = 2*pi*mf; mH = zeros(size(mf));
 mfs = 1000; mN = 512; mf = (0:mN/2)'*mfs/mN; mw = 2*pi*mf; mH = zeros(size(mf)); mwn = 2*pi*50; mH = mH + 1./(mwn^2-mw.^2+2i*0.02*mwn*mw); mwn = 2*pi*120; mH = mH + 0.5./(mwn^2-mw.^2+2i*0.03*mwn*mw); r = modalsd(mH,mf,mfs);	ill-conditioned high-order fits of a two-mode FRF: the extra poles differ from MATLAB at 1e-8 relative (least-squares solver rounding)
 mfs = 1000; mN = 512; mf = (0:mN/2)'*mfs/mN; mw = 2*pi*mf; mH = zeros(size(mf)); mwn = 2*pi*50; mH = mH + 1./(mwn^2-mw.^2+2i*0.02*mwn*mw); mwn = 2*pi*120; mH = mH + 0.5./(mwn^2-mw.^2+2i*0.03*mwn*mw); r = modalsd(single(mH),mf,mfs,'MaxModes',5);	single precision input: MATLAB solves in single, MatLivre in double (differs near 1e-5)
 rfs = 1000; rn = 1024; rt_ = (0:rn-1)'/rfs; rrpm = 600+300*rt_+40*sin(2*pi*1.5*rt_); rph = 2*pi*cumtrapz(rt_,rrpm/60); rx = cos(rph)+0.5*cos(2*rph)+0.1*sin(2*pi*90*rt_)+0.05*cos(2*pi*37*rt_.^2); [rm,ro] = rpmordermap(rx,rfs,rrpm); [rp] = rpmordermap(rx,rfs,rrpm,'Amplitude','power'); [a1,b1] = orderspectrum(single(rx),rfs,single(rrpm)); r = {a1,b1};	single precision input: MATLAB runs the order map in single, MatLivre in double (differs near 1e-5)
+[b,d] = cfirpm(20,[0 .4 .5 1],{@lowpass,0.5}); r = {b,d};	group-delay offset D: the design is not unique (free transition band with complex coefficients) and MATLAB's solution was not recovered
+[b,d] = cfirpm(20,[0 .3 .4 1],{@highpass,1}); r = {b,d};	group-delay offset D: not unique, MATLAB's solution not recovered
+[b,d] = cfirpm(20,[0 .2 .3 .5 .6 1],{@bandstop,0.25}); r = {b,d};	group-delay offset D: not unique, MATLAB's solution not recovered
+[b,d] = cfirpm(20,[0 .4 .5 1],{@multiband,[1 1 .5 0],0.3}); r = {b,d};	group-delay offset D: not unique, MATLAB's solution not recovered
+[b,d] = cfirpm(20,[.1 .9],{@differentiator,1,0.5}); r = {b,d};	group-delay offset D: not unique, MATLAB's solution not recovered
+[b,d] = cfirpm(20,[.1 .9],{@hilbfilt,0.5}); r = {b,d};	group-delay offset D: not unique, MATLAB's solution not recovered
+[b,d] = cfirpm(21,[-.9 -.1 .1 .9],@hilbfilt); r = {b,d};	hilbfilt with negative band edges (SYM none): MATLAB's solution is not the minimal one found here
+[b,d] = cfirpm(20,[0 .4 .5 1],@allpass); r = {b,d};	@allpass phase law not recovered
+[b,d] = cfirpm(20,[-1 1],@allpass); r = {b,d};	@allpass phase law not recovered
+r = cfirpm(20,[0 .4 .5 1],@foo);	MATLAB's message for an undefined response function handle
