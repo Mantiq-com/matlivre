@@ -11,11 +11,11 @@ How MatLivre grows to cover the MATLAB Signal Processing Toolbox. The function i
 |---|---:|
 | Functions in scope (R2023b-era, from `signal.tsv`) | 333 |
 | Already in MatLivre before this plan (`xcorr`, `xcov`, `resample`, `rms`, `sinc`, `detrend`, `movmedian`, `movmad`, `isoutlier`, `filloutliers`, `smoothdata`, `islocalmax`, `paddata`, `trimdata`, `resize`, `freqspace`, `ss2tf`) | 17 |
-| Implemented by this plan (`crates/livre-lang/src/signal/`) | 236 |
-| Still to implement and verifiable here | 66 |
+| Implemented by this plan (`crates/livre-lang/src/signal/`) | 237 |
+| Still to implement and verifiable here | 65 |
 | Not verifiable: requires Wavelet/Audio Toolbox, not installed (see below) | 14 |
 
-The 236 are checked against MATLAB: see "How it is tested".
+The 237 are checked against MATLAB: see "How it is tested".
 
 ## Not verifiable: requires Wavelet/Audio Toolbox, not installed
 
@@ -289,3 +289,6 @@ Only the band whose center is below fs/250 differs (band 3.98 Hz at fs 1000: 4.3
 4. `lowpass`, `highpass`, `bandpass`, `bandstop` (the signal-processing filter functions), which design with `designfilt` internally (steepness 0.85, 60 dB stopband attenuation, 'auto' impulse response) and so depend on steps 1-3.
 Later: `kaiserwin`, `maxflat`, `cls`, `arbmagfir`, `differentiatorfir`, `hilbertfir`, the notch/peak and the DSP System Toolbox responses are not planned (the last need a toolbox that is not installed).
 **Open questions to settle by probing MATLAB:** which specification sets `designfilt` accepts per response and method (and its messages for incomplete or inconsistent sets), the exact values it fills in for properties not given, the 'auto' choice between FIR and IIR in `lowpass`/`highpass`, and how the object compares (`eq`).
+
+### designfilt step 1 (done): the object and the four FIR responses
+`designfilt` for `lowpassfir`/`highpassfir`/`bandpassfir`/`bandstopfir` builds a `digitalFilter` object (a built-in value class whose property list depends on the specification set; assignments raise MATLAB's "cannot change the specifications" error). Designs: `window` (FilterOrder + CutoffFrequency(1,2); `fir1` with `Window` and `ScalePassband`; an odd-order highpass is the antisymmetric lowpass of cutoff 1-wc modulated by `-(-1)^k`; odd-order bandstop not implemented), `equiripple`/`ls` with FilterOrder + band edges (+ weights; `firpm`/`firls`), and minimum-order `equiripple` from the ripple and attenuation (the smallest order, searched from the `firpmord` estimate, whose design keeps the passband within `dp = (10^(rp/20)-1)/(10^(rp/20)+1)` and the stopband under `10^(-As/20)`). The display is exact except that MATLAB lists the specification properties in an order that changes from one MATLAB session to the next, so MatLivre uses the order the properties were given and the difftest case sorts the display lines. The Coefficients line is shortened with ` ... ] (1xN double)` once the line would pass 179 characters. Not implemented: `kaiserwin`, `maxflat`, `cls`, editing a digitalFilter with `designfilt(d)`, and the other responses.

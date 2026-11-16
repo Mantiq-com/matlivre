@@ -590,6 +590,11 @@ pub fn display_value_cw(name: &str, v: &Value, f: NumFormat) -> Option<String> {
             let body = disp_value(v, f);
             Some(format!("\n{name} =\n\n{}\n", wrap_columns(body.trim_end_matches('\n'), m.cols())))
         }
+        Value::Object(o) if o.class.name == "digitalFilter" => crate::signal::digfilt::object_text(o).map(|t| format!("
+{name} = 
+
+{t}
+")),
         _ => None,
     }
 }

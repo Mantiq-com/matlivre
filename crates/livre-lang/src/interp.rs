@@ -736,8 +736,12 @@ impl Interpreter {
     /// still shown.
     pub(crate) fn capture_text<T>(&mut self, f: impl FnOnce(&mut Self) -> R<T>) -> R<(T, String)> {
         let flush = self.flush.take();
+        // The captured text is not displayed, so the diary must not record it.
+        let diary_on = self.diary.0;
+        self.diary.0 = false;
         let start = self.pending.len();
         let r = f(self);
+        self.diary.0 = diary_on;
         let produced: Vec<Output> = self.pending.drain(start..).collect();
         self.flush = flush;
         let mut text = String::new();
@@ -1348,6 +1352,10 @@ impl Interpreter {
                     }
                     if !o.has_prop(f) {
                         return rt(format!("Unrecognized property '{f}' for class '{}'.", o.class.name));
+                    }
+                    if o.class.name == "digitalFilter" {
+                        return rt("You cannot change the specifications of a digital filter.
+If you want to design a new filter with different specifications, use the designfilt function with your new inputs, or call designfilt(D), where D is the digital filter of interest, to edit the filter using the Filter Design Assistant.");
                     }
                     let sub = o.get(f);
                     let new = self.apply_assign(sub, rest, rhs)?;
