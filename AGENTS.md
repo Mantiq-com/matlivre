@@ -60,6 +60,23 @@ runs each case in MatLivre and diffs it against them.
   out (it shows the screen-dependent window position).
 - Cases must not depend on time, random numbers without `rng`, paths or handle numbers.
 
+## Running MatLivre code yourself
+
+Use these to check behaviour in MatLivre while you work (MATLAB itself: see Rules).
+
+- **CLI.** `target/debug/matlivre-cli script.m` (or `target/release/...`; build with
+  `cargo build -p livre-lang --bins`) runs a script in a fresh workspace. Values print to
+  stdout, warnings and errors to stderr; the exit code is 0, 1 (script error) or 2 (usage).
+  To try a snippet, write it to a file in the scratchpad and run it. `MATLIVRE_NOJIT=1` turns
+  the native compiler off (to compare), `MATLIVRE_JIT_LOG=1` says why a loop was not compiled.
+- **MCP.** `matlivre --mcp` serves `run_code` and `get_workspace` over stdio, plus the document
+  tools when a MatLivre window is open; `claude mcp add matlivre -- /path/to/matlivre --mcp`
+  adds it to Claude Code. Use it to drive a live workspace; for a one-off check the CLI is
+  simpler. Details and the tool list are in the README ("Using MatLivre from agents").
+- The CLI shows results in the Live Editor style (`x = 5`). The differential tests compare
+  the `matlab -batch` style instead, so a case can pass or fail differently than the CLI
+  suggests; run `cargo test -p livre-lang --test all difftest` for those.
+
 ## Layout
 
 | Path | Contents |

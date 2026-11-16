@@ -159,6 +159,45 @@ without installing anything.
 
 `matlivre-cli script.m` runs a script headless and prints its output.
 
+### Using MatLivre from agents (CLI and MCP)
+
+MatLivre ships both, so a coding agent can run MATLAB code without the GUI.
+
+**CLI.** `matlivre-cli script.m` runs the script in a fresh workspace, like `matlab -batch`
+(the script's folder is on the search path, so it can call the functions next to it).
+Results go to stdout; warnings and errors go to stderr (`Error (line N): message`). The exit
+code is 0 on success, 1 when the script raised an error, 2 for a usage error or an unreadable
+file. Figures are not written out by the CLI; save them from the script (`exportgraphics`,
+`saveas`). Set `MATLIVRE_NOJIT=1` to run loops in the interpreter, and `MATLIVRE_JIT_LOG=1` to
+print on stderr why a loop or function was not compiled.
+
+```bash
+matlivre-cli analysis.m > out.txt 2> err.txt
+```
+
+**MCP.** MatLivre is an MCP server for Claude Code and other MCP clients. In the app, choose
+… › Connect Claude Code to copy the command, or run it yourself once:
+
+```bash
+claude mcp add matlivre -- /path/to/matlivre --mcp
+```
+
+`matlivre --mcp` speaks MCP over stdio. When a MatLivre window is open it forwards to that
+window, so the agent works in the same workspace and documents you see; otherwise it runs a
+workspace of its own, without a window. Tools:
+
+| Tool | Offered | What it does |
+|---|---|---|
+| `run_code` | always | Runs MATLAB code in the base workspace; returns the command window output, figures as images |
+| `get_workspace` | always | Lists the variables: name, class, size, short value |
+| `list_documents`, `read_document` | with a window | Lists and reads the open scripts, unsaved changes included |
+| `edit_document`, `write_document`, `open_document` | with a window | Edits appear in the editor unsaved; you save them |
+| `run_document` | with a window | Runs a document or one `%%` section |
+
+Without a window only `run_code` and `get_workspace` exist. Every window also serves MCP over
+HTTP on 127.0.0.1 at a URL with a random token (written to `mcp-url.txt` in MatLivre's
+settings folder), for clients that take `claude mcp add --transport http matlivre <url>`.
+
 ### Linux
 
 Install the build dependencies (Ubuntu/Debian) and Rust (via rustup), then build:
