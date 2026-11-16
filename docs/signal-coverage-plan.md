@@ -11,11 +11,11 @@ How MatLivre grows to cover the MATLAB Signal Processing Toolbox. The function i
 |---|---:|
 | Functions in scope (R2023b-era, from `signal.tsv`) | 333 |
 | Already in MatLivre before this plan (`xcorr`, `xcov`, `resample`, `rms`, `sinc`, `detrend`, `movmedian`, `movmad`, `isoutlier`, `filloutliers`, `smoothdata`, `islocalmax`, `paddata`, `trimdata`, `resize`, `freqspace`, `ss2tf`) | 17 |
-| Implemented by this plan (`crates/livre-lang/src/signal/`) | 235 |
-| Still to implement and verifiable here | 67 |
+| Implemented by this plan (`crates/livre-lang/src/signal/`) | 236 |
+| Still to implement and verifiable here | 66 |
 | Not verifiable: requires Wavelet/Audio Toolbox, not installed (see below) | 14 |
 
-The 235 are checked against MATLAB: see "How it is tested".
+The 236 are checked against MATLAB: see "How it is tested".
 
 ## Not verifiable: requires Wavelet/Audio Toolbox, not installed
 
@@ -269,3 +269,7 @@ Exact against MATLAB except the cases in the deviations file. Findings: Kaiser w
 
 ### tfridge (done), kurtogram (not recovered)
 `tfridge`: penalised dynamic programme on `-ln|tfm|` (jump cost `penalty*(j-k)^2`, first index wins ties); with penalty 0 the per-column maximum; further ridges zero `NumFrequencyBins` bins either side of the previous path; `fridge = f(iridge)` keeps the class of `f`, `iridge` and `lridge` follow the class of `tfm`; no error for `NumFrequencyBins` above a quarter of the rows. `kurtogram`: output shape is `2*level` rows by `3*2^level` columns (default level 4 for 1024 samples), `w = [2 4 6 8 12 16 ...]`; the filter bank of the fast kurtogram (Antoni and Randall) was not reproduced, so it is not implemented.
+
+### orderspectrum (done); research queue after one more round
+`orderspectrum`: the order-RPM map of `rpmordermap` (rms, default window) averaged over time: `sqrt(mean(map.^2, 2))` for rms and peak maps, `mean(map, 2)` for a power map; the map syntax gives the same numbers as the signal syntax. Order axis = the map's.
+Not recovered after one more dense round: `wvd(...,'smoothedPseudo')` and `xwvd` (default grids are the plain ones, 2*ceil(N/2) frequencies by 4*ceil(N/2) times; a time-window/frequency-window smoothing of the lag products with Kaiser(beta 20) windows of the documented default lengths did not reproduce the values), `vmd` 'peaks' (starting at the three largest `findpeaks` maxima of the one-sided |FFT| gives imfs within 3e-6 of MATLAB's but not exactly; the true starts are some other function of the spectrum), `rootmusic` powers (the frequencies match to 1e-12, the powers differ at 1e-7: the amplitude system is ill-conditioned, so a different solver is enough to move them).

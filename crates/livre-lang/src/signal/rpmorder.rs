@@ -7,7 +7,7 @@ use crate::signal::poly::*;
 use crate::signal::rpmmap::{res_of, window};
 use crate::value::*;
 
-pub const NAMES: &[&str] = &["rpmordermap"];
+pub const NAMES: &[&str] = &["rpmordermap", "orderspectrum"];
 
 /// Shortest window length whose resolution bandwidth (at sample rate `fs`) does not exceed `res`.
 fn solve_len(it: &mut Interpreter, win: &str, par: f64, fs: f64, res: f64) -> R<usize> {
@@ -27,7 +27,10 @@ fn solve_len(it: &mut Interpreter, win: &str, par: f64, fs: f64, res: f64) -> R<
     Ok(l)
 }
 
-pub fn call(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
+pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Ret {
+    if name == "orderspectrum" {
+        return orderspectrum(it, a, nargout);
+    }
     if a.len() < 3 {
         return rt("Not enough input arguments.");
     }
@@ -206,4 +209,85 @@ pub fn call(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
         }
     }
     out(vec![Value::Num(mm), Value::Num(om), Value::Num(rm), Value::Num(tm), Value::Num(sm)].into_iter().take(nargout.max(1)).collect())
+}
+
+/// `orderspectrum`: the average order spectrum of an order-RPM map (or of a signal, through `rpmordermap`).
+pub fn orderspectrum(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
+    if a.is_empty() {
+        return rt("Not enough input arguments.");
+    }
+    if nargout > 2 {
+        return rt("Too many output arguments.");
+    }
+    let num = |v: &Value| matches!(v, Value::Num(m) if m.kind != Kind::Char);
+    let x_syntax = a.len() >= 3 && num(&a[1]) && num(&a[2]) && a[1].to_matrix()?.numel() == 1;
+    let (map, order, mut amp): (Matrix, Matrix, String) = if x_syntax {
+        if a.len() > 3 {
+            return rt("Too many input arguments.");
+        }
+        let xm = a[0].to_matrix()?;
+        if !(xm.dims.len() == 2 && (xm.dims[0] == 1 || xm.dims[1] == 1)) {
+            return rt("Expected input number 1, X, to be a vector.");
+        }
+        let fs = a[1].to_matrix()?;
+        if !(fs.data[0] > 0.0) {
+            return rt("Expected input number 2, Fs, to be positive.");
+        }
+        let rp = a[2].to_matrix()?;
+        if rp.numel() != xm.numel() {
+            return rt("Expected signal and rpm vectors to be of same length.");
+        }
+        if rp.data.iter().any(|v| !(*v > 0.0)) {
+            return rt("Expected input number 3, RPM, to be positive.");
+        }
+        let r = it.call_function("rpmordermap", vec![a[0].clone(), a[1].clone(), a[2].clone()], 2)?;
+        (r[0].to_matrix()?, r[1].to_matrix()?, "rms".to_string())
+    } else {
+        if a.len() < 2 {
+            return rt("Not enough input arguments.");
+        }
+        let mm = match &a[0] {
+            Value::Num(m) if matches!(m.kind, Kind::Double | Kind::Single) => m.clone(),
+            _ => return rt("Expected input number 1, MAP, to be one of these types:  single, double"),
+        };
+        let om = a[1].to_matrix()?;
+        let rows = mm.dims[0];
+        if om.numel() != rows {
+            return rt("The number of elements of ORDER must equal the number of number of rows of MAP.");
+        }
+        let mut amp = "rms".to_string();
+        let mut i = 2;
+        while i < a.len() {
+            let key = a[i].text().unwrap_or_default();
+            if key.to_lowercase() != "amplitude" {
+                return rt(format!("Expected input number 3 to match one of these values:  'Amplitude'  The input, '{key}', did not match any of the valid values."));
+            }
+            let v = a.get(i + 1).and_then(|v| v.text().ok()).unwrap_or_default();
+            match v.to_lowercase().as_str() {
+                "rms" | "peak" | "power" => amp = v.to_lowercase(),
+                _ => return rt(format!("Expected input number 4, AMPLITUDE, to match one of these values:  'power', 'peak', 'rms'  The input, '{v}', did not match any of the valid values.")),
+            }
+            i += 2;
+        }
+        (mm, om, amp)
+    };
+    let _ = &mut amp;
+    let (nr, nc) = (map.dims[0], map.numel() / map.dims[0].max(1));
+    let spec: Vec<f64> = (0..nr)
+        .map(|r| {
+            let vals = (0..nc).map(|c| map.data[c * nr + r]);
+            if amp == "power" {
+                vals.sum::<f64>() / nc as f64
+            } else {
+                (vals.map(|v| v * v).sum::<f64>() / nc as f64).sqrt()
+            }
+        })
+        .collect();
+    let mut sm = Matrix::from_dims(vec![nr, 1], spec);
+    let mut om = Matrix::from_dims(vec![nr, 1], order.data.clone());
+    if map.kind == Kind::Single {
+        sm.kind = Kind::Single;
+    }
+    om.kind = order.kind;
+    out(vec![Value::Num(sm), Value::Num(om)].into_iter().take(nargout.max(1)).collect())
 }
