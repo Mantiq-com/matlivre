@@ -11,11 +11,11 @@ How MatLivre grows to cover the MATLAB Signal Processing Toolbox. The function i
 |---|---:|
 | Functions in scope (R2023b-era, from `signal.tsv`) | 333 |
 | Already in MatLivre before this plan (`xcorr`, `xcov`, `resample`, `rms`, `sinc`, `detrend`, `movmedian`, `movmad`, `isoutlier`, `filloutliers`, `smoothdata`, `islocalmax`, `paddata`, `trimdata`, `resize`, `freqspace`, `ss2tf`) | 17 |
-| Implemented by this plan (`crates/livre-lang/src/signal/`) | 225 |
-| Still to implement and verifiable here | 77 |
+| Implemented by this plan (`crates/livre-lang/src/signal/`) | 226 |
+| Still to implement and verifiable here | 76 |
 | Not verifiable: requires Wavelet/Audio Toolbox, not installed (see below) | 14 |
 
-The 225 are checked against MATLAB: see "How it is tested".
+The 226 are checked against MATLAB: see "How it is tested".
 
 ## Not verifiable: requires Wavelet/Audio Toolbox, not installed
 
@@ -239,3 +239,6 @@ From `AGENTS.md`:
   available in the MATLAB installation, so it can be generated the same way.
 - A test that every name in each module's `NAMES` is dispatched is covered by the recorded cases
   for the implemented functions; new functions need their cases.
+
+### modalfrf (done, partial)
+Single fixed input with one or more outputs, `Measurement` rovinginput/rovingoutput, H1/H2 exact, Sensor acc/vel/dis, coherence output. Not recovered: Hv estimator (MATLAB's formula differs from the total-least-squares form and from sqrt(H1*H2)), multiple fixed inputs (MIMO), subspace, non-integer window/overlap. modalfit/modalsd still to do.

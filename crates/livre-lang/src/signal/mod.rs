@@ -34,6 +34,7 @@ pub mod envspec;
 pub mod tsa;
 pub mod vmd;
 pub mod tachorpm;
+pub mod modal;
 pub mod waveforms2;
 pub mod conversions;
 pub mod db;
@@ -153,6 +154,9 @@ fn dispatch(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
     }
     if ssconv::NAMES.contains(&name) {
         return ssconv::call(it, name, a, nargout);
+    }
+    if modal::NAMES.contains(&name) {
+        return modal::call(it, a, nargout);
     }
     if tachorpm::NAMES.contains(&name) {
         return tachorpm::call(it, a, nargout);
