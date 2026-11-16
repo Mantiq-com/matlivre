@@ -11,11 +11,11 @@ How MatLivre grows to cover the MATLAB Signal Processing Toolbox. The function i
 |---|---:|
 | Functions in scope (R2023b-era, from `signal.tsv`) | 333 |
 | Already in MatLivre before this plan (`xcorr`, `xcov`, `resample`, `rms`, `sinc`, `detrend`, `movmedian`, `movmad`, `isoutlier`, `filloutliers`, `smoothdata`, `islocalmax`, `paddata`, `trimdata`, `resize`, `freqspace`, `ss2tf`) | 17 |
-| Implemented by this plan (`crates/livre-lang/src/signal/`) | 232 |
-| Still to implement and verifiable here | 70 |
+| Implemented by this plan (`crates/livre-lang/src/signal/`) | 233 |
+| Still to implement and verifiable here | 69 |
 | Not verifiable: requires Wavelet/Audio Toolbox, not installed (see below) | 14 |
 
-The 232 are checked against MATLAB: see "How it is tested".
+The 233 are checked against MATLAB: see "How it is tested".
 
 ## Not verifiable: requires Wavelet/Audio Toolbox, not installed
 
@@ -104,9 +104,9 @@ cases in `signal_cases.m` and MATLAB's output recorded as above.
    Done: `levinson`, `ac2rc`, `rc2ac`, `rc2poly`, `poly2rc`, `ac2poly`, `poly2ac`, `rc2is`, `is2rc`,
    `rc2lar`, `lar2rc`, `poly2lsf`, `lsf2poly`, `aryule`, `arburg`, `arcov`, `armcov`,
    `rlevinson`, `schurrc`, `prony`, `lpc`.
-9. **Time-frequency**. Done: `spectrogram`, `iscola`, `stft`, `istft`, `wvd` (not `smoothedPseudo`), `instfreq` (both methods, `tfd,fd,td` input), `instbw`. Not recovered after one round: `xwvd`. `vmd` (explicit ascending `CentralFrequencies` exact; default initialisation not recovered). To do: `xspectrogram`,
+9. **Time-frequency**. Done: `spectrogram`, `xspectrogram`, `iscola`, `stft`, `istft`, `wvd` (not `smoothedPseudo`), `instfreq` (both methods, `tfd,fd,td` input), `instbw`. Not recovered after one round: `xwvd`. `vmd` (explicit ascending `CentralFrequencies` exact; default initialisation not recovered). To do: `xspectrogram`,
    `hht`, `emd`, `vmd`, `ewt`, `fsst`, `ifsst`, `tfridge`, `kurtogram`,
-   `instbw`, spectral descriptors (`spectralCrest`, `spectralEntropy`, `spectralFlatness`,
+   spectral descriptors (`spectralCrest`, `spectralEntropy`, `spectralFlatness`,
    `spectralKurtosis`, `spectralSkewness`) and the wavelet functions (`cwt`, `modwt`,
    `modwpt`, `wsst`, `wcoherence`, `tqwt`, `cqt`): the last two groups are not verifiable here.
 10. **Vibration analysis**. Done: `rainflow`, `envspectrum`, `tsa`, `tachorpm` (FitType 'linear' only). To do: `rpmtrack`, `orderspectrum`, `ordertrack`,
