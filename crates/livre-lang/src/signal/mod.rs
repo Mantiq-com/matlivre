@@ -35,6 +35,9 @@ pub mod tsa;
 pub mod vmd;
 pub mod tachorpm;
 pub mod modal;
+pub mod rpmmap;
+pub mod resampn;
+pub mod rpmorder;
 pub mod waveforms2;
 pub mod conversions;
 pub mod db;
@@ -81,7 +84,7 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
 }
 
 /// Functions whose outputs do not all follow a single-precision input.
-const OWN_PRECISION: &[&str] = &["tripuls", "gauspuls", "zp2tf", "impinvar", "buttord", "cheb1ord", "cheb2ord", "ellipord", "kaiserord", "fir2", "firls", "firpm", "firpmord", "gaussdesign", "rcosdesign", "firtype", "filtord", "filternorm", "impzlength", "enbw", "finddelay", "cusum", "dtw", "edr", "alignsignals", "decimate", "interp", "zerocrossrate", "findchangepts", "envelope", "invfreqz", "invfreqs", "stmcb", "buffer", "shiftdata", "unshiftdata", "uencode", "udecode", "taylorwin", "pulstran", "vco", "modulate", "dpss", "marcumq", "rainflow", "demod", "iscola", "stft", "istft", "maxflat", "findsignal", "fircls", "fircls1", "pmusic", "peig", "rootmusic", "rooteig", "zplane", "cfirpm"];
+const OWN_PRECISION: &[&str] = &["tripuls", "gauspuls", "zp2tf", "impinvar", "buttord", "cheb1ord", "cheb2ord", "ellipord", "kaiserord", "fir2", "firls", "firpm", "firpmord", "gaussdesign", "rcosdesign", "firtype", "filtord", "filternorm", "impzlength", "enbw", "finddelay", "cusum", "dtw", "edr", "alignsignals", "decimate", "interp", "zerocrossrate", "findchangepts", "envelope", "invfreqz", "invfreqs", "stmcb", "buffer", "shiftdata", "unshiftdata", "uencode", "udecode", "taylorwin", "pulstran", "vco", "modulate", "dpss", "marcumq", "rainflow", "demod", "iscola", "stft", "istft", "maxflat", "findsignal", "fircls", "fircls1", "pmusic", "peig", "rootmusic", "rooteig", "zplane", "cfirpm", "rpmfreqmap", "rpmordermap"];
 
 /// A matrix with its values rounded to single precision (the class is left to the caller).
 pub(crate) fn cast_single_values(mut m: Matrix) -> Matrix {
@@ -154,6 +157,12 @@ fn dispatch(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
     }
     if ssconv::NAMES.contains(&name) {
         return ssconv::call(it, name, a, nargout);
+    }
+    if rpmorder::NAMES.contains(&name) {
+        return rpmorder::call(it, a, nargout);
+    }
+    if rpmmap::NAMES.contains(&name) {
+        return rpmmap::call(it, a, nargout);
     }
     if modal::NAMES.contains(&name) {
         return modal::call(it, a, nargout);

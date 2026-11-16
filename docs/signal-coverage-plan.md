@@ -11,11 +11,11 @@ How MatLivre grows to cover the MATLAB Signal Processing Toolbox. The function i
 |---|---:|
 | Functions in scope (R2023b-era, from `signal.tsv`) | 333 |
 | Already in MatLivre before this plan (`xcorr`, `xcov`, `resample`, `rms`, `sinc`, `detrend`, `movmedian`, `movmad`, `isoutlier`, `filloutliers`, `smoothdata`, `islocalmax`, `paddata`, `trimdata`, `resize`, `freqspace`, `ss2tf`) | 17 |
-| Implemented by this plan (`crates/livre-lang/src/signal/`) | 226 |
-| Still to implement and verifiable here | 76 |
+| Implemented by this plan (`crates/livre-lang/src/signal/`) | 228 |
+| Still to implement and verifiable here | 74 |
 | Not verifiable: requires Wavelet/Audio Toolbox, not installed (see below) | 14 |
 
-The 226 are checked against MATLAB: see "How it is tested".
+The 228 are checked against MATLAB: see "How it is tested".
 
 ## Not verifiable: requires Wavelet/Audio Toolbox, not installed
 
@@ -242,3 +242,11 @@ From `AGENTS.md`:
 
 ### modalfrf (done, partial)
 Single fixed input with one or more outputs, `Measurement` rovinginput/rovingoutput, H1/H2 exact, Sensor acc/vel/dis, coherence output. Not recovered: Hv estimator (MATLAB's formula differs from the total-least-squares form and from sqrt(H1*H2)), multiple fixed inputs (MIMO), subspace, non-integer window/overlap. modalfit/modalsd still to do.
+
+### rpmfreqmap, rpmordermap (done)
+Both exact against MATLAB (single-precision `rpmordermap` listed as a deviation). `rpmfreqmap`: symmetric window of the shortest length whose resolution `fs*sum(w^2)/sum(w)^2` does not exceed the target (default `fs/128`), `nfft = max(256, L)`, hop `floor(L*(1-ov))`, rms/peak/power scaling with DC and Nyquist bins special, rpm interpolated at the segment centre. `rpmordermap`: phase by `cumtrapz` of the 15x resampled rpm, linear interpolation onto `fp = 8*Omax` samples per revolution, `res = fp/256`, window length solved the same way, `noverlap = min(ceil(ov*L), L-1)`, `floor(L/8)+2` order rows. This also added the numeric `resample(x,p,q,n,beta)` (Kaiser-windowed sinc, `p*fir1`-style DC gain) in front of the timeseries `resample`.
+
+### Not recovered (one round each)
+- `modalfit`: the least-squares complex exponential fit (Prony on the impulse response) does not reproduce MATLAB's `fn`/`dr` (MATLAB returns approximate values for an exactly 2-mode FRF and NaN padding when `mnum` exceeds the true order); `modalsd` depends on it.
+- `orderwaveform`, `ordertrack`, `rpmtrack`: Vold-Kalman filter. A plain first/second-order structure-equation least-squares solution with one weight `r` leaves a 10-15 % residual against MATLAB for every `r`, so the weighting/bandwidth mapping was not recovered; `rpmtrack` also needs the coarse STFT ridge step.
+- `orderspectrum`: one round earlier (order axis of 122 points, `dO = 0.24819*fs/rpm`); still not recovered.
