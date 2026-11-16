@@ -14,6 +14,9 @@ Notes for coding agents (and people) working in this repository.
 - **Do not modify the user's `.mlx` files.** Work on copies.
 - **Run heavy work one at a time** (builds, test runs, MATLAB sessions, benchmarks): the
   machine is shared and benchmark numbers are only valid on an idle CPU.
+- **No AI co-authors in commits.** Do not add AI agents (Claude or any other) as co-authors:
+  no `Co-Authored-By:` trailers for them in commit messages, and no "Generated with" lines in
+  commit messages or pull request descriptions. The commit author is the person committing.
 
 ## After implementing functions
 
