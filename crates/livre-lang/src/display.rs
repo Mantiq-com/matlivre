@@ -586,7 +586,7 @@ pub fn display_value(name: &str, v: &Value, f: NumFormat) -> String {
 /// then show in the Live Editor style.
 pub fn display_value_cw(name: &str, v: &Value, f: NumFormat) -> Option<String> {
     match v {
-        Value::Num(m) if !m.sparse && m.kind == Kind::Double && m.is_2d() && m.is_scalar() => {
+        Value::Num(m) if !m.sparse && m.kind == Kind::Double && m.is_2d() && !m.is_empty() && !m.is_complex() => {
             Some(format!("\n{name} =\n\n{}\n", disp_value(v, f).trim_end_matches('\n')))
         }
         _ => None,

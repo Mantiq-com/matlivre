@@ -5,7 +5,7 @@
     "computer": "PCWIN64",
     "recorded": "2026-11-16"
   },
-  "log": "\nnrows =\n\n    60\n\n\nncols =\n\n     1\n\n\nfirst =\n\n    50\n\n\nlast =\n\n    25\n\n\nlin_ok =\n\n     1\n\n\nncols2 =\n\n     2\n\n\nr2 =\n\n    16\n\n",
+  "log": "\nsz =\n\n    60     1\n\n\nfirst =\n\n    50\n\n\nlast =\n\n    25\n\n\nlin_ok =\n\n     1\n\n\nsz2 =\n\n    60     2\n\n\nr2 =\n\n    16\n\n",
   "error": {
     "identifier": "",
     "message": ""
@@ -95,46 +95,6 @@
       },
       "display": "\nnc =\n\n    60\n\n"
     },
-    "ncols": {
-      "class": "double",
-      "size": [
-        1,
-        1
-      ],
-      "value": {
-        "kind": "numeric",
-        "class": "double",
-        "sparse": false,
-        "size": [
-          1,
-          1
-        ],
-        "real": [
-          "3ff0000000000000"
-        ]
-      },
-      "display": "\nncols =\n\n     1\n\n"
-    },
-    "ncols2": {
-      "class": "double",
-      "size": [
-        1,
-        1
-      ],
-      "value": {
-        "kind": "numeric",
-        "class": "double",
-        "sparse": false,
-        "size": [
-          1,
-          1
-        ],
-        "real": [
-          "4000000000000000"
-        ]
-      },
-      "display": "\nncols2 =\n\n     2\n\n"
-    },
     "nr": {
       "class": "double",
       "size": [
@@ -155,26 +115,6 @@
       },
       "display": "\nnr =\n\n    40\n\n"
     },
-    "nrows": {
-      "class": "double",
-      "size": [
-        1,
-        1
-      ],
-      "value": {
-        "kind": "numeric",
-        "class": "double",
-        "sparse": false,
-        "size": [
-          1,
-          1
-        ],
-        "real": [
-          "404e000000000000"
-        ]
-      },
-      "display": "\nnrows =\n\n    60\n\n"
-    },
     "r2": {
       "class": "double",
       "size": [
@@ -194,6 +134,48 @@
         ]
       },
       "display": "\nr2 =\n\n    16\n\n"
+    },
+    "sz": {
+      "class": "double",
+      "size": [
+        1,
+        2
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          2
+        ],
+        "real": [
+          "404e000000000000",
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nsz =\n\n    60     1\n\n"
+    },
+    "sz2": {
+      "class": "double",
+      "size": [
+        1,
+        2
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          2
+        ],
+        "real": [
+          "404e000000000000",
+          "4000000000000000"
+        ]
+      },
+      "display": "\nsz2 =\n\n    60     2\n\n"
     }
   },
   "figures": [],
