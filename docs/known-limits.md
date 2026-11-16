@@ -61,3 +61,4 @@
   functions expand the matrix first, so they are limited to 2e8 elements.
 - Windows is the main platform. Linux builds and runs (tested on Ubuntu 24.04, GNOME/Wayland),
   but the benchmarks and most testing are on Windows.
+- `line(x,y,z)` does not store `ZData` (MATLAB keeps it and draws in 3-D), and `line([],[])` returns a 0x0 placeholder where MATLAB returns a 0x1 `Line` array: the graphics model has no z series data and no empty arrays of graphics objects.

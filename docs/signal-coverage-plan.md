@@ -151,7 +151,7 @@ not exercise:
   eigenvalues agree. MATLAB's data matrix holds each segment in reverse order, and for an explicit
   window length the last segment is zero padded and the eigenvalues are normalised by one less than
   the segment count; `peig` weights use a different normalisation again (see `subspace.rs`).
-- **Deferred queue** (after the research items): `cfirpm` predefined responses (`@lowpass`, `@multiband`, ...); `line(x,y,z)` does not store `ZData`; `line([],[])` returns a 0x0 placeholder instead of a 0x1 `Line`.
+- **Deferred queue** (after the research items): `cfirpm` predefined responses (`@lowpass`, `@multiband`, ...); the `line` gaps moved to `docs/known-limits.md`.
 - **Test time**: the cfirpm designs of order 16 and above (about 9 s in a debug build) run only in the
   ignored test `signal_heavy_cases_match_matlab` (`cargo test -p livre-lang --test all -- --ignored`);
   the regular `signal_functions_match_matlab` skips them.
