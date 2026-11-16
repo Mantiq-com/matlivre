@@ -86,7 +86,7 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
 }
 
 /// Functions whose outputs do not all follow a single-precision input.
-const OWN_PRECISION: &[&str] = &["tripuls", "gauspuls", "zp2tf", "impinvar", "buttord", "cheb1ord", "cheb2ord", "ellipord", "kaiserord", "fir2", "firls", "firpm", "firpmord", "gaussdesign", "rcosdesign", "firtype", "filtord", "filternorm", "impzlength", "enbw", "finddelay", "cusum", "dtw", "edr", "alignsignals", "decimate", "interp", "zerocrossrate", "findchangepts", "envelope", "invfreqz", "invfreqs", "stmcb", "buffer", "shiftdata", "unshiftdata", "uencode", "udecode", "taylorwin", "pulstran", "vco", "modulate", "dpss", "marcumq", "rainflow", "demod", "iscola", "stft", "istft", "maxflat", "findsignal", "fircls", "fircls1", "pmusic", "peig", "rootmusic", "rooteig", "zplane", "cfirpm", "rpmfreqmap", "rpmordermap", "pspectrum", "modalfit", "modalsd"];
+const OWN_PRECISION: &[&str] = &["tripuls", "gauspuls", "zp2tf", "impinvar", "buttord", "cheb1ord", "cheb2ord", "ellipord", "kaiserord", "fir2", "firls", "firpm", "firpmord", "gaussdesign", "rcosdesign", "firtype", "filtord", "filternorm", "impzlength", "enbw", "finddelay", "cusum", "dtw", "edr", "alignsignals", "decimate", "interp", "zerocrossrate", "findchangepts", "envelope", "invfreqz", "invfreqs", "stmcb", "buffer", "shiftdata", "unshiftdata", "uencode", "udecode", "taylorwin", "pulstran", "vco", "modulate", "dpss", "marcumq", "rainflow", "demod", "iscola", "stft", "istft", "maxflat", "findsignal", "fircls", "fircls1", "pmusic", "peig", "rootmusic", "rooteig", "zplane", "cfirpm", "rpmfreqmap", "rpmordermap", "pspectrum", "modalfit", "modalsd", "instfreq", "instbw"];
 
 /// A matrix with its values rounded to single precision (the class is left to the caller).
 pub(crate) fn cast_single_values(mut m: Matrix) -> Matrix {
@@ -188,7 +188,7 @@ fn dispatch(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
         return envspec::call(it, a, nargout);
     }
     if instf::NAMES.contains(&name) {
-        return instf::call(it, a, nargout);
+        return instf::call(it, name, a, nargout);
     }
     if wigner::NAMES.contains(&name) {
         return wigner::call(it, name, a, nargout);
