@@ -3196,6 +3196,9 @@ fn call_dense(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) 
             Err(LangError::new(msg, 0).with_id(id).raised())
         }
         "warning" => {
+            if let Some(r) = crate::warnings::state_call(it, a, nargout)? {
+                return Ok(Some(r));
+            }
             let mut parts: &[Value] = a;
             let mut id = String::new();
             if parts.len() >= 2 {
@@ -3209,19 +3212,14 @@ fn call_dense(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) 
             if let Some(Value::Object(o)) = parts.first() {
                 if let Some(p) = crate::messages::parts(o) {
                     let (msg, id) = p?;
-                    it.last_warning = (msg.clone(), id);
-                    it.emit(OutputKind::Warning(msg));
+                    it.raise_warning(msg, id)?;
                     return none();
                 }
             }
             if let Some(f) = parts.first() {
                 let t = f.text()?;
-                if t == "off" || t == "on" || t == "query" {
-                    return none();
-                }
                 let msg = if parts.len() > 1 { sprintf(&t, &parts[1..])? } else { t };
-                it.last_warning = (msg.clone(), id);
-                it.emit(OutputKind::Warning(msg));
+                it.raise_warning(msg, id)?;
             }
             none()
         }

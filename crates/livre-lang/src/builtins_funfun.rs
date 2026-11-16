@@ -87,7 +87,6 @@ pub(crate) fn cols_to_matrix(cols: &[Vec<f64>], nrows: usize) -> Value {
 
 pub(crate) fn warn(it: &mut Interpreter, msg: impl Into<String>) {
     let msg = msg.into();
-    it.last_warning = (msg.clone(), String::new());
     it.emit(OutputKind::Warning(msg));
 }
 

@@ -145,6 +145,8 @@ pub struct Interpreter {
     /// The last error and warning (message, identifier), for `lasterr` and `lastwarn`.
     pub(crate) last_error: (String, String),
     pub(crate) last_warning: (String, String),
+    /// `warning('off', id)` and the like.
+    pub(crate) warning_states: crate::warnings::WarningStates,
     /// Event listeners of handle objects (addlistener, listener).
     pub(crate) listeners: Vec<crate::lang_more::Listener>,
     jit: Option<crate::jit::Jit>,
@@ -212,6 +214,7 @@ impl Interpreter {
             arg_names: Vec::new(),
             last_error: (String::new(), String::new()),
             last_warning: (String::new(), String::new()),
+            warning_states: Default::default(),
             listeners: Vec::new(),
             jit: None,
             jit_enabled: std::env::var_os("MATLIVRE_NOJIT").is_none(),
@@ -379,6 +382,14 @@ impl Interpreter {
     }
 
     pub(crate) fn emit(&mut self, kind: OutputKind) {
+        if let OutputKind::Warning(msg) = &kind {
+            let id = crate::warnings::builtin_id(msg).to_string();
+            return self.emit_warning(msg.clone(), id);
+        }
+        self.push_output(kind);
+    }
+
+    pub(crate) fn push_output(&mut self, kind: OutputKind) {
         self.diary_write(&kind);
         self.pending.push(Output { line: self.top_line, kind });
     }

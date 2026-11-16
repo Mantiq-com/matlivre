@@ -8,6 +8,7 @@
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 pub mod ast;
+pub(crate) mod warnings;
 pub mod sparse_lu;
 pub mod sparse_ops;
 pub mod fft_big;

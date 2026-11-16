@@ -1,0 +1,185 @@
+{
+  "header": {
+    "release": "2023b",
+    "version": "23.2.0.2409890 (R2023b) Update 3",
+    "computer": "PCWIN64",
+    "recorded": "2026-11-16"
+  },
+  "log": "MATLAB:singularMatrix=on\nMATLAB:singularMatrix=off\nThe state of warning 'MATLAB:singularMatrix' is 'off'.\nMATLAB:singularMatrix=on\nmy:id=off\nhello 3 / my:id\nmy:id / stop here\nall=on a:b=off c:d=error\nMatrix is singular to working precision. / MATLAB:singularMatrix\nbacktrace=on\n",
+  "error": {
+    "identifier": "",
+    "message": ""
+  },
+  "lastwarn": {
+    "message": "Matrix is singular to working precision.",
+    "identifier": "MATLAB:singularMatrix"
+  },
+  "variables": {
+    "n": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4008000000000000"
+        ]
+      },
+      "display": "\nn =\n\n     3\n\n"
+    },
+    "n2": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4008000000000000"
+        ]
+      },
+      "display": "\nn2 =\n\n     3\n\n"
+    },
+    "n3": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nn3 =\n\n     1\n\n"
+    },
+    "n_a": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4000000000000000"
+        ]
+      },
+      "display": "\nn_a =\n\n     2\n\n"
+    },
+    "n_w1": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nn_w1 =\n\n     1\n\n"
+    },
+    "same": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nsame =\n\n     1\n\n"
+    },
+    "x": {
+      "class": "double",
+      "size": [
+        2,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          2,
+          1
+        ],
+        "real": [
+          "fff0000000000000",
+          "7ff0000000000000"
+        ]
+      },
+      "display": "\nx =\n\n  -Inf\n   Inf\n\n"
+    },
+    "y": {
+      "class": "double",
+      "size": [
+        2,
+        2
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          2,
+          2
+        ],
+        "real": [
+          "7ff0000000000000",
+          "7ff0000000000000",
+          "7ff0000000000000",
+          "7ff0000000000000"
+        ]
+      },
+      "display": "\ny =\n\n   Inf   Inf\n   Inf   Inf\n\n"
+    }
+  },
+  "figures": [],
+  "nfigures": 0
+}
