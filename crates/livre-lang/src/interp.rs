@@ -149,6 +149,8 @@ pub struct Interpreter {
     pub(crate) listeners: Vec<crate::lang_more::Listener>,
     jit: Option<crate::jit::Jit>,
     jit_enabled: bool,
+    /// `MATLIVRE_JIT_LOG`: report on stderr why code was not compiled.
+    jit_log: bool,
     /// Compiled kernels by (statement address, variable types); `None` = not compilable.
     jit_cache: HashMap<(usize, String), Option<Rc<crate::jit::Kernel>>>,
     jit_names: HashMap<usize, Vec<String>>,
@@ -213,6 +215,7 @@ impl Interpreter {
             listeners: Vec::new(),
             jit: None,
             jit_enabled: std::env::var_os("MATLIVRE_NOJIT").is_none(),
+            jit_log: std::env::var_os("MATLIVRE_JIT_LOG").is_some(),
             jit_cache: HashMap::new(),
             jit_names: HashMap::new(),
             jit_entries: HashMap::new(),
@@ -2810,7 +2813,19 @@ impl Interpreter {
                 names.retain(|m| !f.params.contains(m) && !f.outputs.contains(m));
                 let (env, _, clash) = self.jit_env(&names, false, f.file);
                 let jit = self.jit.get_or_insert_with(j::Jit::new);
-                let e = if clash { None } else { jit.compile_entry(f, args.len(), &env).ok() };
+                let e = if clash {
+                    None
+                } else {
+                    match jit.compile_entry(f, args.len(), &env) {
+                        Ok(e) => Some(e),
+                        Err(r) => {
+                            if self.jit_log {
+                                eprintln!("function {}: not compiled: {}", f.name, r.0);
+                            }
+                            None
+                        }
+                    }
+                };
                 self.jit_entries.insert(key, e);
                 e
             }
@@ -2861,7 +2876,19 @@ impl Interpreter {
             Some(k) => k.clone(),
             None => {
                 let jit = self.jit.get_or_insert_with(j::Jit::new);
-                let k = if clash { None } else { jit.compile_kernel(s, &env).ok().map(Rc::new) };
+                let k = if clash {
+                    None
+                } else {
+                    match jit.compile_kernel(s, &env) {
+                        Ok(k) => Some(Rc::new(k)),
+                        Err(r) => {
+                            if self.jit_log {
+                                eprintln!("line {}: loop not compiled: {}", s.line, r.0);
+                            }
+                            None
+                        }
+                    }
+                };
                 self.jit_cache.insert(cache_key.clone(), k.clone());
                 k
             }
