@@ -56,18 +56,37 @@ fn strip_links(s: &str) -> String {
     out.replace("</a>", "")
 }
 
+/// A line of the call stack MATLAB prints under a warning or error: `> In name (line 3)` or,
+/// for the frames below it, `  In name (line 7)`. Output that merely starts with "In " (from
+/// `disp('In the loop')`, say) is not one.
+fn is_stack_line(l: &str) -> bool {
+    let t = l.trim_start();
+    let t = t.strip_prefix('>').map_or(t, str::trim_start);
+    let Some(rest) = t.strip_prefix("In ") else { return false };
+    let Some(head) = rest.trim_end().strip_suffix(')') else { return false };
+    let Some(k) = head.rfind("(line ") else { return false };
+    let n = &head[k + "(line ".len()..];
+    !n.is_empty() && n.chars().all(|c| c.is_ascii_digit())
+}
+
 /// Command-window text without what differs between the two programs for reasons that are not
 /// behaviour: line endings, hyperlink markup, the bold markers MATLAB wraps warnings in,
 /// call-stack lines, and trailing blanks.
 fn normalize_text(s: &str) -> String {
     let s = s.replace("\r\n", "\n").replace("[\u{8}", "").replace("]\u{8}", "").replace('\u{8}', "");
     let s = strip_links(&s);
-    let lines: Vec<&str> = s
-        .split('\n')
-        .filter(|l| !(l.starts_with("> In ") || l.starts_with("In ")))
-        .map(|l| l.trim_end())
-        .collect();
+    let lines: Vec<&str> = s.split('\n').filter(|l| !is_stack_line(l)).map(|l| l.trim_end()).collect();
     lines.join("\n")
+}
+
+#[test]
+fn only_call_stack_lines_are_dropped() {
+    assert!(is_stack_line("> In error_case (line 3)"));
+    assert!(is_stack_line("  In run (line 91)"));
+    assert!(is_stack_line("In difftest_run>dt__resetState (line 12)"));
+    assert!(!is_stack_line("In the loop"));
+    assert!(!is_stack_line("In total (line)"));
+    assert_eq!(normalize_text("Warning: careful\n> In f (line 2)\nIn the loop\n"), "Warning: careful\nIn the loop\n");
 }
 
 fn normalize(v: &mut J, key: &str) {

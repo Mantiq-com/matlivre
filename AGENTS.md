@@ -37,8 +37,10 @@ bits, display) and the open figures' graphics tree. MATLAB's snapshots are recor
 `tests/matlab/expected/<release>/` and committed; `cargo test -p livre-lang --test all difftest`
 runs each case in MatLivre and diffs it against them.
 
-- Record: `tools/difftest/record.sh [--release R2023b] [cases...]` (needs MATLAB, local or over
-  SSH as in `AGENTS.local.md`). It refuses to record if MATLAB is not the release you named.
+- Record: `tools/difftest/record.sh [--release R2023b] [cases...]`. It runs the MATLAB on this
+  machine (`MATLAB_BIN`, else `matlab` on PATH or the R2023b install), or a remote one over SSH
+  when `MATLAB_SSH_HOST` is set (see `AGENTS.local.md`). It refuses to record if MATLAB is not
+  the release you named.
 - `MATLIVRE_TARGET_RELEASE` picks the release compared against (default `R2023b`). A case with no
   snapshot for it is listed as not recorded, not failed.
 - **Any difference from MATLAB fails the test.** There is no pending or skip marker: a failing
@@ -50,7 +52,8 @@ runs each case in MatLivre and diffs it against them.
   app uses. Types `display_value_cw` (`display.rs`) does not cover yet fall back to the Live
   Editor style and so fail until they are added.
 - The comparer drops only what is not behaviour: line endings, MATLAB's `<a href>` link markup
-  and warning bold markers, call-stack lines, trailing blanks. Figure windows' display is left
+  and warning bold markers, call-stack lines (`> In name (line N)` only, not any output that
+  starts with "In "), trailing blanks. Figure windows' display is left
   out (it shows the screen-dependent window position).
 - Cases must not depend on time, random numbers without `rng`, paths or handle numbers.
 
