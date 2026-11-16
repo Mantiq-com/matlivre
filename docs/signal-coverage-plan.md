@@ -11,11 +11,11 @@ How MatLivre grows to cover the MATLAB Signal Processing Toolbox. The function i
 |---|---:|
 | Functions in scope (R2023b-era, from `signal.tsv`) | 333 |
 | Already in MatLivre before this plan (`xcorr`, `xcov`, `resample`, `rms`, `sinc`, `detrend`, `movmedian`, `movmad`, `isoutlier`, `filloutliers`, `smoothdata`, `islocalmax`, `paddata`, `trimdata`, `resize`, `freqspace`, `ss2tf`) | 17 |
-| Implemented by this plan (`crates/livre-lang/src/signal/`) | 229 |
-| Still to implement and verifiable here | 73 |
+| Implemented by this plan (`crates/livre-lang/src/signal/`) | 231 |
+| Still to implement and verifiable here | 71 |
 | Not verifiable: requires Wavelet/Audio Toolbox, not installed (see below) | 14 |
 
-The 229 are checked against MATLAB: see "How it is tested".
+The 231 are checked against MATLAB: see "How it is tested".
 
 ## Not verifiable: requires Wavelet/Audio Toolbox, not installed
 
@@ -96,7 +96,7 @@ cases in `signal_cases.m` and MATLAB's output recorded as above.
 7. **Spectral estimation and transforms**. Done: `periodogram`, `pwelch`, `mscohere`, `cpsd`, `tfestimate`, `dct`,
    `idct`, `dftmtx`, `goertzel`, `hilbert`, `cconv`, `convmtx`, `bitrevorder`, `czt`, `fwht`, `ifwht`, `cceps`, `rceps`, `icceps`,
    `digitrevorder`, `corrmtx`, `pyulear`, `pburg`, `pcov`, `pmcov`, `xcorr2`, `pmusic`, `peig`, `rootmusic`, `rooteig`, `pmtm`, `plomb`, `poctave` (power and PSD smoothing; not `Weighting` or the spectrogram type).
-   Not implemented after one dense round: `pspectrum` (rule not recovered, see the research queue).
+   `pspectrum` (power and spectrogram types), `modalfit`, `modalsd` (see their notes below).
 8. **Measurements and modeling**. Done: `peak2peak`, `peak2rms`, `rssq`, `findpeaks`, `enbw`, `bandpower`, `meanfreq`, `medfreq`,
    `finddelay`, `seqperiod`, `cusum`, `dtw`, `edr`, `alignsignals`, `obw`, `powerbw`, `statelevels`, `midcross`, `risetime`, `falltime`,
    `pulsewidth`, `pulseperiod`, `pulsesep`, `dutycycle`, `overshoot`, `undershoot`, `settlingtime`, `slewrate`, `zerocrossrate`, `findchangepts`, `envelope`, `invfreqz`, `invfreqs` (non-iterative fit), `stmcb`, `findsignal` (fixed time alignment only). To do:
@@ -247,9 +247,19 @@ Single fixed input with one or more outputs, `Measurement` rovinginput/rovingout
 Both exact against MATLAB (single-precision `rpmordermap` listed as a deviation). `rpmfreqmap`: symmetric window of the shortest length whose resolution `fs*sum(w^2)/sum(w)^2` does not exceed the target (default `fs/128`), `nfft = max(256, L)`, hop `floor(L*(1-ov))`, rms/peak/power scaling with DC and Nyquist bins special, rpm interpolated at the segment centre. `rpmordermap`: phase by `cumtrapz` of the 15x resampled rpm, linear interpolation onto `fp = 8*Omax` samples per revolution, `res = fp/256`, window length solved the same way, `noverlap = min(ceil(ov*L), L-1)`, `floor(L/8)+2` order rows. This also added the numeric `resample(x,p,q,n,beta)` (Kaiser-windowed sinc, `p*fir1`-style DC gain) in front of the timeseries `resample`.
 
 ### Not recovered (one round each)
-- `modalfit`: the least-squares complex exponential fit (Prony on the impulse response) does not reproduce MATLAB's `fn`/`dr` (MATLAB returns approximate values for an exactly 2-mode FRF and NaN padding when `mnum` exceeds the true order); `modalsd` depends on it.
 - `orderwaveform`, `ordertrack`, `rpmtrack`: Vold-Kalman filter. A plain first/second-order structure-equation least-squares solution with one weight `r` leaves a 10-15 % residual against MATLAB for every `r`, so the weighting/bandwidth mapping was not recovered; `rpmtrack` also needs the coarse STFT ridge step.
 - `orderspectrum`: one round earlier (order axis of 122 points, `dO = 0.24819*fs/rpm`); still not recovered.
 
 ### pspectrum (done: power and spectrogram types)
 Exact against MATLAB except the cases in the deviations file. Findings: Kaiser window with beta = 40*(1-Leakage); the equivalent noise bandwidth MATLAB uses is not the discrete one (table read from the limits in its error message, 0.01 steps, cubic interpolation between); output grid = linspace over the limits with 4096 points (1024 for spectrograms) or `round(8*fnyq/FR)+1` points when `FrequencyResolution` is given; spectra are DTFTs on that grid (folded FFT), one-sided values doubled at every bin including DC. Power: a single modified periodogram when the target resolution equals `fs*ENBW/N`, else Welch with `L = round(fs*ENBW/(8*df))`, hop `L/(2*ENBW-1)`, `K = ceil((N-L)/hop)+1` segments at `round(linspace(0,N-L,K))`; the default floor on the resolution is `fs/1024`. Spectrogram: `L = ceil(N/d)` with d = 2 (N<64), 8, 16 (N>=2048), 32 (4096), 64 (8192), 128 (16384); hop `ceil(L*(1-ov))`; the last segment is shortened and gets its own window of that length. Not implemented: `persistence`, `Reassign`, nonuniform time vectors, timetable input.
+
+### modalfit, modalsd (done: LSCE, single FRF)
+`modalfit` (fn, dr, ofrf exact; `ms` approximate): impulse response = real inverse FFT of the one-sided FRF (length `2(p-1)`, DC and Nyquist real), covariance-method Prony of order `2*mnum` on the first `22*mnum` samples (`mldivide`), poles `log(roots)*fs`; natural frequencies from the poles with positive imaginary part of `z` (real roots are dropped and the vectors padded with NaN to `mnum`); residues from a frequency-domain least-squares fit of `1/(jw-s)` over all `2*mnum` poles; `ofrf` is the sum over the identified modes. `ms` = square root of those residues agrees with MATLAB to 1e-5 when the fit is good and not when it is poor (MATLAB's mode shape normalisation was not recovered; also `PhysFreq` re-fits them). Not implemented: `FreqRange`, `lsrf`, `pp`, several FRFs (p-by-m-by-n). `modalsd`: row `i` of the `MaxModes`-square matrix holds the order-`i` poles that are stable against the nearest pole of order `i+1` (relative frequency change under `SCriteria(1)`, absolute damping change under `SCriteria(2)`), NaN otherwise, zeros above the diagonal; `MaxModes` is capped at `floor(2(p-1)/22)` with a warning. MATLAB also opens a (hidden) figure when `modalsd` is called with an output; that is not reproduced.
+
+### Research queue, one more dense round (not recovered)
+- `emd`: spline envelopes through the extrema (plain, end points added, linear end extrapolation, mirrored extension) do not reproduce the first sift; the mean envelope agrees to 1e-4 in the interior, so the end handling is what is missing.
+- `snr` family: for a clean sinusoid the signal power is exactly `sum(P(lo:hi))/ENBW` over the monotone mainlobe of a Kaiser(beta 38) periodogram (power-scaled), but the noise estimate (median level, `min(level, P)`) was not recovered.
+- `fillgaps`: forward and backward Burg predictions weighted linearly across the gap reproduce MATLAB to 6e-3; the exact fit (which samples feed each model) was not recovered.
+- `filtfilt` with second-order sections: interior samples equal the transfer-function version to 1e-12, the edge samples differ by up to 2.5e-2 from every padding/initial-condition variant tried.
+- Vold-Kalman (`orderwaveform`, `ordertrack`, `rpmtrack`): the coupled real least-squares form (data weight 1, structure weight `r`) with first and second order differences was tried; best fits leave 15-20 % error for any `r`.
+- The lowpass family needs `designfilt` (deferred).
