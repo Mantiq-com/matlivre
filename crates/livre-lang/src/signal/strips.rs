@@ -99,7 +99,7 @@ pub fn call(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
     let starts: Vec<f64> = (0..strips).rev().map(|s| if in_time { s as f64 * n as f64 / fs } else { (s * n) as f64 }).collect();
     let labels = it.call_function("num2str", vec![real_col(starts)], 1)?.remove(0);
     let xmax = n as f64 / fs;
-    let ylim = if range > 0.0 { vec![-0.75 * range, strips as f64 * d - 0.4 * d] } else { vec![0.0, strips as f64 * d] };
+    let ylim = if range > 0.0 { vec![-0.75 * range, strips as f64 * d - 0.5 * d + 0.1 * d] } else { vec![0.0, strips as f64 * d] };
     it.call_function(
         "set",
         vec![
