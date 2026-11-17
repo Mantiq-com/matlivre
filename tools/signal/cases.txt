@@ -8323,3 +8323,11 @@ lpx = sin(0.3*(1:600)')+0.5*cos(1.1*(1:600)'.^1.05); d = designfilt('highpassiir
 lpx = sin(0.3*(1:600)')+0.5*cos(1.1*(1:600)'.^1.05); d = designfilt('bandpassiir','FilterOrder',8,'HalfPowerFrequency1',0.3,'HalfPowerFrequency2',0.5); r = filtfilt(d,[lpx(1:120) lpx(1:120).^2]);
 lpx = sin(0.3*(1:600)')+0.5*cos(1.1*(1:600)'.^1.05); d = designfilt('lowpassiir','FilterOrder',6,'HalfPowerFrequency',0.3); r = filtfilt(d,lpx(1:18));
 lpx = sin(0.3*(1:600)')+0.5*cos(1.1*(1:600)'.^1.05); d = designfilt('lowpassiir','FilterOrder',2,'HalfPowerFrequency',0.3); r = filtfilt(d,lpx(1:6));
+ffx = sin(0.3*(1:120)')+0.5*cos(1.1*(1:120)'.^1.05)+3; dl = designfilt('lowpassiir','FilterOrder',6,'HalfPowerFrequency',0.3,'DesignMethod','butter'); r = filter(dl,ffx);
+ffx = sin(0.3*(1:120)')+0.5*cos(1.1*(1:120)'.^1.05)+3; dl = designfilt('lowpassiir','FilterOrder',6,'HalfPowerFrequency',0.3,'DesignMethod','butter'); r = impz(dl);
+ffx = sin(0.3*(1:120)')+0.5*cos(1.1*(1:120)'.^1.05)+3; dl = designfilt('lowpassiir','FilterOrder',6,'HalfPowerFrequency',0.3,'DesignMethod','butter'); r = impz(dl,40);
+ffx = sin(0.3*(1:120)')+0.5*cos(1.1*(1:120)'.^1.05)+3; db = designfilt('bandpassiir','FilterOrder',8,'HalfPowerFrequency1',0.3,'HalfPowerFrequency2',0.5); r = filter(db,ffx);
+ffx = sin(0.3*(1:120)')+0.5*cos(1.1*(1:120)'.^1.05)+3; db = designfilt('bandpassiir','FilterOrder',8,'HalfPowerFrequency1',0.3,'HalfPowerFrequency2',0.5); r = impz(db);
+ffx = sin(0.3*(1:120)')+0.5*cos(1.1*(1:120)'.^1.05)+3; db = designfilt('bandpassiir','FilterOrder',8,'HalfPowerFrequency1',0.3,'HalfPowerFrequency2',0.5); r = impz(db,40);
+ffx = sin(0.3*(1:120)')+0.5*cos(1.1*(1:120)'.^1.05)+3; de = designfilt('lowpassiir','PassbandFrequency',0.2,'StopbandFrequency',0.3256,'PassbandRipple',0.1,'StopbandAttenuation',60,'DesignMethod','ellip'); r = filter(de,ffx);
+ffx = sin(0.3*(1:120)')+0.5*cos(1.1*(1:120)'.^1.05)+3; de = designfilt('lowpassiir','PassbandFrequency',0.2,'StopbandFrequency',0.3256,'PassbandRipple',0.1,'StopbandAttenuation',60,'DesignMethod','ellip'); r = impz(de,40);
