@@ -17,13 +17,13 @@ const KNOWN: &[&str] = &[
     "FilterOrder", "CutoffFrequency", "CutoffFrequency1", "CutoffFrequency2", "PassbandFrequency", "PassbandFrequency1", "PassbandFrequency2", "StopbandFrequency",
     "StopbandFrequency1", "StopbandFrequency2", "PassbandRipple", "PassbandRipple1", "PassbandRipple2", "StopbandAttenuation", "StopbandAttenuation1",
     "StopbandAttenuation2", "PassbandWeight", "StopbandWeight", "StopbandWeight1", "StopbandWeight2", "SampleRate", "DesignMethod", "Window", "ScalePassband",
-    "HalfPowerFrequency",
+    "HalfPowerFrequency", "HalfPowerFrequency1", "HalfPowerFrequency2",
 ];
 
 /// Properties that are used by the design but not listed among the specifications.
 const HIDDEN: &[&str] = &["PassbandWeight", "StopbandWeight", "StopbandWeight1", "StopbandWeight2", "Window", "ScalePassband"];
 
-const RESPONSES: &[&str] = &["lowpassfir", "highpassfir", "bandpassfir", "bandstopfir"];
+const RESPONSES: &[&str] = &["lowpassfir", "highpassfir", "bandpassfir", "bandstopfir", "lowpassiir", "highpassiir", "bandpassiir", "bandstopiir"];
 
 fn class_for(props: &[String]) -> Rc<ClassDef> {
     thread_local! {
@@ -162,6 +162,9 @@ pub fn call(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
         };
         given.push((c, a[i + 1].clone()));
         i += 2;
+    }
+    if resp_l.ends_with("iir") {
+        return design_iir(it, &resp_l, &given);
     }
     let has = |n: &str| given.iter().any(|(k, _)| *k == n);
     let get = |n: &str| -> Option<Value> { given.iter().find(|(k, _)| *k == n).map(|(_, v)| v.clone()) };
@@ -370,6 +373,218 @@ pub fn call(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
         Value::chars("fir"),
         scalar_value(fs),
     ];
+    for (k, v) in given.iter() {
+        if HIDDEN.contains(k) || *k == "SampleRate" || *k == "DesignMethod" {
+            continue;
+        }
+        names.push(k.to_string());
+        vals.push(v.clone());
+    }
+    names.push("DesignMethod".into());
+    vals.push(Value::chars(&method));
+    let o = Object { class: class_for(&names), props: Rc::new(RefCell::new(vals)) };
+    out(vec![Value::Object(o)])
+}
+
+
+/// The IIR responses: butter, cheby1, cheby2 and ellip, for a given order or the minimum order.
+fn design_iir(it: &mut Interpreter, resp: &str, given: &[(&'static str, Value)]) -> Ret {
+    let has = |n: &str| given.iter().any(|(k, _)| *k == n);
+    let get = |n: &str| -> Option<Value> { given.iter().find(|(k, _)| *k == n).map(|(_, v)| v.clone()) };
+    let spec: Vec<&str> = given.iter().map(|(k, _)| *k).filter(|k| !HIDDEN.contains(k) && *k != "SampleRate" && *k != "DesignMethod").collect();
+    let kind = &resp[..resp.len() - 3];
+    let band = kind == "bandpass" || kind == "bandstop";
+    let n = |name: &str| -> R<f64> {
+        let v = get(name).unwrap().to_matrix()?;
+        if v.numel() != 1 {
+            return rt("Expected input to be a scalar.");
+        }
+        Ok(v.data[0])
+    };
+    let fs = if has("SampleRate") { n("SampleRate")? } else { 2.0 };
+    if !(fs > 0.0) {
+        return rt("Expected Fs to be positive.");
+    }
+    let nyq = fs / 2.0;
+    let sfx = |base: &str| -> Vec<String> {
+        if band {
+            vec![format!("{base}1"), format!("{base}2")]
+        } else {
+            vec![base.to_string()]
+        }
+    };
+    let all_in = |names: &[String]| names.iter().all(|nm| has(nm));
+    let fixed = has("FilterOrder");
+    let hp = sfx("HalfPowerFrequency");
+    let pf = sfx("PassbandFrequency");
+    let sf = sfx("StopbandFrequency");
+    let mut want: Vec<String> = vec![];
+    let method_default: &str;
+    if fixed {
+        want.push("FilterOrder".into());
+        if all_in(&hp) {
+            want.extend(hp.clone());
+            method_default = "butter";
+        } else if all_in(&pf) && has("PassbandRipple") && has("StopbandAttenuation") {
+            want.extend(pf.clone());
+            want.push("PassbandRipple".into());
+            want.push("StopbandAttenuation".into());
+            method_default = "ellip";
+        } else if all_in(&pf) && has("PassbandRipple") {
+            want.extend(pf.clone());
+            want.push("PassbandRipple".into());
+            method_default = "cheby1";
+        } else if all_in(&sf) && has("StopbandAttenuation") {
+            want.extend(sf.clone());
+            want.push("StopbandAttenuation".into());
+            method_default = "cheby2";
+        } else {
+            let sets: Vec<Vec<String>> = {
+                let mut v = vec![];
+                let mut a = vec!["FilterOrder".to_string()];
+                a.extend(hp.clone());
+                v.push(a);
+                let mut b2 = vec!["FilterOrder".to_string()];
+                b2.extend(pf.clone());
+                b2.push("PassbandRipple".into());
+                v.push(b2.clone());
+                let mut c = b2.clone();
+                c.push("StopbandAttenuation".into());
+                v.push(c);
+                let mut d = vec!["FilterOrder".to_string()];
+                d.extend(sf.clone());
+                d.push("StopbandAttenuation".into());
+                v.push(d);
+                v
+            };
+            let list = sets.iter().filter(|s| spec.iter().all(|n| s.iter().any(|x| x == *n))).map(|s| format!("  - {}", s.join(", "))).collect::<Vec<_>>().join("\n");
+            return rt(format!("You have specified too few parameters for '{resp}'.\nThe following are valid parameter sets that are close to your inputs:\n{list}\n"));
+        }
+        if band && has("PassbandRipple") && has("StopbandAttenuation") {
+            return rt(format!("You have specified too many parameters for '{resp}'. A solution is to remove the following parameter from your inputs:\n\n  - StopbandAttenuation\n"));
+        }
+    } else {
+        method_default = "butter";
+        let names: Vec<&str> = match kind {
+            "lowpass" | "highpass" => vec!["PassbandFrequency", "StopbandFrequency", "PassbandRipple", "StopbandAttenuation"],
+            "bandpass" => vec!["StopbandFrequency1", "PassbandFrequency1", "PassbandFrequency2", "StopbandFrequency2", "StopbandAttenuation1", "PassbandRipple", "StopbandAttenuation2"],
+            _ => vec!["PassbandFrequency1", "StopbandFrequency1", "StopbandFrequency2", "PassbandFrequency2", "PassbandRipple1", "StopbandAttenuation", "PassbandRipple2"],
+        };
+        if !names.iter().all(|nm| has(nm)) {
+            return rt(format!("You have specified too few parameters for '{resp}'."));
+        }
+        want.extend(names.iter().map(|s| s.to_string()));
+    }
+    if let Some(extra) = spec.iter().find(|k| !want.iter().any(|w| w == **k)) {
+        return rt(format!("You have specified too many parameters for '{resp}'. A solution is to remove the following parameter from your inputs:\n\n  - {extra}\n"));
+    }
+    let method = match get("DesignMethod") {
+        Some(v) => {
+            let m = v.text().unwrap_or_default().to_lowercase();
+            let ok = if fixed { m == method_default } else { ["butter", "cheby1", "cheby2", "ellip"].contains(&m.as_str()) };
+            if !ok {
+                return rt(format!("'{}' is an invalid design method for {resp} designs with {} specifications.", v.text().unwrap_or_default(), want.join(", ")));
+            }
+            m
+        }
+        None => method_default.to_string(),
+    };
+    let mut fr: HashMap<String, f64> = HashMap::new();
+    for nm in &want {
+        if nm.contains("Frequency") {
+            let f = n(nm)?;
+            if f < 0.0 || f > nyq {
+                return rt(if has("SampleRate") { format!("Frequency specifications must be between 0 and {}.", short(nyq)) } else { "Frequency specifications must be between 0 and 1.".to_string() });
+            }
+            fr.insert(nm.clone(), f / nyq);
+        }
+    }
+    let f = |nm: &str| fr[nm];
+    if band && fixed && method == "butter" && !(f("HalfPowerFrequency1") < f("HalfPowerFrequency2")) {
+        return rt("Expected Wcutoff to be positive.");
+    }
+    let vecv = |names: &[String]| -> Value {
+        if names.len() == 1 {
+            scalar_value(f(&names[0]))
+        } else {
+            real_row(names.iter().map(|x| f(x)).collect())
+        }
+    };
+    let ty = match kind {
+        "highpass" => Some("high"),
+        "bandstop" => Some("stop"),
+        _ => None,
+    };
+    let order: f64;
+    let wn_val: Value;
+    let rp: f64;
+    let rs: f64;
+    if fixed {
+        let ord = n("FilterOrder")?;
+        if ord.fract() != 0.0 {
+            return rt("Expected input to be integer-valued.");
+        }
+        if ord < 1.0 {
+            return rt("Expected input to be positive.");
+        }
+        let edges = if method == "butter" { hp.clone() } else if method == "cheby2" { sf.clone() } else { pf.clone() };
+        wn_val = vecv(&edges);
+        order = if band { ord / 2.0 } else { ord };
+        rp = if has("PassbandRipple") { n("PassbandRipple")? } else { 0.0 };
+        rs = if has("StopbandAttenuation") { n("StopbandAttenuation")? } else { 0.0 };
+    } else {
+        let (wp, ws, rpv, rsv): (Value, Value, f64, f64) = match kind {
+            "lowpass" | "highpass" => (scalar_value(f("PassbandFrequency")), scalar_value(f("StopbandFrequency")), n("PassbandRipple")?, n("StopbandAttenuation")?),
+            "bandpass" => (
+                real_row(vec![f("PassbandFrequency1"), f("PassbandFrequency2")]),
+                real_row(vec![f("StopbandFrequency1"), f("StopbandFrequency2")]),
+                n("PassbandRipple")?,
+                n("StopbandAttenuation1")?.max(n("StopbandAttenuation2")?),
+            ),
+            _ => (
+                real_row(vec![f("PassbandFrequency1"), f("PassbandFrequency2")]),
+                real_row(vec![f("StopbandFrequency1"), f("StopbandFrequency2")]),
+                n("PassbandRipple1")?.min(n("PassbandRipple2")?),
+                n("StopbandAttenuation")?,
+            ),
+        };
+        rp = rpv;
+        rs = rsv;
+        let ordname = match method.as_str() {
+            "butter" => "buttord",
+            "cheby1" => "cheb1ord",
+            "cheby2" => "cheb2ord",
+            _ => "ellipord",
+        };
+        let r = it.call_function(ordname, vec![wp, ws, scalar_value(rp), scalar_value(rs)], 2)?;
+        order = r[0].scalar().unwrap_or(1.0);
+        wn_val = r[1].clone();
+    }
+    let mut args: Vec<Value> = vec![scalar_value(order)];
+    match method.as_str() {
+        "butter" => {}
+        "cheby1" => args.push(scalar_value(rp)),
+        "cheby2" => args.push(scalar_value(rs)),
+        _ => {
+            args.push(scalar_value(rp));
+            args.push(scalar_value(rs));
+        }
+    }
+    args.push(wn_val);
+    if let Some(t) = ty {
+        args.push(Value::string(t));
+    }
+    let zpk = it.call_function(&method, args, 3)?;
+    let sos_out = it.call_function("zp2sos", vec![zpk[0].clone(), zpk[1].clone(), zpk[2].clone(), Value::string("down"), Value::string("inf")], 2)?;
+    let mut sos = sos_out[0].to_matrix()?;
+    let g = sos_out[1].scalar().unwrap_or(1.0);
+    let l = sos.dims[0];
+    // The leftover gain goes on the last section.
+    for c in 0..3 {
+        sos.data[c * l + (l - 1)] *= g;
+    }
+    let mut names: Vec<String> = vec!["Coefficients".into(), "FrequencyResponse".into(), "ImpulseResponse".into(), "SampleRate".into()];
+    let mut vals: Vec<Value> = vec![Value::Num(sos), Value::chars(kind), Value::chars("iir"), scalar_value(fs)];
     for (k, v) in given.iter() {
         if HIDDEN.contains(k) || *k == "SampleRate" || *k == "DesignMethod" {
             continue;

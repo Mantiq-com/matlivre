@@ -467,3 +467,6 @@ rfs = 1000; rn = 1024; rt_ = (0:rn-1)'/rfs; rrpm = 600+300*rt_+40*sin(2*pi*1.5*r
 [b,d] = cfirpm(20,[0 .4 .5 1],@allpass); r = {b,d};	@allpass phase law not recovered
 [b,d] = cfirpm(20,[-1 1],@allpass); r = {b,d};	@allpass phase law not recovered
 r = cfirpm(20,[0 .4 .5 1],@foo);	MATLAB's message for an undefined response function handle
+d = designfilt('lowpassiir','FilterOrder',4,'HalfPowerFrequency',0.3); r = d.Coefficients;	section numerators: MATLAB spreads the total gain over the sections by a rule that was not recovered (the transfer function sos2tf(d.Coefficients) matches exactly)
+d = designfilt('lowpassiir','FilterOrder',4,'PassbandFrequency',0.3,'PassbandRipple',1,'StopbandAttenuation',40); r = d.Coefficients;	section numerators: MATLAB spreads the total gain over the sections by a rule that was not recovered (the transfer function sos2tf(d.Coefficients) matches exactly)
+d = designfilt('bandpassiir','FilterOrder',6,'HalfPowerFrequency1',0.2,'HalfPowerFrequency2',0.5); r = d.Coefficients;	section numerators: MATLAB spreads the total gain over the sections by a rule that was not recovered (the transfer function sos2tf(d.Coefficients) matches exactly)
