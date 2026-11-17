@@ -336,3 +336,5 @@ Griffin-Lim exactly as MATLAB (1e-13): start `Sest = S.*exp(i*phase)` (zero phas
 
 ### strips (done)
 One line per column made of NaN-terminated strips of N samples (the last strip padded with NaN; the NaNs are negative NaN), the first strip on top: `y = x*scale - mid + offset`, `mid = (max+min)/2` over all columns, strip spacing `d = 1.25*range` (1 for a constant signal, then `YLim = [0 S*d]`), `YLim = [-0.75*range, S*d - 0.5*d + 0.1*d]` (the operation order matters to the last bit), `YTick` = the offsets, `YTickLabel = num2str` of the strip start samples (or seconds for `strips(x,sd,fs)`, where N = round(sd*fs)), `XLim = [0 N]` or `[0 sd]`; a complex X warns `X vector complex.  I'm ignoring the imaginary part.`. The recorded cases use rounded data (sin/cos differ in the last bit).
+
+Absent-harmonic data point (thd/snr): with f1 = 77.3 Hz, N = 1024, fs = 1000, MATLAB's single-bin lobes are at 0-based bins 395 (k=5, expected 395.84) and 476 (k=6, expected 474.93; bin 477 is the local maximum); `round`, `floor` and a biased centroid estimate of f1 each fit at most one of them, and the lobe power is the raw bin value.
