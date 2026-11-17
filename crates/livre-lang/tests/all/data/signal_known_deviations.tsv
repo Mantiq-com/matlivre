@@ -487,3 +487,5 @@ lpx = sin(0.3*(1:600)')+0.5*cos(1.1*(1:600)'.^1.05); y = lowpass(lpx(1:200),0.2,
 lpx = sin(0.3*(1:600)')+0.5*cos(1.1*(1:600)'.^1.05); [y,d] = bandstop(lpx(1:100),[100 200],1000); r = {y, size(d.Coefficients)};	Same bandstop IIR zero-to-pole assignment difference.
 [b1,a1] = yulewalk(12,[0 .55 .6 .65 1],[1 1 .5 0 0]); r = {b1,a1};	Order 12 is ill-conditioned (denominator roots near the unit circle): rounding differences in the FFTs and the QR least squares grow to about 1e-8 relative; the method itself matches.
 [b1,a1] = yulewalk(16,[0 .25 .25 1],[1 1 0 0]); r = {b1,a1};	Order 16 with a sharp edge: the same ill-conditioning, differences reach about 1e-2 in the numerator.
+r = db(single(2),50);	MATLAB's single-precision log10 path is off by 1.3e-6 relative from the correctly rounded value (-10.969086 against -10.969100); the double results match.
+r = db(2,single(50));	MATLAB's single-precision log10 path is off by 1.3e-6 relative from the correctly rounded value (-10.969086 against -10.969100); the double results match.

@@ -18,6 +18,7 @@ pub mod envelope;
 pub mod invfreq;
 pub mod stmcb;
 pub mod yulewalk;
+pub mod gateway;
 pub mod framing;
 pub mod stfts;
 pub mod maxflat;
@@ -87,12 +88,13 @@ use crate::value::*;
 pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Ret {
     let result = dispatch(it, name, a, nargout)?;
     // These functions decide the class of each output themselves.
-    let single = !OWN_PRECISION.contains(&name) && a.iter().any(|v| matches!(v, Value::Num(m) if m.kind == Kind::Single));
+    let skip = if windows::NAMES.contains(&name) { 1 } else { 0 };
+    let single = !OWN_PRECISION.contains(&name) && a.iter().skip(skip).any(|v| matches!(v, Value::Num(m) if m.kind == Kind::Single));
     Ok(result.map(|vals| if single { vals.into_iter().map(to_single).collect() } else { vals }))
 }
 
 /// Functions whose outputs do not all follow a single-precision input.
-const OWN_PRECISION: &[&str] = &["tripuls", "gauspuls", "zp2tf", "impinvar", "buttord", "cheb1ord", "cheb2ord", "ellipord", "kaiserord", "fir2", "firls", "firpm", "firpmord", "gaussdesign", "rcosdesign", "firtype", "filtord", "filternorm", "impzlength", "enbw", "finddelay", "cusum", "dtw", "edr", "alignsignals", "decimate", "interp", "zerocrossrate", "findchangepts", "envelope", "invfreqz", "invfreqs", "stmcb", "yulewalk", "buffer", "shiftdata", "unshiftdata", "uencode", "udecode", "taylorwin", "pulstran", "vco", "modulate", "dpss", "marcumq", "rainflow", "demod", "iscola", "stft", "istft", "maxflat", "findsignal", "fircls", "fircls1", "pmusic", "peig", "rootmusic", "rooteig", "zplane", "cfirpm", "rpmfreqmap", "rpmordermap", "pspectrum", "modalfit", "modalsd", "instfreq", "instbw", "xspectrogram", "ifsst", "tfridge", "orderspectrum", "designfilt", "lowpass", "highpass", "bandpass", "bandstop"];
+const OWN_PRECISION: &[&str] = &["tripuls", "gauspuls", "zp2tf", "impinvar", "buttord", "cheb1ord", "cheb2ord", "ellipord", "kaiserord", "fir2", "firls", "firpm", "firpmord", "gaussdesign", "rcosdesign", "firtype", "filtord", "filternorm", "impzlength", "enbw", "finddelay", "cusum", "dtw", "edr", "alignsignals", "decimate", "interp", "zerocrossrate", "findchangepts", "envelope", "invfreqz", "invfreqs", "stmcb", "yulewalk", "buffer", "shiftdata", "unshiftdata", "uencode", "udecode", "taylorwin", "pulstran", "vco", "modulate", "dpss", "marcumq", "rainflow", "demod", "iscola", "stft", "istft", "maxflat", "findsignal", "fircls", "fircls1", "pmusic", "peig", "rootmusic", "rooteig", "zplane", "cfirpm", "rpmfreqmap", "rpmordermap", "pspectrum", "modalfit", "modalsd", "instfreq", "instbw", "xspectrogram", "ifsst", "tfridge", "orderspectrum", "designfilt", "lowpass", "highpass", "bandpass", "bandstop", "window", "db", "scaleFilterSections"];
 
 /// A matrix with its values rounded to single precision (the class is left to the caller).
 pub(crate) fn cast_single_values(mut m: Matrix) -> Matrix {
@@ -168,6 +170,9 @@ fn dispatch(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
     }
     if modalfit::NAMES.contains(&name) {
         return modalfit::call(it, name, a, nargout);
+    }
+    if gateway::NAMES.contains(&name) {
+        return gateway::call(it, name, a, nargout);
     }
     if lpfilt::NAMES.contains(&name) {
         return lpfilt::call(it, name, a, nargout);

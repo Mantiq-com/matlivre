@@ -11,17 +11,20 @@ How MatLivre grows to cover the MATLAB Signal Processing Toolbox. The function i
 |---|---:|
 | Functions in scope (R2023b-era, from `signal.tsv`) | 333 |
 | Already in MatLivre before this plan (`xcorr`, `xcov`, `resample`, `rms`, `sinc`, `detrend`, `movmedian`, `movmad`, `isoutlier`, `filloutliers`, `smoothdata`, `islocalmax`, `paddata`, `trimdata`, `resize`, `freqspace`, `ss2tf`) | 17 |
-| Implemented by this plan (`crates/livre-lang/src/signal/`) | 243 |
-| Still to implement and verifiable here | 59 |
-| Not verifiable: requires Wavelet/Audio Toolbox, not installed (see below) | 14 |
+| Implemented by this plan (`crates/livre-lang/src/signal/`) | 250 |
+| Still to implement and verifiable here (incl. 1 registered without its main syntax) | 16 |
+| Not verifiable: requires Wavelet/Audio Toolbox, not installed (see below) | 16 |
+| Out of scope (see below) | 34 |
 
-The 243 are checked against MATLAB: see "How it is tested".
+The 250 are checked against MATLAB: see "How it is tested". `isfir`, `tf`, `zpk` and `ss` count as done (digitalFilter methods, which `exist()` cannot see).
+
+Still to do (16): `snr`, `sinad`, `thd`, `sfdr`, `toi`, `fillgaps`, `emd`, `hht`, `fsst`, `kurtogram`, `orderwaveform`, `ordertrack`, `rpmtrack`, `stftmag2sig`, `strips`, and `xwvd` (registered, main syntax not implemented: the cross distribution's rule was not recovered).
 
 ## Not verifiable: requires Wavelet/Audio Toolbox, not installed
 
 The MATLAB install used for recording has neither the Wavelet nor the Audio Toolbox, so these cannot be
 recorded and are not implemented: `cwt`, `modwt`, `modwpt`, `imodwt`, `wsst`, `wcoherence`, `tqwt`, `cqt`,
-`ewt`, `spectralCrest`, `spectralEntropy`, `spectralFlatness`, `spectralKurtosis`, `spectralSkewness`.
+`ewt`, `waveletScattering`, `cwtmag2sig`, `wsstridge`, `spectralCrest`, `spectralEntropy`, `spectralFlatness`, `spectralKurtosis`, `spectralSkewness`.
 They stay in the gap count; the `dwt`/`wavedec` family is likewise unrecordable.
 
 ## How it is tested
@@ -58,10 +61,10 @@ Following the existing scope rules for a live-script engine:
 - `filt2block` (Simulink) and code generation.
 - The Slepian database functions `dpssclear`, `dpssdir`, `dpssload`, `dpsssave`
   (`dpss` itself is in scope).
-- Signal labeling objects and region-of-interest functions (15 functions, object-heavy).
+- Signal labeling objects and region-of-interest functions (15 functions, object-heavy), and the two feature-extractor frameworks `signalTimeFeatureExtractor` and `signalFrequencyFeatureExtractor` (object-heavy, grouped with the labeling objects).
 - EDF file I/O (`edfheader`, `edfinfo`, `edfread`, `edfwrite`): a file-format task.
 
-That removes about 32 of the 333 names from the practical target; they stay in `signal.tsv`
+That removes 34 of the 333 names from the practical target; they stay in `signal.tsv`
 so the coverage page can list them as out of scope.
 
 ## Phases
@@ -318,3 +321,6 @@ The IIR branch of the four response functions is `designfilt('<resp>iir', same e
 
 ### IIR section gains: research queue facts
 ellip(6,...) lowpass sections have DC gains 1.57, 14.97 and 0.038; their cumulative L-infinity prefix norms are 3.4, 25.7 and 1; the cascade peak is exactly 1; the first section's gain at DC equals its gain at the passband edge. Ruled out: per-section G^(1/L) at the reference frequency; cumulative L-infinity and L2 scaling on the prefix, on the section's own response and on the internal node 1/A_i; zp2sos/ss2sos up/down with none/inf/two scaling (all miss by 0.04 to 1.2). The gain split only matters through rounding: `filter(d,x)` and `impz(d)` on butter lowpass, butter bandpass and elliptic lowpass objects match MATLAB to 1e-9 as full vectors (cases 8238-8245).
+
+### window, db, scaleFilterSections (done)
+`window(@f,N,...)` passes everything to the window function (function handle, or a name as char or string): the output is the first output, two outputs give `Output argument "varargout{2}" (and possibly others) not assigned a value in the execution with "window" function.`; an unknown name gives `Undefined function 'foo' for input arguments of type 'double'.`; anything else `Function to evaluate must be represented as a string scalar, character vector, or function_handle object.` A single-precision N gives a double window (hamming, hann, blackman, rectwin); `hamming`/`hann`/`blackman`/`flattopwin` reject logical and complex N with MATLAB's messages. `db(x,unit,R)`: voltage `10*log10(abs(x).^2./R)` (R default 1; R may be an array or complex, a negative R gives a complex result), power `10*log10(x)` with `Power cannot be negative.` for a negative real; the unit is matched by prefix (`'v'`, `'volt'`, `'p'`, `'POWER'`), in the two-argument form a char is the unit and a number is R; integer and logical input fails in `log10`; single input is computed in double and rounded (MATLAB's single `log10` is 1.3e-6 off, two listed deviations). `scaleFilterSections(N,g)`: g scalar or a vector of L+1 values, section i is multiplied by `g(i)*g(L+1)^(1/L)` (principal root, so a negative g gives complex sections); integer N takes only a scalar g; an N-D array is folded into columns. `hanning(N)` (undocumented legacy): `hann(N+2)` without the end points, `'periodic'` gives `hann(N,'periodic')`, single N gives a single result.
