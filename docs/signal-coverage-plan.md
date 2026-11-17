@@ -11,14 +11,14 @@ How MatLivre grows to cover the MATLAB Signal Processing Toolbox. The function i
 |---|---:|
 | Functions in scope (R2023b-era, from `signal.tsv`) | 333 |
 | Already in MatLivre before this plan (`xcorr`, `xcov`, `resample`, `rms`, `sinc`, `detrend`, `movmedian`, `movmad`, `isoutlier`, `filloutliers`, `smoothdata`, `islocalmax`, `paddata`, `trimdata`, `resize`, `freqspace`, `ss2tf`) | 17 |
-| Implemented by this plan (`crates/livre-lang/src/signal/`) | 257 |
-| Still to implement and verifiable here (incl. 1 registered without its main syntax) | 9 |
+| Implemented by this plan (`crates/livre-lang/src/signal/`) | 258 |
+| Still to implement and verifiable here (incl. 1 registered without its main syntax) | 8 |
 | Not verifiable: requires Wavelet/Audio Toolbox, not installed (see below) | 16 |
 | Out of scope (see below) | 34 |
 
-The 257 are checked against MATLAB: see "How it is tested". `isfir`, `tf`, `zpk` and `ss` count as done (digitalFilter methods, which `exist()` cannot see).
+The 258 are checked against MATLAB: see "How it is tested". `isfir`, `tf`, `zpk` and `ss` count as done (digitalFilter methods, which `exist()` cannot see).
 
-Still to do (9): `emd`, `hht`, `fsst`, `kurtogram`, `orderwaveform`, `ordertrack`, `rpmtrack`, `strips`, and `xwvd` (registered, main syntax not implemented: the cross distribution's rule was not recovered).
+Still to do (8): `emd`, `hht`, `fsst`, `kurtogram`, `orderwaveform`, `ordertrack`, `rpmtrack`, and `xwvd` (registered, main syntax not implemented: the cross distribution's rule was not recovered).
 
 ## Not verifiable: requires Wavelet/Audio Toolbox, not installed
 
@@ -333,3 +333,6 @@ Two passes over the NaN runs: a forward pass fills the gaps left to right, each 
 
 ### stftmag2sig (done for 'gla')
 Griffin-Lim exactly as MATLAB (1e-13): start `Sest = S.*exp(i*phase)` (zero phase), then each iteration is `x = istft(Sest, ConjugateSymmetric for centered/twosided); S2 = stft(x); Sest = S.*exp(i*angle(S2))`; it stops after `MaxIterations` (default 100) or at the first iteration whose spectral convergence `norm(abs(S2)-S)/norm(S)` is below `InconsistencyTolerance` (default 1e-4; the documented inconsistency `norm(S2-Sest)/norm(Sest)` does not reproduce the stopping point); the result is `istft(Sest)` after the last iteration (`MaxIterations=0` is `istft(S)`). Window default `hann(128,'periodic')`, overlap `floor(0.75*numel(window))`, FFT length at least the window length, `FrequencyRange` centered/onesided/twosided, 3-D input is a multichannel signal, `InputTimeDimension='downrows'` transposes. Outputs: `t = (0:length(x)-1)'/Fs` (or `*Ts` as a duration, samples when omitted) and `info` with `ExitFlag` (1 when the tolerance was met), `NumIterations`, `Inconsistency` (the last spectral convergence, `Inf` for zero iterations), `ReconstructedSTFT = Sest` and `ReconstructedPhase = angle(Sest)`. `Method='gd'` fails with MATLAB's `Undefined function 'dlarray'` (Deep Learning Toolbox). Not recovered: `'fgla'` (Perraudin's momentum step matches MATLAB after one iteration only), `'legla'`, `InitializePhaseMethod='random'`, a nonzero `InitialPhase` (a constant offset has no effect in MATLAB), and MATLAB's single-precision iterations.
+
+### strips (done)
+One line per column made of NaN-terminated strips of N samples (the last strip padded with NaN; the NaNs are negative NaN), the first strip on top: `y = x*scale - mid + offset`, `mid = (max+min)/2` over all columns, strip spacing `d = 1.25*range` (1 for a constant signal, then `YLim = [0 S*d]`), `YLim = [-0.75*range, S*d - 0.4*d]`, `YTick` = the offsets, `YTickLabel = num2str` of the strip start samples (or seconds for `strips(x,sd,fs)`, where N = round(sd*fs)), `XLim = [0 N]` or `[0 sd]`; a complex X warns `X vector complex.  I'm ignoring the imaginary part.`. The recorded cases use rounded data (sin/cos differ in the last bit). One short-signal case (single strip) differs from MATLAB by 1 ulp in the top `YLim` and is not kept as a difftest case.
