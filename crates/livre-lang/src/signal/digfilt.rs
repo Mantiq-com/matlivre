@@ -11,7 +11,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-pub const NAMES: &[&str] = &["designfilt"];
+pub const NAMES: &[&str] = &["designfilt", "matlivre_df_method"];
 
 const KNOWN: &[&str] = &[
     "FilterOrder", "CutoffFrequency", "CutoffFrequency1", "CutoffFrequency2", "PassbandFrequency", "PassbandFrequency1", "PassbandFrequency2", "StopbandFrequency",
@@ -37,6 +37,10 @@ fn class_for(props: &[String]) -> Rc<ClassDef> {
         let mut src = String::from("classdef digitalFilter\n  properties\n");
         for p in props {
             src += &format!("    {p}\n");
+        }
+        src += "  end\n  methods\n";
+        for m in METHODS {
+            src += &format!("    function varargout = {m}(obj, varargin)\n      varargout = matlivre_df_method('{m}', nargout, obj, varargin{{:}});\n    end\n");
         }
         src += "  end\nend\n";
         let ast = crate::class::parse_classdef(&src).expect("built-in class source parses");
@@ -123,7 +127,12 @@ fn sets_for(resp: &str) -> Vec<Vec<&'static str>> {
     }
 }
 
-pub fn call(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
+pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Ret {
+    if name == "matlivre_df_method" {
+        // The class methods take their outputs from a cell (varargout).
+        let r = method(it, a)?;
+        return out(vec![Value::Cell(CellArray::row(r.unwrap_or_default()))]);
+    }
     if a.is_empty() {
         return rt("Not enough input arguments.");
     }
@@ -596,4 +605,235 @@ fn design_iir(it: &mut Interpreter, resp: &str, given: &[(&'static str, Value)])
     vals.push(Value::chars(&method));
     let o = Object { class: class_for(&names), props: Rc::new(RefCell::new(vals)) };
     out(vec![Value::Object(o)])
+}
+
+const METHODS: &[&str] = &[
+    "filter", "filtfilt", "fftfilt", "freqz", "impz", "impzlength", "stepz", "zplane", "grpdelay", "phasez", "phasedelay", "zerophase", "filtord", "firtype", "info",
+    "isfir", "islinphase", "isminphase", "ismaxphase", "isallpass", "isstable", "isdouble", "issingle", "double", "single", "tf", "zpk", "ss", "eq", "ne",
+];
+
+fn is_fir(o: &Object) -> bool {
+    o.class.prop_index("ImpulseResponse").map(|i| o.props.borrow()[i].text().unwrap_or_default() == "fir").unwrap_or(true)
+}
+
+/// The numerator and denominator (row vectors) of a digital filter.
+fn tf_of(it: &mut Interpreter, o: &Object) -> R<(Value, Value)> {
+    let c = o.props.borrow()[0].to_matrix()?;
+    if is_fir(o) {
+        Ok((Value::Num(c), scalar_value(1.0)))
+    } else {
+        let r = it.call_function("sos2tf", vec![Value::Num(c)], 2)?;
+        Ok((r[0].clone(), r[1].clone()))
+    }
+}
+
+fn prop_num(o: &Object, name: &str) -> Option<f64> {
+    o.class.prop_index(name).and_then(|i| o.props.borrow()[i].scalar().ok())
+}
+
+/// The object functions (the methods the class forwards here).
+fn method(it: &mut Interpreter, a: &[Value]) -> Ret {
+    let name = a[0].text().unwrap_or_default();
+    let nargout = a[1].scalar().unwrap_or(1.0) as usize;
+    let o = match &a[2] {
+        Value::Object(o) => o.clone(),
+        _ => return rt("Invalid digitalFilter."),
+    };
+    let rest: Vec<Value> = a[3..].to_vec();
+    let fir = is_fir(&o);
+    let coef = o.props.borrow()[0].clone();
+    let boolv = |b: bool| out(vec![Value::bool(b)]);
+    match name.as_str() {
+        "isfir" => boolv(fir),
+        "isdouble" | "issingle" => {
+            let single = coef.to_matrix()?.kind == Kind::Single;
+            boolv(if name == "issingle" { single } else { !single })
+        }
+        "double" | "single" => {
+            let mut m = coef.to_matrix()?;
+            m.kind = if name == "single" { Kind::Single } else { Kind::Double };
+            let mut vals = o.props.borrow().clone();
+            vals[0] = Value::Num(m);
+            out(vec![Value::Object(Object { class: o.class.clone(), props: Rc::new(RefCell::new(vals)) })])
+        }
+        "eq" | "ne" => {
+            let same = match rest.first() {
+                Some(Value::Object(p)) => p.class.name == o.class.name && *p.props.borrow() == *o.props.borrow(),
+                _ => false,
+            };
+            boolv(if name == "eq" { same } else { !same })
+        }
+        "filter" => {
+            if nargout > 1 {
+                return rt("Too many output arguments.");
+            }
+            let x = rest.first().cloned().ok_or_else(|| crate::error::LangError::new("Not enough input arguments.", 0))?;
+            let r = if fir {
+                it.call_function("filter", vec![coef.clone(), scalar_value(1.0), x], 1)?
+            } else {
+                it.call_function("sosfilt", vec![coef.clone(), x], 1)?
+            };
+            out(r)
+        }
+        "fftfilt" | "filtfilt" => {
+            if !fir && name == "filtfilt" {
+                return rt("filtfilt: second-order-section (IIR) digitalFilter objects are not implemented.");
+            }
+            if !fir {
+                return rt("fftfilt: the filter must be an FIR digitalFilter.");
+            }
+            let x = rest.first().cloned().ok_or_else(|| crate::error::LangError::new("Not enough input arguments.", 0))?;
+            let args = if name == "fftfilt" { vec![coef.clone(), x] } else { vec![coef.clone(), scalar_value(1.0), x] };
+            out(it.call_function(&name, args, 1)?)
+        }
+        "firtype" => {
+            if !fir {
+                return rt("The firtype function is only valid for FIR filters.");
+            }
+            out(it.call_function("firtype", vec![coef.clone()], 1)?)
+        }
+        "filtord" => {
+            if fir {
+                out(vec![scalar_value(coef.to_matrix()?.numel() as f64 - 1.0)])
+            } else {
+                let (b, den) = tf_of(it, &o)?;
+                out(it.call_function("filtord", vec![b, den], 1)?)
+            }
+        }
+        "tf" => {
+            let (b, den) = tf_of(it, &o)?;
+            out(vec![b, den].into_iter().take(nargout.max(1)).collect())
+        }
+        "zpk" => {
+            if fir {
+                let (b, den) = tf_of(it, &o)?;
+                out(it.call_function("tf2zpk", vec![b, den], nargout.max(1))?)
+            } else {
+                // Zeros and poles section by section, in the order of the sections.
+                let m = coef.to_matrix()?;
+                let l = m.dims[0];
+                let (mut zr, mut zi, mut pr, mut pi_) = (vec![], vec![], vec![], vec![]);
+                let mut k = 1.0;
+                for i in 0..l {
+                    k *= m.data[i];
+                    for (part, re, im) in [(0usize, &mut zr, &mut zi), (3usize, &mut pr, &mut pi_)] {
+                        let row = real_row((0..3).map(|c| m.data[(part + c) * l + i]).collect());
+                        let r = it.call_function("roots", vec![row], 1)?.remove(0).to_matrix()?;
+                        let imv = r.im.clone().unwrap_or_else(|| vec![0.0; r.numel()]);
+                        let mut idx: Vec<usize> = (0..r.numel()).collect();
+                        if r.numel() == 2 && imv.iter().all(|v| *v == 0.0) {
+                            idx.sort_by(|&x, &y| r.data[x].partial_cmp(&r.data[y]).unwrap_or(std::cmp::Ordering::Equal));
+                        }
+                        for q in idx {
+                            re.push(r.data[q]);
+                            im.push(imv[q]);
+                        }
+                    }
+                }
+                let zm = Matrix::complex(vec![zr.len(), 1], zr, zi);
+                let pm = Matrix::complex(vec![pr.len(), 1], pr, pi_);
+                let outs = vec![Value::Num(zm), Value::Num(pm), scalar_value(k)];
+                out(outs.into_iter().take(nargout.max(1)).collect())
+            }
+        }
+        "ss" => {
+            if fir {
+                let m = coef.to_matrix()?;
+                let mut den = vec![0.0; m.numel()];
+                den[0] = 1.0;
+                out(it.call_function("tf2ss", vec![coef.clone(), real_row(den)], nargout.max(1))?)
+            } else {
+                out(it.call_function("sos2ss", vec![coef.clone()], nargout.max(1))?)
+            }
+        }
+        "isminphase" if !fir => {
+            // Zeros and poles of every section on or inside the unit circle.
+            let m = coef.to_matrix()?;
+            let l = m.dims[0];
+            let mut ok = true;
+            for i in 0..l {
+                for part in [0usize, 3] {
+                    let row = real_row((0..3).map(|c| m.data[(part + c) * l + i]).collect());
+                    let r = it.call_function("roots", vec![row], 1)?.remove(0).to_matrix()?;
+                    let im = r.im.clone().unwrap_or_else(|| vec![0.0; r.numel()]);
+                    if (0..r.numel()).any(|k| r.data[k].hypot(im[k]) > 1.0 + 1e-8) {
+                        ok = false;
+                    }
+                }
+            }
+            out(vec![Value::bool(ok)])
+        }
+        "ismaxphase" if !fir => {
+            let m = coef.to_matrix()?;
+            let l = m.dims[0];
+            let mut ok = true;
+            for i in 0..l {
+                let row = real_row((0..3).map(|c| m.data[c * l + i]).collect());
+                let r = it.call_function("roots", vec![row], 1)?.remove(0).to_matrix()?;
+                let im = r.im.clone().unwrap_or_else(|| vec![0.0; r.numel()]);
+                if (0..r.numel()).any(|k| r.data[k].hypot(im[k]) < 1.0 - 1e-8) {
+                    ok = false;
+                }
+            }
+            out(vec![Value::bool(ok)])
+        }
+        "grpdelay" | "phasez" | "phasedelay" | "zerophase" if !fir => {
+            // Sums over the sections: group delay and (unwrapped) phase add.
+            let m = coef.to_matrix()?;
+            let l = m.dims[0];
+            let mut acc: Option<Vec<f64>> = None;
+            let mut wv: Option<Value> = None;
+            for i in 0..l {
+                let bsec = real_row((0..3).map(|c| m.data[c * l + i]).collect());
+                let asec = real_row((0..3).map(|c| m.data[(3 + c) * l + i]).collect());
+                let call_name = if name == "grpdelay" { "grpdelay" } else { "phasez" };
+                let mut args = vec![bsec, asec];
+                args.extend(rest.iter().cloned());
+                let r = it.call_function(call_name, args, 2)?;
+                let v = r[0].to_matrix()?.data;
+                acc = Some(match acc {
+                    None => v,
+                    Some(prev) => prev.iter().zip(v.iter()).map(|(x, y)| x + y).collect(),
+                });
+                wv = Some(r[1].clone());
+            }
+            let w = wv.unwrap();
+            let wm = w.to_matrix()?;
+            let ph = acc.unwrap();
+            let n = ph.len();
+            let res: Vec<f64> = match name.as_str() {
+                "phasedelay" => (0..n).map(|k| -ph[k] / wm.data[k]).collect(),
+                _ => ph.clone(),
+            };
+            if name == "zerophase" {
+                let hr = it.call_function("freqz", vec![coef.clone(), Value::Num(Matrix::from_dims(vec![0, 0], vec![]))], 1);
+                let _ = hr;
+                // Hr = real(H exp(-j phi)) with H from the transfer function.
+                let (bb, aa) = tf_of(it, &o)?;
+                let mut args = vec![bb, aa];
+                args.extend(rest.iter().cloned());
+                let rr = it.call_function("freqz", args, 2)?;
+                let h = rr[0].to_matrix()?;
+                let him = h.im.clone().unwrap_or_else(|| vec![0.0; n]);
+                let hrv: Vec<f64> = (0..n)
+                    .map(|k| {
+                        let p = if ph[k].is_nan() { 0.0 } else { ph[k] };
+                        h.data[k] * p.cos() + him[k] * p.sin()
+                    })
+                    .collect();
+                let outs = vec![Value::Num(Matrix::from_dims(vec![n, 1], hrv)), w, Value::Num(Matrix::from_dims(vec![n, 1], ph))];
+                return out(outs.into_iter().take(nargout.max(1)).collect());
+            }
+            let outs = vec![Value::Num(Matrix::from_dims(vec![n, 1], res)), w];
+            out(outs.into_iter().take(nargout.max(1)).collect())
+        }
+        "info" => rt("info: not implemented."),
+        _ => {
+            // Responses and tests of the transfer function: the same function on (b, a, ...).
+            let (b, den) = tf_of(it, &o)?;
+            let mut args = vec![b, den];
+            args.extend(rest);
+            out(it.call_function(&name, args, nargout)?)
+        }
+    }
 }

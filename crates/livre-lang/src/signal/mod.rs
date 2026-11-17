@@ -168,7 +168,7 @@ fn dispatch(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
         return modalfit::call(it, name, a, nargout);
     }
     if digfilt::NAMES.contains(&name) {
-        return digfilt::call(it, a, nargout);
+        return digfilt::call(it, name, a, nargout);
     }
     if ridge::NAMES.contains(&name) {
         return ridge::call(it, a, nargout);

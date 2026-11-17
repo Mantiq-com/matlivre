@@ -1,0 +1,213 @@
+{
+  "header": {
+    "release": "2023b",
+    "version": "23.2.0.2409890 (R2023b) Update 3",
+    "computer": "PCWIN64",
+    "recorded": "2026-11-17"
+  },
+  "log": "\nisfir1 =\n\n  logical\n\n   1\n\n\nisfir2 =\n\n  logical\n\n   0\n\n\nord1 =\n\n    20\n\n\nstab =\n\n     1\n\n\ny1 =\n\n    6.1430\n\n\ny2 =\n\n    1.8308\n\n\nnb =\n\n     5\n\n\na2 =\n\n   -1.5704\n\n\nnh =\n\n    64\n\n\nw2 =\n\n    0.0491\n\n\nsame =\n\n     1\n\n\ndif =\n\n     1\n\n",
+  "error": {
+    "identifier": "",
+    "message": ""
+  },
+  "lastwarn": {
+    "message": "",
+    "identifier": ""
+  },
+  "variables": {
+    "a2": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "bff9205ab3aabcd8"
+        ]
+      },
+      "display": "\na2 =\n\n   -1.5704\n\n"
+    },
+    "dif": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\ndif =\n\n     1\n\n"
+    },
+    "isfir1": {
+      "class": "logical",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "logical",
+        "size": [
+          1,
+          1
+        ],
+        "data": 1
+      },
+      "display": "\nisfir1 =\n\n  <a href=\"matlab:helpPopup logical\" style=\"font-weight:bold\">logical</a>\n\n   1\n\n"
+    },
+    "isfir2": {
+      "class": "logical",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "logical",
+        "size": [
+          1,
+          1
+        ],
+        "data": 0
+      },
+      "display": "\nisfir2 =\n\n  <a href=\"matlab:helpPopup logical\" style=\"font-weight:bold\">logical</a>\n\n   0\n\n"
+    },
+    "nb": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4014000000000000"
+        ]
+      },
+      "display": "\nnb =\n\n     5\n\n"
+    },
+    "nh": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4050000000000000"
+        ]
+      },
+      "display": "\nnh =\n\n    64\n\n"
+    },
+    "ord1": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4034000000000000"
+        ]
+      },
+      "display": "\nord1 =\n\n    20\n\n"
+    },
+    "same": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nsame =\n\n     1\n\n"
+    },
+    "stab": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nstab =\n\n     1\n\n"
+    },
+    "w2": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3fa921ee675147f1"
+        ]
+      },
+      "display": "\nw2 =\n\n    0.0491\n\n"
+    }
+  },
+  "figures": [],
+  "nfigures": 0
+}
