@@ -11,14 +11,14 @@ How MatLivre grows to cover the MATLAB Signal Processing Toolbox. The function i
 |---|---:|
 | Functions in scope (R2023b-era, from `signal.tsv`) | 333 |
 | Already in MatLivre before this plan (`xcorr`, `xcov`, `resample`, `rms`, `sinc`, `detrend`, `movmedian`, `movmad`, `isoutlier`, `filloutliers`, `smoothdata`, `islocalmax`, `paddata`, `trimdata`, `resize`, `freqspace`, `ss2tf`) | 17 |
-| Implemented by this plan (`crates/livre-lang/src/signal/`) | 255 |
-| Still to implement and verifiable here (incl. 1 registered without its main syntax) | 11 |
+| Implemented by this plan (`crates/livre-lang/src/signal/`) | 256 |
+| Still to implement and verifiable here (incl. 1 registered without its main syntax) | 10 |
 | Not verifiable: requires Wavelet/Audio Toolbox, not installed (see below) | 16 |
 | Out of scope (see below) | 34 |
 
-The 255 are checked against MATLAB: see "How it is tested". `isfir`, `tf`, `zpk` and `ss` count as done (digitalFilter methods, which `exist()` cannot see).
+The 256 are checked against MATLAB: see "How it is tested". `isfir`, `tf`, `zpk` and `ss` count as done (digitalFilter methods, which `exist()` cannot see).
 
-Still to do (11): `fillgaps`, `emd`, `hht`, `fsst`, `kurtogram`, `orderwaveform`, `ordertrack`, `rpmtrack`, `stftmag2sig`, `strips`, and `xwvd` (registered, main syntax not implemented: the cross distribution's rule was not recovered).
+Still to do (10): `emd`, `hht`, `fsst`, `kurtogram`, `orderwaveform`, `ordertrack`, `rpmtrack`, `stftmag2sig`, `strips`, and `xwvd` (registered, main syntax not implemented: the cross distribution's rule was not recovered).
 
 ## Not verifiable: requires Wavelet/Audio Toolbox, not installed
 
@@ -267,7 +267,7 @@ Exact against MATLAB except the cases in the deviations file. Findings: Kaiser w
 ### Research queue, one more dense round (not recovered)
 - `emd`: spline envelopes through the extrema (plain, end points added, linear end extrapolation, mirrored extension) do not reproduce the first sift; the mean envelope agrees to 1e-4 in the interior, so the end handling is what is missing.
 - `snr` family: for a clean sinusoid the signal power is exactly `sum(P(lo:hi))/ENBW` over the monotone mainlobe of a Kaiser(beta 38) periodogram (power-scaled), but the noise estimate (median level, `min(level, P)`) was not recovered.
-- `fillgaps`: forward and backward Burg predictions weighted linearly across the gap reproduce MATLAB to 6e-3; the exact fit (which samples feed each model) was not recovered.
+- (`fillgaps` is recovered, see the note at the end.)
 - (`filtfilt` with second-order sections is recovered, see the note at the end.)
 - Vold-Kalman (`orderwaveform`, `ordertrack`, `rpmtrack`): the coupled real least-squares form (data weight 1, structure weight `r`) with first and second order differences was tried; best fits leave 15-20 % error for any `r`.
 - The lowpass family needs `designfilt` (deferred).
@@ -327,3 +327,6 @@ ellip(6,...) lowpass sections have DC gains 1.57, 14.97 and 0.038; their cumulat
 
 ### thd, sfdr, toi, snr, sinad (done for tones; floors are deviations)
 All use a power-scaled periodogram of the whole record (nfft = N, Kaiser window beta 38). A tone's power is the sum of the periodogram over its mainlobe divided by the window's equivalent noise bandwidth in bins (`N*sum(w.^2)/sum(w)^2`), and its frequency is the power-weighted centroid of that band; the mainlobe is the monotone-decreasing run of bins either side of the peak, the valley bin on the high side belonging to the next lobe. The fundamental is the largest peak above the DC mainlobe (13 bins; a DC offset is ignored). thd: harmonic k is searched within 2 bins of `k*f1` (aliased folds above Nyquist, otherwise NaN), `r = 10*log10(sum(harmonics 2..n)/fundamental)`, default `n = 6`, frequency scale 1 when `Fs` is omitted; sfdr: the largest local maximum outside the fundamental's lobe and `MSD`; toi: the two largest local maxima are the fundamentals, the products at `2f1-f2` and `2f2-f1`, `OIP3 = mean(Pf + (Pf-Pim)/2)` over the two sides (dB, no 30 dB offset); snr(x,y) is the ratio of summed squared magnitudes; snr(x,Fs,N) divides the fundamental by the periodogram outside the DC guard and the first N harmonic lobes; sinad divides it by everything outside the DC guard and the fundamental. Exact (1e-13) for noise-free tones and for noise when the excluded harmonics are present. Not recovered (listed deviations): harmonics absent from the signal (MATLAB's band for a harmonic that is not there is a single bin at a position that is not `round(k*f1)`, and its power is the bin value itself rather than `sum/enbw`: `hp = P(bin)` for the single-bin case), so the default `N = 6` on a signal with fewer harmonics differs by 0.06 dB in the noise power; floors at -300 dB; tones closer than a mainlobe (toi); single-precision floors. The spectrum-input syntaxes (`'psd'`, `'power'`) are not implemented.
+
+### fillgaps (done)
+Two passes over the NaN runs: a forward pass fills the gaps left to right, each from an AR model fitted (Burg, `arburg`) to all samples before the gap with their mean removed, extended recursively over the gap, and the filled values feed the model of the next gap; a backward pass does the same right to left on the reversed samples. Sample `k` of a gap of length `L` is `(1-k/(L+1))*forward + k/(L+1)*backward`; a gap at the start takes only the backward estimate, at the end only the forward one; all-NaN stays NaN; a single non-NaN sample fills everything with it (order 0 = the mean). `MAXLEN` keeps the last (first) `MAXLEN` samples before (after) the gap and an `ORDER` larger than `MAXLEN` is an error. The automatic order minimises `N*log(e) + 2*q` over `q = 1..N-1` (`e` = the Burg error variance, `N` the number of samples used, picked separately for the two directions); a fixed or infinite order is truncated to `N-1`. Single, integer, logical, N-D input and Inf are errors (`Expected X to be one of these types: double`). Exact (1e-13) except: two gaps with automatic order when the backward data contain the AR extension of a later gap (the AIC picks the maximal order, a degenerate fit), and complex input.
