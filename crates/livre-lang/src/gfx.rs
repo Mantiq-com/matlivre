@@ -1705,8 +1705,10 @@ pub fn display(it: &mut Interpreter, name: &str, v: &Value) -> R<String> {
     }
     let body = crate::display::struct_fields_body(&s, it.format);
     if it.command_window {
-        // The command window: a blank line before the heading and after the properties.
-        return Ok(format!("\n{name} = \n\n  {title} with properties:\n\n{body}\n  Use GET to show all properties\n"));
+        // The command window: a blank line before the heading and after the properties. The last
+        // line is plain text in the batch log and a link in what `evalc` captures.
+        let more = if it.capturing > 0 { "Show all properties" } else { "Use GET to show all properties" };
+        return Ok(format!("\n{name} = \n\n  {title} with properties:\n\n{body}\n  {more}\n"));
     }
     Ok(format!("{name} = \n  {title} with properties:\n\n{body}\n  Use GET to show all properties"))
 }

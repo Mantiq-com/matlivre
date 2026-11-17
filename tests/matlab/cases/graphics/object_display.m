@@ -6,7 +6,7 @@ ax
 h
 title('Squares');
 ax
+hold on;
 h2 = plot(x, x, 'r--o', 'DisplayName', 'line');
 h2
-close all
-clear x h ax h2
+clear x ax
