@@ -71,6 +71,7 @@ pub fn builtin_identifier(message: &str) -> &'static str {
         ("Too many input arguments", "MATLAB:TooManyInputs"),
         ("Too many output arguments", "MATLAB:TooManyOutputs"),
         ("Unrecognized field name", "MATLAB:nonExistentField"),
+        ("Scalar structure required for this assignment", "MATLAB:scalarStrucRequired"),
         ("Dimensions of arrays being concatenated are not consistent", "MATLAB:catenate:dimensionMismatch"),
         ("Unable to perform assignment because the left and right sides have a different number of elements", "MATLAB:matrix:singleSubscriptNumelMismatch"),
     ];

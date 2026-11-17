@@ -1,0 +1,121 @@
+{
+  "header": {
+    "release": "2023b",
+    "version": "23.2.0.2409890 (R2023b) Update 3",
+    "computer": "PCWIN64",
+    "recorded": "2026-11-17"
+  },
+  "log": "c: [1 2]\nsz: [2 3]\nd: abc\na=1 b=4 g: [2 3], isempty(g{1})=1\nh: [0 1;0 1] [8 9]\nk: [2 2] [3 4]\nm: xyz\np: q 2 p\nq: [5 2 6]\nr: [8 9]\nt.c: [5 6]\nz: [0 0]\ns.f: [10 20 30]\ns.f: [7 7 7]\ns.f: 7 u v\nu: [1 4] [1 2 5 6]\nv.f: [4 5]\ne: [0 0]\nw: [1 1] 11\nMATLAB:maxlhs | Too many output arguments.\nMATLAB:needMoreRhsOutputs | Insufficient number of outputs from right hand side of equal sign to satisfy assignment.\nMATLAB:needMoreRhsOutputs | Insufficient number of outputs from right hand side of equal sign to satisfy assignment.\nMATLAB:deal:narginNargoutMismatch | The number of outputs should match the number of inputs.\nMATLAB:cellAssToNonCell | Unable to perform assignment because brace indexing is not supported for variables of this type.\nMATLAB:cellAssToNonCell | Unable to perform assignment because brace indexing is not supported for variables of this type.\nMATLAB:index:expected_one_output_for_assignment | Assigning to 2 elements using a simple assignment statement is not supported. Consider using comma-separated list assignment.\nMATLAB:index:expected_one_output_for_assignment | Assigning to 2 elements using a simple assignment statement is not supported. Consider using comma-separated list assignment.\nMATLAB:scalarStrucRequired | Scalar structure required for this assignment.\nMATLAB:scalarStrucRequired | Scalar structure required for this assignment.\nMATLAB:UndefinedFunction | Unrecognized function or variable 'undefinedFunctionForCsList'.\nMATLAB:UndefinedFunction | Unrecognized function or variable 'undefinedIndexForCsList'.\nMATLAB:index:expected_one_output_for_assignment | Assigning to 0 elements using a simple assignment statement is not supported. Consider using comma-separated list assignment.\nMATLAB:cellAssToNonCell | Unable to perform assignment because brace indexing is not supported for variables of this type.\nMATLAB:maxlhs | Too many output arguments.\nn13: 5\n\nn5 =\n\n     5\n\n\nn6 =\n\n     5\n\n\nn15 =\n\n     5\n\n",
+  "error": {
+    "identifier": "",
+    "message": ""
+  },
+  "lastwarn": {
+    "message": "",
+    "identifier": ""
+  },
+  "variables": {
+    "a": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\na =\n\n     1\n\n"
+    },
+    "b": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4010000000000000"
+        ]
+      },
+      "display": "\nb =\n\n     4\n\n"
+    },
+    "n15": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4014000000000000"
+        ]
+      },
+      "display": "\nn15 =\n\n     5\n\n"
+    },
+    "n5": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4014000000000000"
+        ]
+      },
+      "display": "\nn5 =\n\n     5\n\n"
+    },
+    "n6": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4014000000000000"
+        ]
+      },
+      "display": "\nn6 =\n\n     5\n\n"
+    }
+  },
+  "figures": [],
+  "nfigures": 0
+}

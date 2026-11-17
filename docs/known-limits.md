@@ -62,4 +62,3 @@
 - Windows is the main platform. Linux builds and runs (tested on Ubuntu 24.04, GNOME/Wayland),
   but the benchmarks and most testing are on Windows.
 - `line(x,y,z)` does not store `ZData` (MATLAB keeps it and draws in 3-D), and `line([],[])` returns a 0x0 placeholder where MATLAB returns a 0x1 `Line` array: the graphics model has no z series data and no empty arrays of graphics objects.
-- `[c{1:2}] = f(...)` (a cs-list of cell elements as the output list) assigns the first output to every element: `c = cell(1,2); [c{1:2}] = deal(1,2)` gives `{1} {1}` where MATLAB gives `{1} {2}`. Not fixed yet; code that needs it returns a cell and indexes it.

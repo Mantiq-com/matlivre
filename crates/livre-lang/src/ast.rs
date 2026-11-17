@@ -124,7 +124,9 @@ pub struct Stmt {
 #[derive(Debug, Clone)]
 pub enum StmtKind {
     Expr { expr: Expr, print: bool },
-    Assign { lhs: Vec<LValue>, rhs: Expr, print: bool },
+    /// `list`: the targets were written in brackets (`[a, c{:}] = f(...)`), so a cs-list target
+    /// such as `c{1:2}` or `s.f` on a struct array takes one output per element.
+    Assign { lhs: Vec<LValue>, rhs: Expr, print: bool, list: bool },
     Command { name: String, args: Vec<String>, print: bool },
     If { clauses: Vec<(Expr, Vec<Stmt>)>, otherwise: Option<Vec<Stmt>> },
     For { var: String, iter: Expr, body: Vec<Stmt> },
