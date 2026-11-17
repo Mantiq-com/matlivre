@@ -3,7 +3,7 @@
 
 use crate::cplx::C;
 use crate::display::{disp_value, fmt_g, NumFormat};
-use crate::error::{rt, LangError};
+use crate::error::{rt, rt_id, LangError};
 use crate::format::sprintf;
 use crate::indexing::{self, hconcat, vconcat};
 use crate::interp::{range_count, Interpreter, OutputKind};
@@ -2915,8 +2915,8 @@ fn call_dense(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) 
             if a.len() == 1 {
                 return Ok(Some(vec![a[0].clone(); nargout.max(1)]));
             }
-            if nargout > a.len() {
-                return rt("The number of outputs should match the number of inputs.");
+            if nargout != a.len() {
+                return rt_id("MATLAB:deal:narginNargoutMismatch", "The number of outputs should match the number of inputs.");
             }
             Ok(Some(args.to_vec()))
         }

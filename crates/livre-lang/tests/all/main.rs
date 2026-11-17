@@ -5,6 +5,7 @@ mod charts;
 mod classes_more;
 mod containers;
 mod copyobj;
+mod cs_list_assign;
 mod data_files;
 mod datafun;
 mod datatips;

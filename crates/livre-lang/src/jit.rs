@@ -1187,7 +1187,7 @@ impl<'a, 'b> Gen<'a, 'b> {
             self.line = s.line as i64;
         }
         match &s.kind {
-            StmtKind::Assign { lhs, rhs, print } => {
+            StmtKind::Assign { lhs, rhs, print, list } => {
                 if *print {
                     return reject("displays a value");
                 }
@@ -1195,6 +1195,9 @@ impl<'a, 'b> Gen<'a, 'b> {
                     return reject("multiple assignment");
                 }
                 let LValue::Target { name, chain } = &lhs[0] else { return reject("~ target") };
+                if *list && !chain.is_empty() {
+                    return reject("comma-separated list assignment");
+                }
                 match chain.as_slice() {
                     [] => {
                         let v = self.expr(rhs)?;

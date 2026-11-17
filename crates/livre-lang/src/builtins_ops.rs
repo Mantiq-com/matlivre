@@ -1281,7 +1281,7 @@ fn subsasgn(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
             Sub::Dot(f) => Accessor::Field(f.clone()),
         })
         .collect();
-    let stmt = Stmt { kind: StmtKind::Assign { lhs: vec![LValue::Target { name: base.clone(), chain }], rhs: Expr::Ident(rhs), print: false }, line: 0 };
+    let stmt = Stmt { kind: StmtKind::Assign { lhs: vec![LValue::Target { name: base.clone(), chain }], rhs: Expr::Ident(rhs), print: false, list: false }, line: 0 };
     let r = it.exec_block(std::slice::from_ref(&stmt));
     let out = it.get_var(&base).cloned();
     t.clear(it);

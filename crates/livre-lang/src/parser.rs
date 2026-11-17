@@ -464,19 +464,19 @@ impl Parser {
                 let e = self.expr()?;
                 if self.is_op("=") {
                     self.bump();
-                    let lhs = match e {
+                    let (lhs, list) = match e {
                         Expr::Matrix(rows) if rows.len() <= 1 => {
                             let mut v = Vec::new();
                             for item in rows.into_iter().flatten() {
                                 v.push(to_lvalue(item, line)?);
                             }
-                            v
+                            (v, true)
                         }
-                        other => vec![to_lvalue(other, line)?],
+                        other => (vec![to_lvalue(other, line)?], false),
                     };
                     let rhs = self.expr()?;
                     let print = self.terminator()?;
-                    StmtKind::Assign { lhs, rhs, print }
+                    StmtKind::Assign { lhs, rhs, print, list }
                 } else {
                     let print = self.terminator()?;
                     StmtKind::Expr { expr: e, print }
