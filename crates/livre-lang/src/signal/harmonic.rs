@@ -18,6 +18,7 @@ const BAND: usize = 14;
 /// Bins at the low end that belong to the mainlobe of the DC term.
 const DC_GUARD: usize = 13;
 
+#[derive(Clone)]
 struct Spec {
     p: Vec<f64>,
     f: Vec<f64>,
@@ -25,7 +26,14 @@ struct Spec {
     fs: f64,
 }
 
+thread_local! {
+    static GIVEN: std::cell::RefCell<Option<Spec>> = const { std::cell::RefCell::new(None) };
+}
+
 fn spectrum(it: &mut Interpreter, x: &[f64], fs: f64) -> Result<Spec, crate::error::LangError> {
+    if let Some(sp) = GIVEN.with(|g| g.borrow().clone()) {
+        return Ok(sp);
+    }
     let n = x.len();
     let w = it.call_function("kaiser", vec![scalar_value(n as f64), scalar_value(38.0)], 1)?.remove(0).to_matrix()?;
     let sw: f64 = w.data.iter().sum();
@@ -135,6 +143,14 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
     } {
         return rt("Too many output arguments.");
     }
+    // The spectrum syntaxes: (Pxx, F, [N], 'psd') and (Sxx, F, RBW, [N], 'power').
+    let flag = a.iter().position(|v| matches!(v, Value::Num(m) if m.kind == Kind::Char) && matches!(v.text().unwrap_or_default().to_lowercase().as_str(), "psd" | "power"));
+    if let (Some(j), true) = (flag, a.len() >= 2 && matches!(&a[0], Value::Num(m) if m.kind != Kind::Char && m.numel() > 1)) {
+        if j >= 2 {
+            return spectrum_call(it, name, a, j, nargout);
+        }
+    }
+    GIVEN.with(|g| *g.borrow_mut() = None);
     match name {
         "thd" => thd(it, a, nargout),
         "sfdr" => sfdr(it, a, nargout),
@@ -144,7 +160,87 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
     }
 }
 
+fn spectrum_call(it: &mut Interpreter, name: &str, a: &[Value], j: usize, nargout: usize) -> Ret {
+    let power = a[j].text().unwrap_or_default().to_lowercase() == "power";
+    if name == "sfdr" && !power {
+        return rt("Unknown option:  'psd'");
+    }
+    let (pv, fv) = (a[0].to_matrix()?, a[1].to_matrix()?);
+    let mut i = 2;
+    let mut rbw = 0.0;
+    if power {
+        if j < 3 {
+            return rt("Not enough input arguments.");
+        }
+        rbw = scalar_arg(a, 2, "RBW", &["scalar", "positive"])?;
+        i = 3;
+    }
+    if pv.data.iter().any(|v| *v < 0.0) {
+        return rt(format!("Expected input number 1, {}, to be nonnegative.", if power { "Sxx" } else { "Pxx" }));
+    }
+    if fv.numel() < pv.numel() {
+        return rt(format!("Index exceeds the number of array elements. Index must not exceed {}.", fv.numel()));
+    }
+    let mut rest: Vec<Value> = Vec::new();
+    if i < j {
+        // The number of harmonics (thd, snr).
+        let n = scalar_arg(a, i, "N", &["scalar", "positive", "integer", "gt1"]);
+        match n {
+            Ok(_) => rest.push(a[i].clone()),
+            Err(e) => return rt(e.message.replace("input number 3", &format!("input number {}", i + 2))),
+        }
+    }
+    let df = fv.data[1] - fv.data[0];
+    let (p, en): (Vec<f64>, f64) = if power { (pv.data.clone(), rbw / df) } else { (pv.data.iter().map(|v| v * df).collect(), 1.0) };
+    let fs = 2.0 * fv.data[pv.numel() - 1];
+    let sp = Spec { p: p.clone(), f: fv.data[..pv.numel()].to_vec(), en, fs };
+    GIVEN.with(|g| *g.borrow_mut() = Some(sp));
+    let mut args = vec![real_col(vec![0.0; pv.numel().max(4)]), scalar_value(fs)];
+    args.extend(rest);
+    args.extend(a[j + 1..].iter().cloned());
+    let r = if name == "sfdr" && power { sfdr_power(it, nargout) } else {
+        match name {
+            "thd" => thd(it, &args, nargout),
+            "snr" => snr(it, &args, nargout),
+            "sinad" => sinad(it, &args, nargout),
+            "toi" => toi(it, &args, nargout),
+            _ => sfdr(it, &args, nargout),
+        }
+    };
+    GIVEN.with(|g| *g.borrow_mut() = None);
+    r
+}
+
+/// sfdr of a power spectrum: the largest bin and the largest spur bin, as bin values.
+fn sfdr_power(_it: &mut Interpreter, nargout: usize) -> Ret {
+    let sp = GIVEN.with(|g| g.borrow().clone()).unwrap();
+    let Some(i1) = sp.fundamental() else { return finish(vec![scalar_value(f64::NAN); 3], false, nargout) };
+    let mut best: Option<usize> = None;
+    for k in (DC_GUARD + 1)..sp.p.len() {
+        if (k as i64 - i1 as i64).unsigned_abs() as usize <= BAND {
+            continue;
+        }
+        let left = sp.p[k - 1];
+        let right = if k + 1 < sp.p.len() { sp.p[k + 1] } else { 0.0 };
+        if sp.p[k] >= left && sp.p[k] >= right && best.map_or(true, |b| sp.p[k] > sp.p[b]) {
+            best = Some(k);
+        }
+    }
+    let Some(ib) = best else { return finish(vec![scalar_value(f64::NAN); 3], false, nargout) };
+    finish(vec![scalar_value(db(sp.p[i1]) - db(sp.p[ib])), scalar_value(db(sp.p[ib])), scalar_value(sp.f[ib])], false, nargout)
+}
+
 fn thd(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
+    for v in a.iter().skip(1) {
+        if let Value::Num(m) = v {
+            if m.kind == Kind::Char && m.numel() > 1 {
+                let t = v.text().unwrap_or_default().to_lowercase();
+                if !("aliased".starts_with(&t) || "omitaliases".starts_with(&t)) {
+                    return rt(format!("Unknown option:  '{}'", v.text().unwrap_or_default()));
+                }
+            }
+        }
+    }
     let (x, single, _) = signal(a)?;
     let mut i = 1;
     let mut fs = 1.0;
