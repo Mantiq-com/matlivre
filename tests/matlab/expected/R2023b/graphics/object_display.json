@@ -1,0 +1,20 @@
+{
+  "header": {
+    "release": "2023b",
+    "version": "23.2.0.2409890 (R2023b) Update 3",
+    "computer": "PCWIN64",
+    "recorded": "2026-11-17"
+  },
+  "log": "\nax = \n\n  Axes with properties:\n\n             XLim: [0 2]\n             YLim: [0 4]\n           XScale: 'linear'\n           YScale: 'linear'\n    GridLineStyle: '-'\n         Position: [0.1300 0.1100 0.7750 0.8150]\n            Units: 'normalized'\n\n  Use GET to show all properties\n\n\nh = \n\n  Line with properties:\n\n              Color: [0 0.4470 0.7410]\n          LineStyle: '-'\n          LineWidth: 0.5000\n             Marker: 'none'\n         MarkerSize: 6\n    MarkerFaceColor: 'none'\n              XData: [0 0.5000 1 1.5000 2]\n              YData: [0 0.2500 1 2.2500 4]\n\n  Use GET to show all properties\n\n\nax = \n\n  Axes (Squares) with properties:\n\n             XLim: [0 2]\n             YLim: [0 4]\n           XScale: 'linear'\n           YScale: 'linear'\n    GridLineStyle: '-'\n         Position: [0.1300 0.1100 0.7750 0.8150]\n            Units: 'normalized'\n\n  Use GET to show all properties\n\n\nh2 = \n\n  Line (line) with properties:\n\n              Color: [1 0 0]\n          LineStyle: '--'\n          LineWidth: 0.5000\n             Marker: 'o'\n         MarkerSize: 6\n    MarkerFaceColor: 'none'\n              XData: [0 0.5000 1 1.5000 2]\n              YData: [0 0.5000 1 1.5000 2]\n\n  Use GET to show all properties\n\n",
+  "error": {
+    "identifier": "",
+    "message": ""
+  },
+  "lastwarn": {
+    "message": "",
+    "identifier": ""
+  },
+  "variables": {},
+  "figures": [],
+  "nfigures": 0
+}

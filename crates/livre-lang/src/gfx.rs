@@ -856,7 +856,7 @@ fn computed(it: &mut Interpreter, id: u64, t: Target, name: &str) -> R<Option<Va
                 "XScale" => Value::chars(if ax.xlog { "log" } else { "linear" }),
                 "YScale" => Value::chars(if ax.ylog { "log" } else { "linear" }),
                 "YDir" => Value::chars(if ax.y_reverse { "reverse" } else { "normal" }),
-                "XGrid" | "YGrid" => on_off_value(ax.grid),
+                "XGrid" | "YGrid" | "ZGrid" => on_off_value(ax.grid),
                 "XTick" => row(&tick_values(&ax.xticks, x0, x1)),
                 "YTick" => row(&tick_values(&ax.yticks, y0, y1)),
                 "XTickLabel" => label_value(&ax.xticks, &tick_labels(&ax.xticks, &tick_values(&ax.xticks, x0, x1))),
@@ -1614,7 +1614,13 @@ fn object_title(it: &mut Interpreter, id: u64, t: Target) -> String {
         }
         // MATLAB names the object by its Tag, else its DisplayName: `Line (data1)`.
         _ => {
-            let label = ["Tag", "DisplayName"].iter().find_map(|p| get_prop(it, id, p).ok().and_then(|v| v.text().ok()).filter(|s| !s.is_empty()));
+            // The command window names an axes by its title: `Axes (Squares)`.
+            let titled = if it.command_window && class.ends_with(".Axes") {
+                get_prop(it, id + Part::Title as u64, "String").ok().and_then(|v| v.text().ok()).filter(|s| !s.is_empty())
+            } else {
+                None
+            };
+            let label = titled.or_else(|| ["Tag", "DisplayName"].iter().find_map(|p| get_prop(it, id, p).ok().and_then(|v| v.text().ok()).filter(|s| !s.is_empty())));
             match label {
                 Some(l) => format!("{} ({l})", short(class)),
                 None => short(class).to_string(),
@@ -1622,6 +1628,23 @@ fn object_title(it: &mut Interpreter, id: u64, t: Target) -> String {
         }
     }
 }
+
+/// In the command window, the plotting commands that make the first axes of a figure turn its
+/// `Box` on (the axes `hold`, `gca`, `axes`, `subplot`, `scatter`, `surf` or `line` make start
+/// with it off, as the Live Editor's do).
+pub(crate) fn box_on_for_new_axes(it: &mut Interpreter) {
+    if let Some(f) = it.current_figure.filter(|&f| f < it.figures.len() && it.figures[f].has_axes()) {
+        let a = it.figures[f].current_axes;
+        let id = axes_id(it, f, a);
+        store(it, id, "Box", Value::chars("on"));
+    }
+}
+
+/// The plotting commands whose new axes have `Box` on in R2023b.
+pub(crate) const BOXED_PLOTS: &[&str] = &[
+    "plot", "semilogx", "semilogy", "loglog", "bar", "barh", "stairs", "stem", "area", "errorbar", "histogram", "histogram2", "fill",
+    "imagesc", "image", "contour", "quiver", "pcolor", "fplot", "polarplot",
+];
 
 pub fn display(it: &mut Interpreter, name: &str, v: &Value) -> R<String> {
     let ids = ids_of(v).unwrap_or_default();
@@ -1675,6 +1698,10 @@ pub fn display(it: &mut Interpreter, name: &str, v: &Value) -> R<String> {
         s.set(p, v);
     }
     let body = crate::display::struct_fields_body(&s, it.format);
+    if it.command_window {
+        // The command window: a blank line before the heading and after the properties.
+        return Ok(format!("\n{name} = \n\n  {title} with properties:\n\n{body}\n  Use GET to show all properties\n"));
+    }
     Ok(format!("{name} = \n  {title} with properties:\n\n{body}\n  Use GET to show all properties"))
 }
 

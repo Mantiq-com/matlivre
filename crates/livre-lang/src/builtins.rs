@@ -844,6 +844,18 @@ pub fn call_ref(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize
 }
 
 fn call_dense(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) -> Ret {
+    if it.command_window && crate::gfx::BOXED_PLOTS.contains(&name) {
+        let fresh = it.current_figure.is_none_or(|f| f >= it.figures.len() || !it.figures[f].has_axes());
+        let r = call_dense_inner(it, name, args, nargout);
+        if fresh {
+            crate::gfx::box_on_for_new_axes(it);
+        }
+        return r;
+    }
+    call_dense_inner(it, name, args, nargout)
+}
+
+fn call_dense_inner(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) -> Ret {
     // patch with faces and vertices.
     if name == "patch" {
         if let Some(r) = crate::volume::patch_fv(it, &args, nargout)? {
