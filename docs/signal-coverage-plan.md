@@ -11,11 +11,11 @@ How MatLivre grows to cover the MATLAB Signal Processing Toolbox. The function i
 |---|---:|
 | Functions in scope (R2023b-era, from `signal.tsv`) | 333 |
 | Already in MatLivre before this plan (`xcorr`, `xcov`, `resample`, `rms`, `sinc`, `detrend`, `movmedian`, `movmad`, `isoutlier`, `filloutliers`, `smoothdata`, `islocalmax`, `paddata`, `trimdata`, `resize`, `freqspace`, `ss2tf`) | 17 |
-| Implemented by this plan (`crates/livre-lang/src/signal/`) | 237 |
-| Still to implement and verifiable here | 65 |
+| Implemented by this plan (`crates/livre-lang/src/signal/`) | 243 |
+| Still to implement and verifiable here | 59 |
 | Not verifiable: requires Wavelet/Audio Toolbox, not installed (see below) | 14 |
 
-The 237 are checked against MATLAB: see "How it is tested".
+The 243 are checked against MATLAB: see "How it is tested".
 
 ## Not verifiable: requires Wavelet/Audio Toolbox, not installed
 
@@ -82,7 +82,7 @@ cases in `signal_cases.m` and MATLAB's output recorded as above.
 4. **Analog prototypes and IIR design**. Done: `buttap`, `cheb1ap`, `cheb2ap`, `butter`,
    `cheby1`, `cheby2`, `ellipap`, `besselap`, `ellip`, `besself`, `buttord`, `cheb1ord`, `cheb2ord`, `ellipord` (digital and analog, all four band
    types, transfer function, zero-pole-gain and state-space outputs), `maxflat` (without the second-order-section
-   outputs). To do: `yulewalk`.
+   outputs), `yulewalk` (all arguments, including `npt` and `lap`).
 5. **FIR design and filter analysis**. Done: `fir1`, `freqz`, `freqs`, `grpdelay`, `phasez`, `phasedelay`, `zerophase`,
    `isstable`, `impz`, `stepz`, `sgolay`, `fir2`, `firls`, `kaiserord`, `firpm`, `firpmord`, `gaussdesign`, `rcosdesign`, `intfilt`, `impzlength`, `filternorm`, `filtord`,
    `firtype`, `isminphase`, `ismaxphase`, `islinphase`, `isallpass`, `fircls`, `fircls1` (without the WT and
@@ -126,6 +126,11 @@ not exercise:
   case in twenty MATLAB's order follows rounding errors in the entries of that matrix, which
   differ here (five recorded cases).
 - **Degenerate designs**: `cheby1` with zero ripple and `cheby2` with zero attenuation.
+- **`yulewalk`** of high order: the design is ill-conditioned from about order 12, and rounding
+  differences in the FFTs and least-squares solves grow to 1e-8 (order 12) and 1e-2 (order 16 with
+  a sharp edge). Not recorded, and known to differ: a step at frequency 0 with `lap` 0 or 1
+  (rank-deficient equations, MATLAB picks another basic solution) and some complex magnitudes
+  (`yulewalk(4,[0 1],[1 1i])`, 6e-4 off in the numerator).
 - **Single precision**: results are computed in double precision and rounded to single; MATLAB's
   own single arithmetic can differ in the last digits (the recorded cases allow 1e-6).
 - **N-D arrays** and operating along dimension 3 (`dct`, `hilbert`).
