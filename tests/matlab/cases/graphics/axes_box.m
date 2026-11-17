@@ -33,5 +33,20 @@ ax = gca;
 fprintf('grid off  X=%s Y=%s Z=%s\n', char(ax.XGrid), char(ax.YGrid), char(ax.ZGrid));
 grid on;
 fprintf('grid on   X=%s Y=%s Z=%s\n', char(ax.XGrid), char(ax.YGrid), char(ax.ZGrid));
+% a plotting command that replaces the contents sets Box again; with hold on it stays
+figure; ax = axes; plot(1:3);              fprintf('axes; plot            Box=%s\n', char(ax.Box));
+figure; plot(1:3); box off; plot(1:3);     fprintf('plot; box off; plot   Box=%s\n', char(gca().Box));
+figure; hold on; plot(1:3);                fprintf('hold on; plot         Box=%s\n', char(gca().Box));
+figure; plot(1:3); box off; hold on; plot(3:-1:1); fprintf('box off; hold; plot   Box=%s\n', char(gca().Box));
+figure; ax = axes; bar(1:3);               fprintf('axes; bar             Box=%s\n', char(ax.Box));
+figure; plot(1:3); scatter(1:3,1:3);       fprintf('plot; scatter        Box=%s\n', char(gca().Box));
+figure; plot(1:3); surf(peaks(5));         fprintf('plot; surf           Box=%s\n', char(gca().Box));
+figure; plot(1:3); plot3(1:3,1:3,1:3);     fprintf('plot; plot3          Box=%s\n', char(gca().Box));
+figure; plot(1:3); line([0 1],[0 1]);      fprintf('plot; line          Box=%s\n', char(gca().Box));
+figure; plot(1:3); hold on; scatter(1:3,1:3); fprintf('plot; hold; scatter  Box=%s\n', char(gca().Box));
+figure; scatter(1:3,1:3); plot(1:3);       fprintf('scatter; plot        Box=%s\n', char(gca().Box));
+figure; plot(1:3); box off; cla; plot(1:3); fprintf('box off; cla; plot   Box=%s\n', char(gca().Box));
+figure; subplot(1,2,1); plot(1:3);         fprintf('subplot; plot       Box=%s\n', char(gca().Box));
+close all
 close all
 clear ax a names calls k

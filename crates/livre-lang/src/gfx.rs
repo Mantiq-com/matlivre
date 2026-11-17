@@ -1629,22 +1629,28 @@ fn object_title(it: &mut Interpreter, id: u64, t: Target) -> String {
     }
 }
 
-/// In the command window, the plotting commands that make the first axes of a figure turn its
-/// `Box` on (the axes `hold`, `gca`, `axes`, `subplot`, `scatter`, `surf` or `line` make start
-/// with it off, as the Live Editor's do).
-pub(crate) fn box_on_for_new_axes(it: &mut Interpreter) {
-    if let Some(f) = it.current_figure.filter(|&f| f < it.figures.len() && it.figures[f].has_axes()) {
-        let a = it.figures[f].current_axes;
-        let id = axes_id(it, f, a);
-        store(it, id, "Box", Value::chars("on"));
-    }
-}
-
-/// The plotting commands whose new axes have `Box` on in R2023b.
+/// The plotting commands that replace the contents of the current axes (hold off) reset its `Box`
+/// to their own default in R2023b: on for these, off for `UNBOXED_PLOTS`. With hold on, or for
+/// commands that only add to the axes (`line`, `xline`, `text`, `title`, `xlim`, ...), it stays.
 pub(crate) const BOXED_PLOTS: &[&str] = &[
     "plot", "semilogx", "semilogy", "loglog", "bar", "barh", "stairs", "stem", "area", "errorbar", "histogram", "histogram2", "fill",
     "imagesc", "image", "contour", "quiver", "pcolor", "fplot", "polarplot",
 ];
+pub(crate) const UNBOXED_PLOTS: &[&str] = &["scatter", "plot3", "surf", "mesh"];
+
+/// Whether the current axes hold their contents (`hold on`); false when there are no axes yet.
+pub(crate) fn current_axes_hold(it: &Interpreter) -> bool {
+    it.current_figure.filter(|&f| f < it.figures.len() && it.figures[f].has_axes()).is_some_and(|f| it.figures[f].axes[it.figures[f].current_axes].hold)
+}
+
+/// Sets `Box` of the current axes after a plotting command that replaced their contents.
+pub(crate) fn set_box_after_plot(it: &mut Interpreter, on: bool) {
+    if let Some(f) = it.current_figure.filter(|&f| f < it.figures.len() && it.figures[f].has_axes()) {
+        let a = it.figures[f].current_axes;
+        let id = axes_id(it, f, a);
+        store(it, id, "Box", Value::chars(if on { "on" } else { "off" }));
+    }
+}
 
 pub fn display(it: &mut Interpreter, name: &str, v: &Value) -> R<String> {
     let ids = ids_of(v).unwrap_or_default();
