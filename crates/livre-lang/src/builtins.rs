@@ -420,6 +420,8 @@ pub(crate) fn values_equal(a: &Value, b: &Value) -> bool {
         (Value::Str(x), Value::Str(y)) => x == y,
         (Value::Str(x), y) | (y, Value::Str(x)) if y.is_char() && x.is_scalar() => y.text().map(|t| x.data[0].as_deref() == Some(t.as_str())).unwrap_or(false),
         (Value::Table(x), Value::Table(y)) => x.names == y.names && x.vars.iter().zip(&y.vars).all(|(p, q)| values_equal(p, q)),
+        // Graphics handles are equal when they name the same objects (`isequal(gca, gca)`).
+        (Value::Object(_), Value::Object(_)) if crate::gfx::is_gfx(a) && crate::gfx::is_gfx(b) => crate::gfx::ids_of(a) == crate::gfx::ids_of(b),
         _ => a == b,
     }
 }
@@ -788,7 +790,11 @@ pub fn call_ref(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize
     static FAER_INIT: std::sync::Once = std::sync::Once::new();
     FAER_INIT.call_once(|| faer::set_global_parallelism(faer::Par::Seq));
     // matlab.lang.OnOffSwitchState arguments: each builtin reads them as text or as a logical value.
-    if args.iter().any(crate::class::is_on_off) {
+    if args.iter().any(crate::class::holds_on_off) {
+        // upper and lower leave such a value as it is.
+        if matches!(name, "upper" | "lower") && args.len() == 1 && crate::class::is_on_off(&args[0]) {
+            return Ok(Some(vec![args[0].clone()]));
+        }
         if name == "mat2str" && args.len() == 1 {
             let state = if crate::class::on_off_state(&args[0]) == Some(true) { "on" } else { "off" };
             return Ok(Some(vec![Value::chars(&format!("{}.{state}", crate::class::ON_OFF_CLASS))]));

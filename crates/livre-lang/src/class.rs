@@ -9,7 +9,7 @@ use crate::ast::{Expr, Function};
 use crate::display::NumFormat;
 use crate::error::LangError;
 use crate::lexer::{tokenize, Kw, Tok};
-use crate::value::{StructArray, Value};
+use crate::value::{CellArray, StructArray, Value};
 
 type R<T> = Result<T, LangError>;
 
@@ -209,6 +209,24 @@ pub fn is_on_off(v: &Value) -> bool {
     on_off_state(v).is_some()
 }
 
+/// Whether `v` is an `OnOffSwitchState` value or a cell holding one (at any depth).
+pub fn holds_on_off(v: &Value) -> bool {
+    match v {
+        Value::Cell(c) => c.data.iter().any(holds_on_off),
+        _ => is_on_off(v),
+    }
+}
+
+/// `v` with `f` applied to each `OnOffSwitchState` value in it, also inside cells.
+fn map_on_off(v: Value, f: fn(Value) -> Value) -> Value {
+    match v {
+        Value::Cell(c) if holds_on_off(&Value::Cell(c.clone())) => {
+            Value::Cell(CellArray::from_dims(c.dims.clone(), c.data.iter().cloned().map(|x| map_on_off(x, f)).collect()))
+        }
+        other => f(other),
+    }
+}
+
 /// An `OnOffSwitchState` value as the text `on` / `off`; other values unchanged.
 pub fn on_off_as_text(v: Value) -> Value {
     match on_off_state(&v) {
@@ -254,7 +272,7 @@ const READ_BY_PEER: &[&str] = &["isequal", "ismember"];
 /// The arguments of builtin `name` with its `OnOffSwitchState` values replaced by what the
 /// builtin reads them as, or `None` when the builtin takes them as they are.
 pub fn on_off_args(name: &str, args: &[Value]) -> Option<Vec<Value>> {
-    if !args.iter().any(is_on_off) {
+    if !args.iter().any(holds_on_off) {
         return None;
     }
     let as_text = if READ_AS_TEXT.contains(&name) {
@@ -268,7 +286,9 @@ pub fn on_off_args(name: &str, args: &[Value]) -> Option<Vec<Value>> {
     } else {
         return None;
     };
-    Some(args.iter().cloned().map(if as_text { on_off_as_text } else { on_off_as_logical }).collect())
+    // `ismember` takes only top-level values; the others also look inside cells.
+    let conv: fn(Value) -> Value = if as_text { on_off_as_text } else { on_off_as_logical };
+    Some(args.iter().cloned().map(|a| if name == "ismember" { conv(a) } else { map_on_off(a, conv) }).collect())
 }
 
 /// `sprintf` / `fprintf`: an `OnOffSwitchState` argument prints as text under `%s` and `%c`

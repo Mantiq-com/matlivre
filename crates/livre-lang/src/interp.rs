@@ -2510,7 +2510,7 @@ If you want to design a new filter with different specifications, use the design
                 }
                 let file = self.cur_file();
                 self.frames.push(Frame { vars, globals: HashSet::new(), func: None, file, line: 0 });
-                let r = self.eval_multi(&f.body, nargout.max(1));
+                let r = self.eval_multi(&f.body, nargout);
                 self.frames.pop();
                 self.depth -= 1;
                 r
