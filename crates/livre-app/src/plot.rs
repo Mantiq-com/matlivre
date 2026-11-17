@@ -903,7 +903,8 @@ fn draw_figure(c: &mut dyn Canvas, skin: &Skin, fig: &Figure, size: Vec2, hover:
     if let Some(h) = heading {
         c.text(pos2(size.x / 2.0, 6.0 + TITLE.mid()), Align::Center, h, TITLE, t.fg, 0.0);
     }
-    for (i, ax) in fig.axes.iter().enumerate() {
+    for i in fig.stacking() {
+        let ax = &fig.axes[i];
         // plotyy's right axes are drawn with the axes they overlay.
         if ax.overlay_of != 0 {
             continue;

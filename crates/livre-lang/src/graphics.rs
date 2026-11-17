@@ -249,6 +249,9 @@ pub struct Axes {
     /// from the bottom left like MATLAB's positions): the box that holds the axes with their
     /// labels and ticks. `None` is the cell of the figure's subplot grid the axes sit in.
     pub layout: Option<[f64; 4]>,
+    /// Stacking: axes made or selected later with `axes` are in front of earlier ones (0 for
+    /// axes that were never raised; those stack by their position in the figure).
+    pub raised: u64,
 }
 
 /// The y axis of one side of `yyaxis` axes.
@@ -735,6 +738,19 @@ pub struct Figure {
     pub axes_made: bool,
 }
 
+/// The `Position` of axes (the plot box) as a fraction of their outer box, MATLAB's default.
+const INNER_IN_OUTER: [f64; 4] = [0.13, 0.11, 0.775, 0.815];
+
+/// The outer box (`Axes::layout`) of axes whose `Position` is `p`, keeping MATLAB's default
+/// relation between the two. `None` for a box without width or height.
+pub fn outer_of_position(p: [f64; 4]) -> Option<[f64; 4]> {
+    if !(p[2] > 0.0 && p[3] > 0.0) || p.iter().any(|x| !x.is_finite()) {
+        return None;
+    }
+    let (w, h) = (p[2] / INNER_IN_OUTER[2], p[3] / INNER_IN_OUTER[3]);
+    Some([p[0] - INNER_IN_OUTER[0] * w, p[1] - INNER_IN_OUTER[1] * h, w, h])
+}
+
 impl Figure {
     pub fn new(id: u32) -> Self {
         Self { id, name: String::new(), grid: (1, 1), axes: vec![Axes::default()], current_axes: 0, colormap: None, flow: false, objects: Vec::new(), next_tile: 0, color_order: None, axes_made: false }
@@ -743,6 +759,19 @@ impl Figure {
     pub fn axes_mut(&mut self) -> &mut Axes {
         self.axes_made = true;
         &mut self.axes[self.current_axes]
+    }
+
+    /// Brings axes `a` in front of the others.
+    pub fn raise(&mut self, a: usize) {
+        let top = self.axes.iter().map(|x| x.raised).max().unwrap_or(0);
+        self.axes[a].raised = top + 1;
+    }
+
+    /// The axes indices from the back to the front: `Children` lists them the other way round.
+    pub fn stacking(&self) -> Vec<usize> {
+        let mut order: Vec<usize> = (0..self.axes.len()).collect();
+        order.sort_by_key(|&i| (self.axes[i].raised, i));
+        order
     }
 
     /// Whether the figure has axes yet (a grid of several always does).

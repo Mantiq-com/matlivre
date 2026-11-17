@@ -181,3 +181,18 @@ fn switch_state_arrays_as_text_and_numbers() {
     assert_eq!(num(&it, "w"), [1.0]);
     assert_eq!(text(&it, "q"), "1x2 OnOffSwitchState");
 }
+
+#[test]
+fn axes_makes_new_axes_and_positions_them() {
+    let (it, out) = run("f = figure; a1 = axes; a2 = axes; n = numel(f.Children); axes(a1); c = double(isequal(gca, a1)); p = axes('Position', [0.1 0.2 0.5 0.4]); pos = get(p, 'Position'); m = numel(f.Children); top = double(f.Children(1) == p);");
+    assert!(!out.iter().any(|l| l.starts_with("Error")), "{out:?}");
+    assert_eq!(num(&it, "n"), [2.0]);
+    assert_eq!(num(&it, "c"), [1.0]);
+    assert_eq!(num(&it, "m"), [3.0]);
+    assert_eq!(num(&it, "top"), [1.0]);
+    assert_eq!(num(&it, "pos"), [0.1, 0.2, 0.5, 0.4]);
+    // The box the axes are drawn in keeps MATLAB's relation to their Position.
+    let outer = livre_lang::graphics::outer_of_position([0.13, 0.11, 0.775, 0.815]).unwrap();
+    assert!(outer.iter().zip([0.0, 0.0, 1.0, 1.0]).all(|(a, b)| (a - b).abs() < 1e-12), "{outer:?}");
+    assert!(livre_lang::graphics::outer_of_position([0.1, 0.1, 0.0, 0.5]).is_none());
+}

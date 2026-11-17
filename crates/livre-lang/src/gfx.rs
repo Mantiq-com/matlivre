@@ -779,8 +779,8 @@ fn computed(it: &mut Interpreter, id: u64, t: Target, name: &str) -> R<Option<Va
             "Number" => Value::num(it.figures[f].id as f64),
             "Colormap" => colormap_value(it.figures[f].colormap.clone().unwrap_or_else(|| graphics::colormap("parula", 256).unwrap_or_default())),
             "Children" => {
-                let n = if it.figures[f].has_axes() { it.figures[f].axes.len() } else { 0 };
-                let ids: Vec<u64> = (0..n).rev().map(|a| axes_id(it, f, a)).collect();
+                let order = if it.figures[f].has_axes() { it.figures[f].stacking() } else { Vec::new() };
+                let ids: Vec<u64> = order.into_iter().rev().map(|a| axes_id(it, f, a)).collect();
                 handles(it, &ids)
             }
             "CurrentAxes" if !it.figures[f].has_axes() => handles(it, &[]),
@@ -1192,6 +1192,14 @@ pub(crate) fn set_prop(it: &mut Interpreter, id: u64, name: &str, v: Value) -> R
                 "XLim" => ax.xlim = limits_arg(&v)?,
                 "YLim" => ax.ylim = limits_arg(&v)?,
                 "ZLim" => ax.zlim = limits_arg(&v)?,
+                // Where the axes sit in the figure: the box they are drawn in follows.
+                "Position" | "InnerPosition" | "OuterPosition" => {
+                    let m = v.to_matrix().ok().filter(|m| m.numel() == 4 && !m.is_complex());
+                    let Some(m) = m else { return rt(format!("Value must be a 1-by-4 numeric vector for the {name} property.")) };
+                    let p = [m.data[0], m.data[1], m.data[2], m.data[3]];
+                    ax.layout = if name == "OuterPosition" { Some(p).filter(|p| p[2] > 0.0 && p[3] > 0.0) } else { graphics::outer_of_position(p) };
+                    keep = true;
+                }
                 "XLimMode" if auto => ax.xlim = None,
                 "YLimMode" if auto => ax.ylim = None,
                 "XScale" => ax.xlog = v.text()?.eq_ignore_ascii_case("log"),
@@ -1775,8 +1783,8 @@ pub(crate) fn descendants(it: &mut Interpreter, id: u64, out: &mut Vec<u64>) {
             }
         }
         Some(Target::Figure(f)) => {
-            let n = if it.figures[f].has_axes() { it.figures[f].axes.len() } else { 0 };
-            for a in 0..n {
+            let order = if it.figures[f].has_axes() { it.figures[f].stacking() } else { Vec::new() };
+            for a in order {
                 let ax = axes_id(it, f, a);
                 out.push(ax);
                 descendants(it, ax, out);
@@ -2016,7 +2024,7 @@ pub fn delete(it: &mut Interpreter, a: &[Value]) -> Option<Ret> {
     Some(delete_handles(it, &ids).and_then(|_| none()))
 }
 
-pub fn call(it: &mut Interpreter, name: &str, a: &[Value], _nargout: usize) -> Ret {
+pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Ret {
     match name {
         "set" => set_builtin(it, a),
         // Figures are never off screen here, so there is none to bring back.
@@ -2117,20 +2125,34 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], _nargout: usize) -> R
             one(handles(it, &[]))
         }
         "axes" => {
+            // `axes(...)` shows nothing and leaves no ans when its result is not asked for.
+            let give = |it: &Interpreter, id: u64| if nargout > 0 { one(handle(it, id)) } else { none() };
             if let Some(ids) = a.first().and_then(ids_of) {
                 if let Some(Target::Axes(f, ax)) = ids.first().and_then(|&id| resolve(it, id)) {
                     it.current_figure = Some(f);
                     it.figures[f].current_axes = ax;
-                    return one(handle(it, ids[0]));
+                    it.figures[f].raise(ax);
+                    return give(it, ids[0]);
                 }
-                // axes(fig, ...): the figure's current axes.
+                // axes(fig, ...): new axes in that figure.
                 if let Some(Target::Figure(f)) = ids.first().and_then(|&id| resolve(it, id)) {
                     it.current_figure = Some(f);
                 }
             }
             let f = it.current_figure_index();
-            it.figures[f].axes_made = true;
-            let ax = it.figures[f].current_axes;
+            // The first axes of a new figure are the ones it starts with; later ones are made
+            // over the others, covering the whole figure until they get a Position.
+            let ax = if it.figures[f].has_axes() {
+                let fig = &mut it.figures[f];
+                fig.axes.push(Axes { layout: Some([0.0, 0.0, 1.0, 1.0]), ..Axes::default() });
+                fig.current_axes = fig.axes.len() - 1;
+                let last = fig.current_axes;
+                fig.raise(last);
+                last
+            } else {
+                it.figures[f].axes_made = true;
+                it.figures[f].current_axes
+            };
             let id = axes_id(it, f, ax);
             let start = if a.first().is_some_and(is_gfx) { 1 } else { 0 };
             let mut rest = vec![handle(it, id)];
@@ -2138,7 +2160,7 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], _nargout: usize) -> R
             if rest.len() > 1 {
                 set_builtin(it, &rest)?;
             }
-            one(handle(it, id))
+            give(it, id)
         }
         "cla" => {
             let target = match a.first().and_then(ids_of) {
