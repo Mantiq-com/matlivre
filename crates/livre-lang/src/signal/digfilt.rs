@@ -16,12 +16,12 @@ pub const NAMES: &[&str] = &["designfilt", "matlivre_df_method"];
 const KNOWN: &[&str] = &[
     "FilterOrder", "CutoffFrequency", "CutoffFrequency1", "CutoffFrequency2", "PassbandFrequency", "PassbandFrequency1", "PassbandFrequency2", "StopbandFrequency",
     "StopbandFrequency1", "StopbandFrequency2", "PassbandRipple", "PassbandRipple1", "PassbandRipple2", "StopbandAttenuation", "StopbandAttenuation1",
-    "StopbandAttenuation2", "PassbandWeight", "StopbandWeight", "StopbandWeight1", "StopbandWeight2", "SampleRate", "DesignMethod", "Window", "ScalePassband",
+    "StopbandAttenuation2", "PassbandWeight", "StopbandWeight", "StopbandWeight1", "StopbandWeight2", "SampleRate", "DesignMethod", "Window", "ScalePassband", "MinOrder", "MinOrder",
     "HalfPowerFrequency", "HalfPowerFrequency1", "HalfPowerFrequency2",
 ];
 
 /// Properties that are used by the design but not listed among the specifications.
-const HIDDEN: &[&str] = &["PassbandWeight", "StopbandWeight", "StopbandWeight1", "StopbandWeight2", "Window", "ScalePassband"];
+const HIDDEN: &[&str] = &["PassbandWeight", "StopbandWeight", "StopbandWeight1", "StopbandWeight2", "Window", "ScalePassband", "MinOrder"];
 
 const RESPONSES: &[&str] = &["lowpassfir", "highpassfir", "bandpassfir", "bandstopfir", "lowpassiir", "highpassiir", "bandpassiir", "bandstopiir"];
 
@@ -208,7 +208,7 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
             let m = v.text().unwrap_or_default().to_lowercase();
             let ok = match method_set {
                 "window" => m == "window",
-                _ => m == "equiripple" || (m == "ls" && !minorder),
+                _ => m == "equiripple" || (m == "ls" && !minorder) || (m == "kaiserwin" && minorder),
             };
             if !ok {
                 return rt(format!("'{}' is an invalid design method for {resp_l} designs with {} specifications.", v.text().unwrap_or_default(), set.join(", ")));
@@ -338,6 +338,7 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
         let meets = |h: &[f64]| -> bool {
             for (bi, d) in dv.iter().enumerate() {
                 let (lo, hi) = (fo[2 * bi], fo[2 * bi + 1]);
+                let (mut mx, mut mn) = (0.0f64, f64::INFINITY);
                 for &g in grid.iter().filter(|g| **g >= lo && **g <= hi) {
                     let (mut re, mut im) = (0.0, 0.0);
                     for (k, c) in h.iter().enumerate() {
@@ -346,17 +347,52 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
                         im += c * ph.sin();
                     }
                     let m = re.hypot(im);
-                    let e = if av[bi] > 0.5 { (m - 1.0).abs() } else { m };
-                    if e > *d {
+                    mx = mx.max(m);
+                    mn = mn.min(m);
+                }
+                if av[bi] > 0.5 {
+                    // The passband ripple is the peak-to-peak variation, wherever it sits.
+                    if mn.is_finite() && mx / mn > (1.0 + d) / (1.0 - d) {
                         return false;
                     }
+                } else if mx > *d {
+                    return false;
                 }
             }
             true
         };
         let mut found: Option<Matrix> = None;
         let mut n = (n0 - 8).max(1);
-        while n <= n0 + 40 {
+        if method == "kaiserwin" {
+            let stop_dev = dv.iter().cloned().fold(f64::INFINITY, f64::min);
+            let a_att = -20.0 * stop_dev.log10();
+            let beta = if a_att > 50.0 { 0.1102 * (a_att - 8.7) } else if a_att >= 21.0 { 0.5842 * (a_att - 21.0).powf(0.4) + 0.07886 * (a_att - 21.0) } else { 0.0 };
+            let (wn, ftype): (Value, &str) = match resp_l.as_str() {
+                "lowpassfir" => (scalar_value((fe[0] + fe[1]) / 2.0), "low"),
+                "highpassfir" => (scalar_value((fe[0] + fe[1]) / 2.0), "high"),
+                "bandpassfir" => (real_row(vec![(fe[0] + fe[1]) / 2.0, (fe[2] + fe[3]) / 2.0]), "bandpass"),
+                _ => (real_row(vec![(fe[0] + fe[1]) / 2.0, (fe[2] + fe[3]) / 2.0]), "stop"),
+            };
+            let even_only = resp_l == "highpassfir" || resp_l == "bandstopfir" || get("MinOrder").and_then(|v| v.text().ok()).map(|t| t.to_lowercase() == "even").unwrap_or(false);
+            let kr = it.call_function("kaiserord", vec![real_row(fe.clone()), real_row(av.clone()), real_row(dv.clone()), scalar_value(2.0)], 1)?;
+            let mut n = (kr[0].scalar().unwrap_or(2.0) as i64).max(2);
+            if even_only && n % 2 == 1 {
+                n += 1;
+            }
+            while n <= n0 + 400 {
+                let win = it.call_function("kaiser", vec![scalar_value(n as f64 + 1.0), scalar_value(beta)], 1)?.remove(0);
+                let h = it.call_function("fir1", vec![scalar_value(n as f64), wn.clone(), Value::string(ftype), win, Value::string("scale")], 1);
+                if let Ok(mut hv) = h {
+                    let hm = hv.remove(0).to_matrix()?;
+                    if meets(&hm.data) {
+                        found = Some(hm);
+                        break;
+                    }
+                }
+                n += if even_only { 2 } else { 1 };
+            }
+        }
+        while found.is_none() && method != "kaiserwin" && n <= n0 + 40 {
             let h = it.call_function("firpm", vec![scalar_value(n as f64), r[1].clone(), r[2].clone(), real_row(wgt.clone())], 1);
             if let Ok(mut hv) = h {
                 let hm = hv.remove(0).to_matrix()?;
