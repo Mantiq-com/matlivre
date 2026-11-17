@@ -801,8 +801,43 @@ pub fn call_ref(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize
             return Ok(Some(vec![args[0].clone()]));
         }
         if name == "mat2str" && args.len() == 1 {
-            let state = if crate::class::on_off_state(&args[0]) == Some(true) { "on" } else { "off" };
-            return Ok(Some(vec![Value::chars(&format!("{}.{state}", crate::class::ON_OFF_CLASS))]));
+            if let Some(m) = crate::class::on_off_matrix(&args[0]) {
+                let one = |x: f64| format!("{}.{}", crate::class::ON_OFF_CLASS, if x != 0.0 { "on" } else { "off" });
+                let text = if m.numel() == 1 {
+                    one(m.data[0])
+                } else {
+                    let rows: Vec<String> = (0..m.rows()).map(|i| (0..m.cols()).map(|j| one(m.data[i + j * m.rows()])).collect::<Vec<_>>().join(" ")).collect();
+                    format!("[{}]", rows.join(";"))
+                };
+                return Ok(Some(vec![Value::chars(&text)]));
+            }
+        }
+        // Functions that rearrange elements work on the states and give the class back.
+        if crate::class::ON_OFF_SHAPING.contains(&name) {
+            let states: Vec<Value> = args.iter().cloned().map(crate::class::on_off_as_logical).collect();
+            let mut out = call_ref(it, name, &states, nargout)?;
+            if let Some(first) = out.as_mut().and_then(|v| v.first_mut()) {
+                if let Value::Num(m) = first {
+                    if m.kind == Kind::Logical {
+                        *first = crate::class::on_off_from_matrix(m.clone());
+                    }
+                }
+            }
+            return Ok(out);
+        }
+        if name == "num2cell" && args.len() == 1 {
+            let out = call_ref(it, name, &[crate::class::on_off_as_logical(args[0].clone())], nargout)?;
+            return Ok(out.map(|v| {
+                v.into_iter()
+                    .map(|x| match x {
+                        Value::Cell(c) => Value::Cell(crate::value::CellArray::from_dims(
+                            c.dims.clone(),
+                            c.data.iter().map(|e| if let Value::Num(m) = e { crate::class::on_off_from_matrix(m.clone()) } else { e.clone() }).collect(),
+                        )),
+                        other => other,
+                    })
+                    .collect()
+            }));
         }
         if let Some(converted) = crate::class::on_off_args(name, args) {
             return call_ref(it, name, &converted, nargout);
@@ -1024,7 +1059,8 @@ fn call_dense(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) 
             return Ok(Some(r));
         }
     }
-    if matches!(name, "char" | "string" | "cellstr") {
+    // (An OnOffSwitchState array is not one member: its char is handled with the text builtins.)
+    if matches!(name, "char" | "string" | "cellstr") && !args.first().is_some_and(|v| crate::class::is_on_off(v) && v.dims() != [1, 1]) {
         if let Some(v) = crate::lang_more::enum_text(name, &args) {
             return Ok(Some(vec![v]));
         }
@@ -3145,6 +3181,10 @@ fn call_dense(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) 
             let v = arg(a, 0, name)?;
             if let Some(text) = crate::containers::cat_disp(v) {
                 it.emit(OutputKind::Text(text + "\n"));
+                return none();
+            }
+            if let Some(m) = crate::class::on_off_matrix(v).filter(|m| m.numel() != 1 && m.dims.len() == 2) {
+                it.emit(OutputKind::Text(crate::class::on_off_disp(&m)));
                 return none();
             }
             if let Some(state) = crate::class::on_off_state(v) {

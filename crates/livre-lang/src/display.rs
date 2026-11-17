@@ -335,6 +335,7 @@ pub fn summary(v: &Value, f: NumFormat) -> String {
         Value::Func(fv) => func_text(fv),
         Value::Object(o) if crate::gfx::is_gfx_class(&o.class.name) => format!("{} {}", nd::size_text(&v.dims()), o.class.name.rsplit('.').next().unwrap_or("")),
         Value::Object(_) if crate::containers::is_categorical(v) => crate::containers::inline_text(v).unwrap_or_default(),
+        Value::Object(o) if crate::class::on_off_text(o).is_some() => format!("[{}]", crate::class::on_off_text(o).unwrap_or_default()),
         Value::Object(o) => format!("1×1 {}", o.class.name),
         Value::Time(t) => t.summary(),
         Value::Table(t) => format!("{}×{} table", t.nrows, t.vars.len()),

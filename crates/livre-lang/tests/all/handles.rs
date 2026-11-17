@@ -168,3 +168,16 @@ fn empty_axes_limits_and_strrep_on_switch_values() {
     assert_eq!(text(&it, "c"), "matlab.lang.OnOffSwitchState");
     assert!(out.iter().any(|l| l.contains("Inputs must be character vectors, cell arrays of character vectors, or string arrays.")), "{out:?}");
 }
+
+#[test]
+fn switch_state_arrays_as_text_and_numbers() {
+    let (it, out) = run("ax = axes; a = ax.Box; b = ax.Visible; r = [a b]; s = string(r); c = cellstr(r); n = numel(s) + numel(c); m = ismember('on', r); k = strcmp(r, 'on'); z = sum(r); t = size(r'); q = char(r); w = double(r(2) == 'on');");
+    assert!(!out.iter().any(|l| l.starts_with("Error")), "{out:?}");
+    assert_eq!(num(&it, "n"), [4.0]);
+    assert_eq!(num(&it, "m"), [1.0]);
+    assert_eq!(num(&it, "k"), [0.0, 1.0]);
+    assert_eq!(num(&it, "z"), [1.0]);
+    assert_eq!(num(&it, "t"), [2.0, 1.0]);
+    assert_eq!(num(&it, "w"), [1.0]);
+    assert_eq!(text(&it, "q"), "1x2 OnOffSwitchState");
+}
