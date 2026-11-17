@@ -624,6 +624,21 @@ fn design_iir(it: &mut Interpreter, resp: &str, given: &[(&'static str, Value)])
     let mut sos = sos_out[0].to_matrix()?;
     let g = sos_out[1].scalar().unwrap_or(1.0);
     let l = sos.dims[0];
+    // The real zeros of a Butterworth or Chebyshev I bandpass sit at +1 and -1: every section takes one of each.
+    if kind == "bandpass" && (method == "butter" || method == "cheby1") {
+        for i in 0..l {
+            let lead = sos.data[i];
+            sos.data[l + i] = 0.0;
+            sos.data[2 * l + i] = -lead;
+        }
+    }
+    // An even-order elliptic design puts the sections of the poles nearest the unit circle last.
+    if method == "ellip" && order % 2.0 == 0.0 {
+        let m = if band { 2 } else { 1 }.min(l - 1);
+        for c in 0..6 {
+            sos.data[c * l..(c + 1) * l].rotate_left(m);
+        }
+    }
     // The leftover gain goes on the last section.
     for c in 0..3 {
         sos.data[c * l + (l - 1)] *= g;
@@ -713,7 +728,15 @@ fn method(it: &mut Interpreter, a: &[Value]) -> Ret {
         }
         "fftfilt" | "filtfilt" => {
             if !fir && name == "filtfilt" {
-                return rt("filtfilt: second-order-section (IIR) digitalFilter objects are not implemented.");
+                let x = rest.first().cloned().ok_or_else(|| crate::error::LangError::new("Not enough input arguments.", 0))?;
+                let m = coef.to_matrix()?;
+                // One section is a plain transfer function; several are filtered section by section.
+                let args = if m.dims[0] >= 2 {
+                    vec![coef.clone(), scalar_value(1.0), x]
+                } else {
+                    vec![real_row((0..3).map(|c| m.data[c]).collect()), real_row((3..6).map(|c| m.data[c]).collect()), x]
+                };
+                return out(it.call_function("filtfilt", args, 1)?);
             }
             if !fir {
                 return rt("fftfilt: the filter must be an FIR digitalFilter.");

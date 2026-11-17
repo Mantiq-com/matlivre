@@ -1,0 +1,20 @@
+{
+  "header": {
+    "release": "2023b",
+    "version": "23.2.0.2409890 (R2023b) Update 3",
+    "computer": "PCWIN64",
+    "recorded": "2026-11-17"
+  },
+  "log": "3.5202 3.5594 3.6782 3.8609 2.2548 2.5294 2.2948 2.0586 1.8216 \n2.8471 2.9262 3.0111 3.1264 1.6574 2.0179 1.7956 1.6088 1.4544 \n3652863.9920 3768663.6370 3881362.4290 4097048.7760 3858864.4570 3544732.5290 \nData length must be larger than 18 samples.\nThere must be at most 4 scale values.\n3.5173 3.5795 3.6912 2.2920 2.0616 1.8294 \n",
+  "error": {
+    "identifier": "",
+    "message": ""
+  },
+  "lastwarn": {
+    "message": "",
+    "identifier": ""
+  },
+  "variables": {},
+  "figures": [],
+  "nfigures": 0
+}

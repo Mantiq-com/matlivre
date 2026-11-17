@@ -1,6 +1,6 @@
 //! `lowpass`, `highpass`, `bandpass` and `bandstop`: zero-phase filtering with a minimum-order
 //! Kaiser-window FIR filter designed from the passband edge and the steepness. (The IIR branch
-//! of MATLAB's automatic choice needs `filtfilt` with second-order sections and is not implemented.)
+//! of MATLAB's automatic choice is an elliptic filter run through `filtfilt` section by section.)
 
 use crate::builtins::Ret;
 use crate::error::rt;
@@ -151,7 +151,40 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
         _ => (n as f64) >= 2.0 * req,
     };
     if !use_fir {
-        return rt("lowpass/highpass/bandpass/bandstop: the IIR branch (it needs filtfilt with second-order sections) is not implemented.");
+        // The IIR design: the same edges, an elliptic filter of minimum order, filtered section by section.
+        let mut di: Vec<Value> = vec![Value::chars(&resp_name.replace("fir", "iir"))];
+        let mut k = 1;
+        while k < dargs.len() {
+            let key = dargs[k].text().unwrap_or_default();
+            if key != "DesignMethod" && key != "MinOrder" {
+                di.push(dargs[k].clone());
+                di.push(dargs[k + 1].clone());
+            }
+            k += 2;
+        }
+        di.push(Value::chars("DesignMethod"));
+        di.push(Value::chars("ellip"));
+        let d = it.call_function("designfilt", di, 1)?.remove(0);
+        let sos = match &d {
+            Value::Object(o) => o.props.borrow()[0].to_matrix()?,
+            _ => return rt("designfilt failed."),
+        };
+        let l = sos.dims[0];
+        let row = |lo: usize| real_row((lo..lo + 3).map(|c| sos.data[c * l]).collect());
+        let vector = x.dims[0] == 1 || x.dims[1] == 1;
+        let (len, cols) = if vector { (x.numel(), 1) } else { (x.dims[0], x.dims[1]) };
+        let mut res = vec![0.0; len * cols];
+        for c in 0..cols {
+            let col = real_col(x.data[c * len..(c + 1) * len].to_vec());
+            let args = if l >= 2 { vec![Value::Num(sos.clone()), scalar_value(1.0), col] } else { vec![row(0), row(3), col] };
+            let y = it.call_function("filtfilt", args, 1)?.remove(0).to_matrix()?;
+            res[c * len..(c + 1) * len].copy_from_slice(&y.data);
+        }
+        let mut ym = Matrix::from_dims(x.dims.clone(), res);
+        if x.kind == Kind::Single {
+            ym.kind = Kind::Single;
+        }
+        return out(vec![Value::Num(ym), d].into_iter().take(nargout.max(1)).collect());
     }
     if (n as f64) <= 2.0 * req && resp == "fir" {
         return rt(format!("Signal length must be greater than twice the required FIR filter order (RequiredOrder = {req}).\nRelax the steepness and stopband attenuation values to reduce the required filter order or increase the signal length."));

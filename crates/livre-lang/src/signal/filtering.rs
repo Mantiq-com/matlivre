@@ -122,6 +122,9 @@ fn filtfilt(a: &[Value]) -> Ret {
         return rt("Too many input arguments.");
     }
     let (bm, am) = (m_arg(a, 0, "filtfilt")?, m_arg(a, 1, "filtfilt")?);
+    if bm.dims.len() == 2 && bm.dims[0] >= 2 && bm.dims[1] == 6 {
+        return filtfilt_sos(a, &bm, &am);
+    }
     if (bm.dims[0] != 1 && bm.dims[1] != 1) || (am.dims[0] != 1 && am.dims[1] != 1) {
         return rt("Inputs must be vector or SOS matrix.");
     }
@@ -154,6 +157,91 @@ fn filtfilt(a: &[Value]) -> Ret {
         Ok(y[nfact..nfact + n].to_vec())
     })?;
     out(vec![Value::Num(m)])
+}
+
+/// `filtfilt(sos, g, x)`: each section is run through the forward-backward filter on its own,
+/// with an edge pad of three times the order of the whole cascade and the steady-state initial
+/// condition of that section; the gain `prod(g(1:L))` multiplies the first section.
+fn filtfilt_sos(a: &[Value], sos: &Matrix, g: &Matrix) -> Ret {
+    for v in a {
+        if !matches!(v, Value::Num(m) if matches!(m.kind, Kind::Double | Kind::Single)) {
+            return rt("Invalid data type. Arguments must be double matrices.");
+        }
+    }
+    if g.dims.len() != 2 || (g.dims[0] != 1 && g.dims[1] != 1 && g.numel() != 0) {
+        return rt("Expected input to be a vector.");
+    }
+    let l = sos.dims[0];
+    if g.numel() > l + 1 {
+        return rt(format!("There must be at most {} scale values.", l + 1));
+    }
+    let x = real_matrix(a, 2, "filtfilt")?;
+    if g.numel() == 0 {
+        return out(vec![Value::Num(Matrix::from_dims(vec![0, 0], vec![]))]);
+    }
+    if x.data.iter().any(|v| !v.is_finite()) {
+        return rt("Expected input to be finite.");
+    }
+    if x.numel() == 0 {
+        return out(vec![Value::Num(Matrix::from_dims(vec![0, 0], vec![]))]);
+    }
+    let gain: f64 = g.data.iter().take(l).product();
+    let mut secs: Vec<([f64; 3], [f64; 3])> = (0..l)
+        .map(|i| {
+            let c = |k: usize| sos.data[k * l + i];
+            ([c(0), c(1), c(2)], [c(3), c(4), c(5)])
+        })
+        .collect();
+    for v in secs[0].0.iter_mut() {
+        *v *= gain;
+    }
+    // The order of the whole cascade, trailing zero coefficients dropped.
+    let mut nb = vec![1.0];
+    let mut na = vec![1.0];
+    for (b, d) in &secs {
+        nb = conv(&nb, b);
+        na = conv(&na, d);
+    }
+    let len = |v: &[f64]| v.iter().rposition(|c| *c != 0.0).map(|i| i + 1).unwrap_or(1);
+    let nfact = 3 * (len(&nb).max(len(&na)) - 1);
+    let zis: Vec<Vec<f64>> = secs.iter().map(|(b, d)| steady_state(b, d)).collect();
+    let m = along(&x, first_dim(&x), &|s| {
+        if s.len() <= nfact {
+            return rt(format!("Data length must be larger than {nfact} samples."));
+        }
+        let mut cur = s.to_vec();
+        for ((b, d), zi) in secs.iter().zip(&zis) {
+            cur = ff_pass(b, d, zi, &cur, nfact);
+        }
+        Ok(cur)
+    })?;
+    out(vec![Value::Num(m)])
+}
+
+fn conv(p: &[f64], q: &[f64]) -> Vec<f64> {
+    let mut r = vec![0.0; p.len() + q.len() - 1];
+    for (i, a) in p.iter().enumerate() {
+        for (j, b) in q.iter().enumerate() {
+            r[i + j] += a * b;
+        }
+    }
+    r
+}
+
+/// One forward-backward pass of a single filter over `s`, padded by odd reflection.
+fn ff_pass(b: &[f64], den: &[f64], zi: &[f64], s: &[f64], nfact: usize) -> Vec<f64> {
+    let n = s.len();
+    let mut ext = Vec::with_capacity(n + 2 * nfact);
+    ext.extend((1..=nfact).rev().map(|i| 2.0 * s[0] - s[i]));
+    ext.extend_from_slice(s);
+    ext.extend((1..=nfact).map(|i| 2.0 * s[n - 1] - s[n - 1 - i]));
+    let z0: Vec<f64> = zi.iter().map(|z| z * ext[0]).collect();
+    let (mut y, _) = filt(b, den, &ext, &z0);
+    y.reverse();
+    let z1: Vec<f64> = zi.iter().map(|z| z * y[0]).collect();
+    let (mut y, _) = filt(b, den, &y, &z1);
+    y.reverse();
+    y[nfact..nfact + n].to_vec()
 }
 
 fn sosfilt(a: &[Value]) -> Ret {
