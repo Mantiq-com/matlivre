@@ -13,6 +13,8 @@ use std::collections::{BTreeMap, HashMap};
 const SCRIPT: &str = include_str!("data/signal_cases.m");
 const MATLAB: &str = include_str!("data/signal_matlab.txt");
 const KNOWN: &str = include_str!("data/signal_known_deviations.tsv");
+/// A note starting with this marks a deviation that some platforms do not show.
+const MAY_MATCH: &str = "platform-dependent:";
 
 #[derive(Debug, Clone)]
 enum Item {
@@ -189,6 +191,8 @@ fn check(heavy: bool) {
         let diff = difference(w, g);
         match (diff, known.get(text.as_str())) {
             (None, None) => matching += 1,
+            // A deviation that depends on the platform's floating-point results may match.
+            (None, Some(note)) if note.starts_with(MAY_MATCH) => matching += 1,
             (None, Some(_)) => resolved.push(format!("[{case}] {text}")),
             (Some(_), Some(_)) => {}
             (Some(d), None) => failures.push(format!("[{case}] {text}\n      {d}")),

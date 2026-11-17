@@ -662,10 +662,15 @@ fn z_limits(ax: &graphics::Axes) -> (f64, f64) {
 }
 
 pub(crate) fn tick_values(ticks: &graphics::Ticks, lo: f64, hi: f64) -> Vec<f64> {
+    tick_values_for(ticks, lo, hi, 5.0)
+}
+
+/// Tick values aiming at `target` intervals.
+fn tick_values_for(ticks: &graphics::Ticks, lo: f64, hi: f64, target: f64) -> Vec<f64> {
     if let Some(v) = &ticks.values {
         return v.clone();
     }
-    let step = graphics::nice_step(hi - lo, 5.0);
+    let step = graphics::nice_step(hi - lo, target);
     let a = (lo / step - 1e-9).ceil() * step;
     let n = ((hi - a) / step + 1e-9).floor().max(0.0) as usize;
     (0..=n.min(40)).map(|k| {
@@ -827,7 +832,9 @@ fn computed(it: &mut Interpreter, id: u64, t: Target, name: &str) -> R<Option<Va
                 }
                 "ZTick" if stored(it, id, name).is_none() => {
                     let (z0, z1) = z_limits(ax);
-                    row(&tick_values(&graphics::Ticks::default(), z0, z1))
+                    // In a 2-D view the z axis is collapsed: MATLAB keeps about two intervals.
+                    let target = if ax.is_3d() { 5.0 } else { 2.0 };
+                    row(&tick_values_for(&graphics::Ticks::default(), z0, z1, target))
                 }
                 // Labels read back as a column, however they were set.
                 "ZTickLabel" if matches!(stored(it, id, name), Some(Value::Cell(_))) => {

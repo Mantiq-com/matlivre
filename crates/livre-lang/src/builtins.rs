@@ -795,6 +795,11 @@ pub fn call_ref(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize
         if matches!(name, "upper" | "lower") && args.len() == 1 && crate::class::is_on_off(&args[0]) {
             return Ok(Some(vec![args[0].clone()]));
         }
+        // strrep leaves such a value as it is, with a warning.
+        if name == "strrep" && args.first().is_some_and(crate::class::is_on_off) {
+            crate::builtins_funfun::warn(it, "Inputs must be character vectors, cell arrays of character vectors, or string arrays.");
+            return Ok(Some(vec![args[0].clone()]));
+        }
         if name == "mat2str" && args.len() == 1 {
             let state = if crate::class::on_off_state(&args[0]) == Some(true) { "on" } else { "off" };
             return Ok(Some(vec![Value::chars(&format!("{}.{state}", crate::class::ON_OFF_CLASS))]));

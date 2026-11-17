@@ -497,6 +497,10 @@ impl Axes {
         if let Some(l) = self.zlim {
             return l;
         }
+        // Axes with nothing in them: MATLAB's [0 1] (a 2-D plot has [-1 1]).
+        if self.series.is_empty() {
+            return (0.0, 1.0);
+        }
         let mut lo = f64::INFINITY;
         let mut hi = f64::NEG_INFINITY;
         for s in self.series.iter().filter(|s| s.visible && s.kind != SeriesKind::Light) {

@@ -158,3 +158,13 @@ fn line_with_matrix_data() {
     assert_eq!(text(&it, "m4"), "Not enough input arguments.");
     assert_eq!(text(&it, "m5"), "Invalid data argument.");
 }
+
+#[test]
+fn empty_axes_limits_and_strrep_on_switch_values() {
+    let (it, out) = run("ax = axes; zl = ax.ZLim; xl = ax.XLim; plot(1:3); zl2 = gca().ZLim; v = ax.Visible; r = strrep(v, 'o', '0'); c = class(r);");
+    assert_eq!(num(&it, "zl"), [0.0, 1.0]);
+    assert_eq!(num(&it, "xl"), [0.0, 1.0]);
+    assert_eq!(num(&it, "zl2"), [-1.0, 1.0]);
+    assert_eq!(text(&it, "c"), "matlab.lang.OnOffSwitchState");
+    assert!(out.iter().any(|l| l.contains("Inputs must be character vectors, cell arrays of character vectors, or string arrays.")), "{out:?}");
+}
