@@ -245,6 +245,10 @@ pub struct Axes {
     /// `plotyy`: the id of the axes these are drawn over (sharing its box, with the y axis
     /// on the right); 0 for ordinary axes.
     pub overlay_of: u64,
+    /// Where the axes are drawn, as a fraction of the figure ([left bottom width height], measured
+    /// from the bottom left like MATLAB's positions): the box that holds the axes with their
+    /// labels and ticks. `None` is the cell of the figure's subplot grid the axes sit in.
+    pub layout: Option<[f64; 4]>,
 }
 
 /// The y axis of one side of `yyaxis` axes.
