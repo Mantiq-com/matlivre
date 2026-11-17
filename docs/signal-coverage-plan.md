@@ -11,14 +11,14 @@ How MatLivre grows to cover the MATLAB Signal Processing Toolbox. The function i
 |---|---:|
 | Functions in scope (R2023b-era, from `signal.tsv`) | 333 |
 | Already in MatLivre before this plan (`xcorr`, `xcov`, `resample`, `rms`, `sinc`, `detrend`, `movmedian`, `movmad`, `isoutlier`, `filloutliers`, `smoothdata`, `islocalmax`, `paddata`, `trimdata`, `resize`, `freqspace`, `ss2tf`) | 17 |
-| Implemented by this plan (`crates/livre-lang/src/signal/`) | 256 |
-| Still to implement and verifiable here (incl. 1 registered without its main syntax) | 10 |
+| Implemented by this plan (`crates/livre-lang/src/signal/`) | 257 |
+| Still to implement and verifiable here (incl. 1 registered without its main syntax) | 9 |
 | Not verifiable: requires Wavelet/Audio Toolbox, not installed (see below) | 16 |
 | Out of scope (see below) | 34 |
 
-The 256 are checked against MATLAB: see "How it is tested". `isfir`, `tf`, `zpk` and `ss` count as done (digitalFilter methods, which `exist()` cannot see).
+The 257 are checked against MATLAB: see "How it is tested". `isfir`, `tf`, `zpk` and `ss` count as done (digitalFilter methods, which `exist()` cannot see).
 
-Still to do (10): `emd`, `hht`, `fsst`, `kurtogram`, `orderwaveform`, `ordertrack`, `rpmtrack`, `stftmag2sig`, `strips`, and `xwvd` (registered, main syntax not implemented: the cross distribution's rule was not recovered).
+Still to do (9): `emd`, `hht`, `fsst`, `kurtogram`, `orderwaveform`, `ordertrack`, `rpmtrack`, `strips`, and `xwvd` (registered, main syntax not implemented: the cross distribution's rule was not recovered).
 
 ## Not verifiable: requires Wavelet/Audio Toolbox, not installed
 
@@ -330,3 +330,6 @@ All use a power-scaled periodogram of the whole record (nfft = N, Kaiser window 
 
 ### fillgaps (done)
 Two passes over the NaN runs: a forward pass fills the gaps left to right, each from an AR model fitted (Burg, `arburg`) to all samples before the gap with their mean removed, extended recursively over the gap, and the filled values feed the model of the next gap; a backward pass does the same right to left on the reversed samples. Sample `k` of a gap of length `L` is `(1-k/(L+1))*forward + k/(L+1)*backward`; a gap at the start takes only the backward estimate, at the end only the forward one; all-NaN stays NaN; a single non-NaN sample fills everything with it (order 0 = the mean). `MAXLEN` keeps the last (first) `MAXLEN` samples before (after) the gap and an `ORDER` larger than `MAXLEN` is an error. The automatic order minimises `N*log(e) + 2*q` over `q = 1..N-1` (`e` = the Burg error variance, `N` the number of samples used, picked separately for the two directions); a fixed or infinite order is truncated to `N-1`. Single, integer, logical, N-D input and Inf are errors (`Expected X to be one of these types: double`). Exact (1e-13) except: two gaps with automatic order when the backward data contain the AR extension of a later gap (the AIC picks the maximal order, a degenerate fit), and complex input.
+
+### stftmag2sig (done for 'gla')
+Griffin-Lim exactly as MATLAB (1e-13): start `Sest = S.*exp(i*phase)` (zero phase), then each iteration is `x = istft(Sest, ConjugateSymmetric for centered/twosided); S2 = stft(x); Sest = S.*exp(i*angle(S2))`; it stops after `MaxIterations` (default 100) or at the first iteration whose spectral convergence `norm(abs(S2)-S)/norm(S)` is below `InconsistencyTolerance` (default 1e-4; the documented inconsistency `norm(S2-Sest)/norm(Sest)` does not reproduce the stopping point); the result is `istft(Sest)` after the last iteration (`MaxIterations=0` is `istft(S)`). Window default `hann(128,'periodic')`, overlap `floor(0.75*numel(window))`, FFT length at least the window length, `FrequencyRange` centered/onesided/twosided, 3-D input is a multichannel signal, `InputTimeDimension='downrows'` transposes. Outputs: `t = (0:length(x)-1)'/Fs` (or `*Ts` as a duration, samples when omitted) and `info` with `ExitFlag` (1 when the tolerance was met), `NumIterations`, `Inconsistency` (the last spectral convergence, `Inf` for zero iterations), `ReconstructedSTFT = Sest` and `ReconstructedPhase = angle(Sest)`. `Method='gd'` fails with MATLAB's `Undefined function 'dlarray'` (Deep Learning Toolbox). Not recovered: `'fgla'` (Perraudin's momentum step matches MATLAB after one iteration only), `'legla'`, `InitializePhaseMethod='random'`, a nonzero `InitialPhase` (a constant offset has no effect in MATLAB), and MATLAB's single-precision iterations.
