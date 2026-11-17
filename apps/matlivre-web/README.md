@@ -26,6 +26,7 @@ the older `web-host` branch and supplies the browser changes carried here.
 | `livre-app/src/lib.rs`, platform gates and `engine.rs` | Draw the same editor on desktop and in a browser, with a worker that can be stopped | Upstream provides a desktop binary and a thread-based engine | Keep the shared library and worker transport, including variable inspection |
 | `livre-app/src/host.rs` and `apps/matlivre-web` | Exchange MLX/M files, commands, dirty state and saved bytes with a same-origin parent | The upstream checkout has no browser application or parent protocol | Keep the host bridge and browser package |
 | `.github/workflows/web.yml` | Publish an immutable browser archive without replacing an existing release's bytes | Upstream release workflows package desktop applications | Keep the browser packaging workflow |
+| `signal_known_deviations.tsv`, case 6948 | Require the complex FIR callback result to match the recorded MATLAB output | Upstream still lists this matching result as a deviation | Remove this one resolved exception; keep its input, expected output and assertions |
 
 An upstream replacement must provide these browser behaviors and pass the same hosted
 open, edit, save, reopen, export, worker-stop and host-validation checks. A desktop
@@ -39,7 +40,8 @@ Upstream rewrote its history between the previous update and this one. The old
 base `e66a9f6d67c0ffb015c19d967847835d0e94206b` and its replacement `8fe0390`
 have the identical tree `919a448a36da57e4922ff4b9430b45d05a156d54`.
 The merge preserves both histories and carries the browser changes over that
-equivalent base. Native tests and recorded MATLAB fixtures come from upstream.
+equivalent base. Native assertions and recorded MATLAB outputs come from upstream;
+the known-deviation list excludes the one resolved case described above.
 
 ### Browser validation on the selected source
 
@@ -63,12 +65,20 @@ requests. These synthetic checks do not qualify authenticated application storag
 autosave acknowledgements or permissions.
 
 The native workspace test command,
-`cargo test --locked --workspace -- --test-threads=2`, stops with 403 passes,
-one failure and one ignored test in the language integration suite. Case 6948
-matches the recorded MATLAB result but remains listed as a known deviation;
-`signal_matlab.rs` rejects such resolved exceptions. The unmodified selected
-upstream target produces the same failure and counts. The fixture and
-assertions remain unchanged.
+`cargo test --locked --workspace -- --test-threads=2`, initially stops with
+403 passes, one failure and one ignored test in the language integration suite.
+Case 6948 matches the recorded MATLAB result but remains listed as a known
+deviation; the unmodified upstream target produces the same failure and counts.
+Removing only that exception makes the test require a match for that case.
+
+Three full reruns after the removal remain unsuccessful. Two complete with
+403 passes, one failure and one ignored test: case 2138, an elliptic high-pass
+filter, returns two conjugate zero pairs in a different order from the MATLAB
+fixture. The pristine upstream CLI reproduces that ordering. One run
+aborts with a stack overflow before the fixture assertions; its cause remains
+unresolved. A debugger run of the unmodified upstream suite does not reproduce
+the overflow and stops at the resolved exception. The case 2138 input, recorded
+output and assertions remain unchanged.
 
 `cargo build --locked --workspace --bins` and `python tools/linux/smoke.py`
 pass, including CLI success and failure exits and headless MCP PNG/SVG exports.
