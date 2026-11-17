@@ -580,6 +580,72 @@ pub fn display_value(name: &str, v: &Value, f: NumFormat) -> String {
     }
 }
 
+/// The command window's layout of `name = v` (what `matlab -batch` prints and `diary` records):
+/// a blank line, `name =`, a blank line, the body, and a blank line (the caller adds the last
+/// newline). The bodies are the ones `disp` shows. `None` for the types not covered yet, which
+/// then show in the Live Editor style.
+pub fn display_value_cw(name: &str, v: &Value, f: NumFormat) -> Option<String> {
+    match v {
+        Value::Num(m) if !m.sparse && m.kind == Kind::Double && m.is_2d() && !m.is_empty() && !m.is_complex() => {
+            let body = disp_value(v, f);
+            Some(format!("\n{name} =\n\n{}\n", wrap_columns(body.trim_end_matches('\n'), m.cols())))
+        }
+        Value::Object(o) if o.class.name == "digitalFilter" => crate::signal::digfilt::object_text(o).map(|t| format!("
+{name} = 
+
+{t}
+")),
+        _ => None,
+    }
+}
+
+/// The command window is 180 characters wide: wider matrices are shown in blocks of columns,
+/// each introduced by "Columns a through b" (a scale-factor header stays once at the top).
+fn wrap_columns(body: &str, ncols: usize) -> String {
+    let lines: Vec<&str> = body.split('\n').collect();
+    let (head, rows): (Vec<&str>, Vec<&str>) = if lines.len() >= 2 && lines[0].trim_end().ends_with('*') && lines[1].trim().is_empty() {
+        (lines[..2].to_vec(), lines[2..].to_vec())
+    } else {
+        (vec![], lines.clone())
+    };
+    let width = rows.iter().map(|l| l.chars().count()).max().unwrap_or(0);
+    if ncols < 2 || width < 180 {
+        return body.to_string();
+    }
+    let w = width / ncols;
+    if w == 0 || w * ncols != width {
+        return body.to_string();
+    }
+    let per = ((180 - 1) / w).max(1);
+    let mut out = String::new();
+    for h in &head {
+        out.push_str(h);
+        out.push('\n');
+    }
+    let mut c0 = 0;
+    while c0 < ncols {
+        let c1 = (c0 + per).min(ncols);
+        if c0 > 0 {
+            out.push('\n');
+        }
+        if c1 - c0 == 1 {
+            out.push_str(&format!("  Column {}\n\n", c0 + 1));
+        } else {
+            out.push_str(&format!("  Columns {} through {}\n\n", c0 + 1, c1));
+        }
+        for (i, l) in rows.iter().enumerate() {
+            let chars: Vec<char> = l.chars().collect();
+            out.push_str(&chars[c0 * w..c1 * w].iter().collect::<String>());
+            if i + 1 < rows.len() {
+                out.push('\n');
+            }
+        }
+        out.push('\n');
+        c0 = c1;
+    }
+    out.trim_end_matches('\n').to_string()
+}
+
 /// Text produced by `disp(v)`.
 pub fn disp_value(v: &Value, f: NumFormat) -> String {
     match v {

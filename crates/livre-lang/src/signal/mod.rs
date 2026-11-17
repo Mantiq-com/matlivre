@@ -18,6 +18,32 @@ pub mod envelope;
 pub mod invfreq;
 pub mod stmcb;
 pub mod framing;
+pub mod stfts;
+pub mod maxflat;
+pub mod findsig;
+pub mod cls;
+pub mod subspace;
+pub mod zplane;
+pub mod cfir;
+pub mod mtm;
+pub mod lomb;
+pub mod octave;
+pub mod wigner;
+pub mod instf;
+pub mod envspec;
+pub mod tsa;
+pub mod vmd;
+pub mod tachorpm;
+pub mod modal;
+pub mod rpmmap;
+pub mod modalfit;
+pub mod ifsst;
+pub mod digfilt;
+pub mod pspect;
+pub mod ridge;
+pub mod xspec;
+pub mod resampn;
+pub mod rpmorder;
 pub mod waveforms2;
 pub mod conversions;
 pub mod db;
@@ -64,7 +90,7 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
 }
 
 /// Functions whose outputs do not all follow a single-precision input.
-const OWN_PRECISION: &[&str] = &["tripuls", "gauspuls", "zp2tf", "impinvar", "buttord", "cheb1ord", "cheb2ord", "ellipord", "kaiserord", "fir2", "firls", "firpm", "firpmord", "gaussdesign", "rcosdesign", "firtype", "filtord", "filternorm", "impzlength", "enbw", "finddelay", "cusum", "dtw", "edr", "alignsignals", "decimate", "interp", "zerocrossrate", "findchangepts", "envelope", "invfreqz", "invfreqs", "stmcb", "buffer", "shiftdata", "unshiftdata", "uencode", "udecode", "taylorwin", "pulstran", "vco", "modulate", "dpss", "marcumq", "rainflow"];
+const OWN_PRECISION: &[&str] = &["tripuls", "gauspuls", "zp2tf", "impinvar", "buttord", "cheb1ord", "cheb2ord", "ellipord", "kaiserord", "fir2", "firls", "firpm", "firpmord", "gaussdesign", "rcosdesign", "firtype", "filtord", "filternorm", "impzlength", "enbw", "finddelay", "cusum", "dtw", "edr", "alignsignals", "decimate", "interp", "zerocrossrate", "findchangepts", "envelope", "invfreqz", "invfreqs", "stmcb", "buffer", "shiftdata", "unshiftdata", "uencode", "udecode", "taylorwin", "pulstran", "vco", "modulate", "dpss", "marcumq", "rainflow", "demod", "iscola", "stft", "istft", "maxflat", "findsignal", "fircls", "fircls1", "pmusic", "peig", "rootmusic", "rooteig", "zplane", "cfirpm", "rpmfreqmap", "rpmordermap", "pspectrum", "modalfit", "modalsd", "instfreq", "instbw", "xspectrogram", "ifsst", "tfridge", "orderspectrum", "designfilt"];
 
 /// A matrix with its values rounded to single precision (the class is left to the caller).
 pub(crate) fn cast_single_values(mut m: Matrix) -> Matrix {
@@ -137,6 +163,81 @@ fn dispatch(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
     }
     if ssconv::NAMES.contains(&name) {
         return ssconv::call(it, name, a, nargout);
+    }
+    if modalfit::NAMES.contains(&name) {
+        return modalfit::call(it, name, a, nargout);
+    }
+    if digfilt::NAMES.contains(&name) {
+        return digfilt::call(it, a, nargout);
+    }
+    if ridge::NAMES.contains(&name) {
+        return ridge::call(it, a, nargout);
+    }
+    if ifsst::NAMES.contains(&name) {
+        return ifsst::call(it, a, nargout);
+    }
+    if xspec::NAMES.contains(&name) {
+        return xspec::call(it, a, nargout);
+    }
+    if pspect::NAMES.contains(&name) {
+        return pspect::call(it, a, nargout);
+    }
+    if rpmorder::NAMES.contains(&name) {
+        return rpmorder::call(it, name, a, nargout);
+    }
+    if rpmmap::NAMES.contains(&name) {
+        return rpmmap::call(it, a, nargout);
+    }
+    if modal::NAMES.contains(&name) {
+        return modal::call(it, a, nargout);
+    }
+    if tachorpm::NAMES.contains(&name) {
+        return tachorpm::call(it, a, nargout);
+    }
+    if vmd::NAMES.contains(&name) {
+        return vmd::call(it, a, nargout);
+    }
+    if tsa::NAMES.contains(&name) {
+        return tsa::call(it, a, nargout);
+    }
+    if envspec::NAMES.contains(&name) {
+        return envspec::call(it, a, nargout);
+    }
+    if instf::NAMES.contains(&name) {
+        return instf::call(it, name, a, nargout);
+    }
+    if wigner::NAMES.contains(&name) {
+        return wigner::call(it, name, a, nargout);
+    }
+    if octave::NAMES.contains(&name) {
+        return octave::call(it, a, nargout);
+    }
+    if lomb::NAMES.contains(&name) {
+        return lomb::call(a, nargout);
+    }
+    if mtm::NAMES.contains(&name) {
+        return mtm::call(it, a, nargout);
+    }
+    if cfir::NAMES.contains(&name) {
+        return cfir::call(it, a, nargout);
+    }
+    if zplane::NAMES.contains(&name) {
+        return zplane::call(it, a, nargout);
+    }
+    if subspace::NAMES.contains(&name) {
+        return subspace::call(it, name, a, nargout);
+    }
+    if cls::NAMES.contains(&name) {
+        return cls::call(name, a, nargout);
+    }
+    if findsig::NAMES.contains(&name) {
+        return findsig::call(a, nargout);
+    }
+    if maxflat::NAMES.contains(&name) {
+        return maxflat::call(it, a, nargout);
+    }
+    if stfts::NAMES.contains(&name) {
+        return stfts::call(it, name, a, nargout);
     }
     if waveforms2::NAMES.contains(&name) {
         return waveforms2::call(it, name, a, nargout);

@@ -127,3 +127,16 @@ fn powers_rand_and_number_functions_compile() {
     same("rng(3);\nt = 0;\nfor k = 1:5\n  t = t + rand + (k - 3)^0.5;\nend\nt\nu = rand");
     same("y = 0; e = 2;\nfor k = 1:4\n  y = y + (-2)^e + k^e;\nend\ny");
 }
+
+#[test]
+fn scalar_first_assigned_inside_the_loop() {
+    // Assigned in an inner loop and read after it (issue #17, A1).
+    compiled("n = 50; s = 0;\nfor k = 1:n\n  for j = 1:2\n    c = cos(k * 1e-2);\n  end\n  s = s + c;\nend\nr = [s c j];");
+    // Assigned in one branch, read in another on the next pass (B1).
+    compiled("n = 50; s = 0;\nfor k = 1:n\n  for j = 1:2\n    if j == 1\n      a = k * 1e-2;\n    else\n      a = a + 1;\n    end\n  end\n  s = s + a;\nend\nr = [s a j];");
+    // A variable that is really unassigned when read: same error and state as the interpreter.
+    same("s = 0;\nfor k = 1:3\n  if k == 2\n    q = 5;\n  end\n  s = s + q;\nend");
+    // A loop variable read after a loop that may not run.
+    same("n = 0; s = 0;\nfor k = 1:4\n  for j = 1:n\n  end\n  s = s + j;\nend");
+    same("n = 3; s = 0;\nfor k = 1:4\n  for j = 1:n\n  end\n  s = s + j;\nend\nr = [s j];");
+}

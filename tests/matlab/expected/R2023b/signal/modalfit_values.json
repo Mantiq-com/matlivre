@@ -1,0 +1,201 @@
+{
+  "header": {
+    "release": "2023b",
+    "version": "23.2.0.2409890 (R2023b) Update 3",
+    "computer": "PCWIN64",
+    "recorded": "2026-11-16"
+  },
+  "log": "\nfn1 =\n\n   49.9940\n\n\nfn2 =\n\n  119.9990\n\n\nfn3_is_nan =\n\n     1\n\n\ndr1 =\n\n    0.0200\n\n\ndr2 =\n\n    0.0298\n\n\nnms =\n\n     3\n\n\nnof =\n\n   257\n\n",
+  "error": {
+    "identifier": "",
+    "message": ""
+  },
+  "lastwarn": {
+    "message": "",
+    "identifier": ""
+  },
+  "variables": {
+    "N": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4080000000000000"
+        ]
+      },
+      "display": "\nN =\n\n   512\n\n"
+    },
+    "dr1": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3f9475a31a4bdba1"
+        ]
+      },
+      "display": "\ndr1 =\n\n    0.0200\n\n"
+    },
+    "dr2": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3f9e7c06e19b90eb"
+        ]
+      },
+      "display": "\ndr2 =\n\n    0.0298\n\n"
+    },
+    "fn1": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4048ff3b645a1cac"
+        ]
+      },
+      "display": "\nfn1 =\n\n   49.9940\n\n"
+    },
+    "fn2": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "405dffef9db22d0e"
+        ]
+      },
+      "display": "\nfn2 =\n\n  119.9990\n\n"
+    },
+    "fn3_is_nan": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nfn3_is_nan =\n\n     1\n\n"
+    },
+    "fs": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "408f400000000000"
+        ]
+      },
+      "display": "\nfs =\n\n        1000\n\n"
+    },
+    "nms": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4008000000000000"
+        ]
+      },
+      "display": "\nnms =\n\n     3\n\n"
+    },
+    "nof": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4070100000000000"
+        ]
+      },
+      "display": "\nnof =\n\n   257\n\n"
+    }
+  },
+  "figures": [],
+  "nfigures": 0
+}

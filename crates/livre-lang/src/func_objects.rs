@@ -414,5 +414,5 @@ const MEMO_METHODS: &[&str] = &["stats", "clearCache", "MemoizedFunction"];
 /// The display text of the built-in objects shown in their own format (inline functions and
 /// random streams); `global` is the current global stream.
 pub fn object_text(name: &str, o: &Object, global: Option<u64>) -> Option<String> {
-    inline_text(name, o).or_else(|| crate::random::stream_text(global, o)).or_else(|| crate::timers::timer_text(o))
+    inline_text(name, o).or_else(|| crate::random::stream_text(global, o)).or_else(|| crate::timers::timer_text(o)).or_else(|| crate::signal::digfilt::object_text(o))
 }

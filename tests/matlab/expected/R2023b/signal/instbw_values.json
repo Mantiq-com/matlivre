@@ -1,0 +1,141 @@
+{
+  "header": {
+    "release": "2023b",
+    "version": "23.2.0.2409890 (R2023b) Update 3",
+    "computer": "PCWIN64",
+    "recorded": "2026-11-16"
+  },
+  "log": "\nnpts =\n\n    29\n\n\ntfirst =\n\n    0.0375\n\n\nmid =\n\n    52\n\n\nnbw =\n\n    29\n\n\nbwmid =\n\n    49\n\n",
+  "error": {
+    "identifier": "",
+    "message": ""
+  },
+  "lastwarn": {
+    "message": "",
+    "identifier": ""
+  },
+  "variables": {
+    "bwmid": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4048800000000000"
+        ]
+      },
+      "display": "\nbwmid =\n\n    49\n\n"
+    },
+    "fs": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "408f400000000000"
+        ]
+      },
+      "display": "\nfs =\n\n        1000\n\n"
+    },
+    "mid": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "404a000000000000"
+        ]
+      },
+      "display": "\nmid =\n\n    52\n\n"
+    },
+    "nbw": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "403d000000000000"
+        ]
+      },
+      "display": "\nnbw =\n\n    29\n\n"
+    },
+    "npts": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "403d000000000000"
+        ]
+      },
+      "display": "\nnpts =\n\n    29\n\n"
+    },
+    "tfirst": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3fa3333333333333"
+        ]
+      },
+      "display": "\ntfirst =\n\n    0.0375\n\n"
+    }
+  },
+  "figures": [],
+  "nfigures": 0
+}

@@ -1,0 +1,341 @@
+{
+  "header": {
+    "release": "2023b",
+    "version": "23.2.0.2409890 (R2023b) Update 3",
+    "computer": "PCWIN64",
+    "recorded": "2026-11-16"
+  },
+  "log": "\nrows =\n\n        4096\n\n\ncols =\n\n     1\n\n\ndf =\n\n    0.1221\n\n\nfend =\n\n   500\n\n\npeak_hz =\n\n    50\n\n\npeak_pw =\n\n    0.4990\n\n\nrows2 =\n\n   201\n\n\nstep2 =\n\n    2.5000\n\n\nrows_s =\n\n        1024\n\n\ncols_s =\n\n    30\n\n\nt1 =\n\n    0.0625\n\n\ndt =\n\n    0.0310\n\n\nrows3 =\n\n        4096\n\n\nf3_first =\n\n  -500\n\n\nf3_last =\n\n   500\n\n",
+  "error": {
+    "identifier": "",
+    "message": ""
+  },
+  "lastwarn": {
+    "message": "",
+    "identifier": ""
+  },
+  "variables": {
+    "cols": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\ncols =\n\n     1\n\n"
+    },
+    "cols_s": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "403e000000000000"
+        ]
+      },
+      "display": "\ncols_s =\n\n    30\n\n"
+    },
+    "df": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3fbf41f212d77319"
+        ]
+      },
+      "display": "\ndf =\n\n    0.1221\n\n"
+    },
+    "dt": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3f9fbe76c8b43958"
+        ]
+      },
+      "display": "\ndt =\n\n    0.0310\n\n"
+    },
+    "f3_first": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "c07f400000000000"
+        ]
+      },
+      "display": "\nf3_first =\n\n  -500\n\n"
+    },
+    "f3_last": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "407f400000000000"
+        ]
+      },
+      "display": "\nf3_last =\n\n   500\n\n"
+    },
+    "fend": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "407f400000000000"
+        ]
+      },
+      "display": "\nfend =\n\n   500\n\n"
+    },
+    "fs": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "408f400000000000"
+        ]
+      },
+      "display": "\nfs =\n\n        1000\n\n"
+    },
+    "peak_hz": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4049000000000000"
+        ]
+      },
+      "display": "\npeak_hz =\n\n    50\n\n"
+    },
+    "peak_pw": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3fdfef9db22d0e56"
+        ]
+      },
+      "display": "\npeak_pw =\n\n    0.4990\n\n"
+    },
+    "rows": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "40b0000000000000"
+        ]
+      },
+      "display": "\nrows =\n\n        4096\n\n"
+    },
+    "rows2": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4069200000000000"
+        ]
+      },
+      "display": "\nrows2 =\n\n   201\n\n"
+    },
+    "rows3": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "40b0000000000000"
+        ]
+      },
+      "display": "\nrows3 =\n\n        4096\n\n"
+    },
+    "rows_s": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4090000000000000"
+        ]
+      },
+      "display": "\nrows_s =\n\n        1024\n\n"
+    },
+    "step2": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4004000000000000"
+        ]
+      },
+      "display": "\nstep2 =\n\n    2.5000\n\n"
+    },
+    "t1": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3fb0000000000000"
+        ]
+      },
+      "display": "\nt1 =\n\n    0.0625\n\n"
+    }
+  },
+  "figures": [],
+  "nfigures": 0
+}

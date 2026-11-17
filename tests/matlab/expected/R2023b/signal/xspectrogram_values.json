@@ -1,0 +1,201 @@
+{
+  "header": {
+    "release": "2023b",
+    "version": "23.2.0.2409890 (R2023b) Update 3",
+    "computer": "PCWIN64",
+    "recorded": "2026-11-16"
+  },
+  "log": "\nrows =\n\n    65\n\n\ncols =\n\n    24\n\n\ndf =\n\n    7.8125\n\n\nt1 =\n\n    0.0320\n\n\npeak_row =\n\n     7\n\n\nmag_matches =\n\n     1\n\n\nrows2 =\n\n   129\n\n\ncols2 =\n\n     8\n\n",
+  "error": {
+    "identifier": "",
+    "message": ""
+  },
+  "lastwarn": {
+    "message": "",
+    "identifier": ""
+  },
+  "variables": {
+    "cols": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4038000000000000"
+        ]
+      },
+      "display": "\ncols =\n\n    24\n\n"
+    },
+    "cols2": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4020000000000000"
+        ]
+      },
+      "display": "\ncols2 =\n\n     8\n\n"
+    },
+    "df": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "401f400000000000"
+        ]
+      },
+      "display": "\ndf =\n\n    7.8125\n\n"
+    },
+    "fs": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "408f400000000000"
+        ]
+      },
+      "display": "\nfs =\n\n        1000\n\n"
+    },
+    "mag_matches": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nmag_matches =\n\n     1\n\n"
+    },
+    "peak_row": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "401c000000000000"
+        ]
+      },
+      "display": "\npeak_row =\n\n     7\n\n"
+    },
+    "rows": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4050400000000000"
+        ]
+      },
+      "display": "\nrows =\n\n    65\n\n"
+    },
+    "rows2": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4060200000000000"
+        ]
+      },
+      "display": "\nrows2 =\n\n   129\n\n"
+    },
+    "t1": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3fa0624dd2f1a9fc"
+        ]
+      },
+      "display": "\nt1 =\n\n    0.0320\n\n"
+    }
+  },
+  "figures": [],
+  "nfigures": 0
+}

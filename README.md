@@ -1,11 +1,11 @@
 # MatLivre
 
 <!-- release-manager:download -->
-[![Download MatLivre 0.1.8](https://img.shields.io/badge/Download-v0.1.8-005FB8?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/campuslivre/matlivre/releases/download/v0.1.8/matlivre-win-Setup.exe)
+[![Download MatLivre 0.1.9](https://img.shields.io/badge/Download-v0.1.9-005FB8?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/campuslivre/matlivre/releases/download/v0.1.9/matlivre-win-Setup.exe)
 
-[matlivre-win-Setup.exe](https://github.com/campuslivre/matlivre/releases/download/v0.1.8/matlivre-win-Setup.exe) · Windows installer, version 0.1.8
+[matlivre-win-Setup.exe](https://github.com/campuslivre/matlivre/releases/download/v0.1.9/matlivre-win-Setup.exe) · Windows installer, version 0.1.9
 
-[MatLivre-0.1.8-macOS.dmg](https://github.com/campuslivre/matlivre/releases/download/v0.1.8/MatLivre-0.1.8-macOS.dmg) · macOS disk image (Apple Silicon and Intel), version 0.1.8
+[MatLivre-0.1.9-macOS.dmg](https://github.com/campuslivre/matlivre/releases/download/v0.1.9/MatLivre-0.1.9-macOS.dmg) · macOS disk image (Apple Silicon and Intel), version 0.1.9
 <!-- /release-manager:download -->
 
 **MatLivre is a fast live script editor and runtime for MATLAB code.** It opens, edits and runs
@@ -132,8 +132,8 @@ Symbolic Math Toolbox references and its status (1,889 implemented).
   (stiff, DAE, implicit, `ode` objects), delay, boundary value and parabolic PDE problems,
   integration, optimization, statistics, FFT and filtering, computational geometry, special
   functions, image resizing and indexed color.
-- **Signal Processing (in progress):** 202 functions so far, compared call by call with
-  MATLAB R2023b (about 6,090 recorded calls): windows, waveforms, `butter`/`cheby1`/`cheby2`/`ellip`/`besself`
+- **Signal Processing (in progress):** 237 functions so far, compared call by call with
+  MATLAB R2023b (about 8,800 recorded calls): windows, waveforms, `butter`/`cheby1`/`cheby2`/`ellip`/`besself`
   designed through state space with MATLAB's pole and zero order, `freqz`/`freqs`, `levinson`
   and reflection-coefficient conversions, spectral estimates. Plan and known deviations:
   [`docs/signal-coverage-plan.md`](docs/signal-coverage-plan.md).
@@ -162,6 +162,45 @@ without installing anything.
 The editor also runs in a browser, for a web page that embeds it and keeps its files:
 `apps/matlivre-web` builds it with trunk, with the engine in a Web Worker. Its
 [README](apps/matlivre-web/README.md) has the build and the protocol the page speaks.
+
+### Using MatLivre from agents (CLI and MCP)
+
+MatLivre ships both, so a coding agent can run MATLAB code without the GUI.
+
+**CLI.** `matlivre-cli script.m` runs the script in a fresh workspace, like `matlab -batch`
+(the script's folder is on the search path, so it can call the functions next to it).
+Results go to stdout; warnings and errors go to stderr (`Error (line N): message`). The exit
+code is 0 on success, 1 when the script raised an error, 2 for a usage error or an unreadable
+file. Figures are not written out by the CLI; save them from the script (`exportgraphics`,
+`saveas`). Set `MATLIVRE_NOJIT=1` to run loops in the interpreter, and `MATLIVRE_JIT_LOG=1` to
+print on stderr why a loop or function was not compiled.
+
+```bash
+matlivre-cli analysis.m > out.txt 2> err.txt
+```
+
+**MCP.** MatLivre is an MCP server for Claude Code and other MCP clients. In the app, choose
+… › Connect Claude Code to copy the command, or run it yourself once:
+
+```bash
+claude mcp add matlivre -- /path/to/matlivre --mcp
+```
+
+`matlivre --mcp` speaks MCP over stdio. When a MatLivre window is open it forwards to that
+window, so the agent works in the same workspace and documents you see; otherwise it runs a
+workspace of its own, without a window. Tools:
+
+| Tool | Offered | What it does |
+|---|---|---|
+| `run_code` | always | Runs MATLAB code in the base workspace; returns the command window output, figures as images |
+| `get_workspace` | always | Lists the variables: name, class, size, short value |
+| `list_documents`, `read_document` | with a window | Lists and reads the open scripts, unsaved changes included |
+| `edit_document`, `write_document`, `open_document` | with a window | Edits appear in the editor unsaved; you save them |
+| `run_document` | with a window | Runs a document or one `%%` section |
+
+Without a window only `run_code` and `get_workspace` exist. Every window also serves MCP over
+HTTP on 127.0.0.1 at a URL with a random token (written to `mcp-url.txt` in MatLivre's
+settings folder), for clients that take `claude mcp add --transport http matlivre <url>`.
 
 ### Linux
 

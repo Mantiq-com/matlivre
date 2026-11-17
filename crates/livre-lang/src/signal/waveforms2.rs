@@ -6,7 +6,7 @@ use crate::interp::Interpreter;
 use crate::signal::poly::*;
 use crate::value::*;
 
-pub const NAMES: &[&str] = &["taylorwin", "pulstran", "vco", "modulate", "dpss", "marcumq", "rainflow"];
+pub const NAMES: &[&str] = &["taylorwin", "pulstran", "vco", "modulate", "dpss", "marcumq", "rainflow", "demod", "iscola"];
 
 const NUM_TYPES: &str = "double, single, uint8, uint16, uint32, uint64, int8, int16, int32, int64";
 
@@ -18,6 +18,8 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
         "dpss" => dpss(it, a, nargout),
         "marcumq" => marcumq(it, a, nargout),
         "rainflow" => rainflow(it, a, nargout),
+        "demod" => demod(it, a, nargout),
+        "iscola" => iscola(a, nargout),
         _ => modulate(it, a, nargout),
     }
 }
@@ -749,6 +751,231 @@ fn rainflow(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
         if nargout > 4 {
             outs.push(cast(Matrix::from_dims(vec![rev.len(), 1], rev.iter().map(|&i| (i + 1) as f64).collect())));
         }
+    }
+    out(outs)
+}
+
+fn demod(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
+    if a.len() < 3 {
+        return rt("Not enough input arguments.");
+    }
+    if a.len() > 5 {
+        return rt("Too many input arguments.");
+    }
+    let method = match a.get(3) {
+        Some(v) => v.text().unwrap_or_default().to_lowercase(),
+        None => "am".to_string(),
+    };
+    let known = ["am", "amdsb-sc", "amdsb-tc", "amssb", "fm", "pm", "pwm", "ppm", "qam"];
+    let y = match &a[0] {
+        Value::Num(m) if matches!(m.kind, Kind::Double | Kind::Single) => m.clone(),
+        other => return rt(format!("Input Y in demod must be double/single, instead it was {}.", other.class_name())),
+    };
+    let single = y.kind == Kind::Single;
+    let fc = match &a[1] {
+        Value::Num(m) if m.numel() == 1 => m.data[0],
+        _ => return rt("Incorrect dimensions for matrix multiplication. Check that the number of columns in the first matrix matches the number of rows in the second matrix. To operate on each element of the matrix individually, use TIMES (.*) for elementwise multiplication."),
+    };
+    let fs = match &a[2] {
+        Value::Num(m) if m.numel() == 1 => m.data[0],
+        _ => return rt("The carrier frequency must be less than half the sampling frequency."),
+    };
+    if !known.contains(&method.as_str()) {
+        return rt("Output argument \"x\" (and possibly others) not assigned a value in the execution with \"demod\" function.");
+    }
+    if fc >= fs / 2.0 {
+        return rt("The carrier frequency must be less than half the sampling frequency.");
+    }
+    if y.numel() == 0 {
+        return out(vec![Value::Num(Matrix::from_dims(y.dims.clone(), vec![]))]);
+    }
+    if method == "qam" {
+        if nargout > 2 {
+            return rt("Too many output arguments.");
+        }
+    } else if nargout > 1 {
+        return rt("Output argument \"x2\" (and possibly others) not assigned a value in the execution with \"demod\" function.");
+    }
+    if method == "pwm" || method == "ppm" {
+        return rt(format!("demod: the '{method}' method is not implemented."));
+    }
+    let wn = fc * 2.0 / fs;
+    if !(wn > 0.0 && wn < 1.0) {
+        return rt("The cutoff frequencies must be within the interval of (0,1).");
+    }
+    let (rows, cols) = (y.dims[0], y.dims[1]);
+    let (len, nch) = if rows == 1 { (cols, 1) } else { (rows, cols) };
+    if len <= 15 {
+        return rt("Data length must be larger than 15 samples.");
+    }
+    let opt = a.get(4);
+    let opt_scalar = |def: f64| -> R<f64> {
+        match opt {
+            None => Ok(def),
+            Some(Value::Num(m)) if m.numel() == 1 => Ok(m.data[0]),
+            Some(Value::Num(m)) if m.numel() == 0 => Ok(def),
+            Some(_) => rt("Matrix dimensions must agree."),
+        }
+    };
+    let tpi = 2.0 * std::f64::consts::PI;
+    let ba = it.call_function("butter", vec![scalar_value(5.0), scalar_value(wn)], 2)?;
+    let (bco, aco) = (ba[0].clone(), ba[1].clone());
+    let mut x1 = vec![0.0; y.numel()];
+    let mut x2 = vec![0.0; y.numel()];
+    for c in 0..nch {
+        let col: Vec<f64> = y.data[c * len..(c + 1) * len].to_vec();
+        let lp = |it: &mut Interpreter, v: Vec<f64>| -> R<Vec<f64>> {
+            let r = it.call_function("filtfilt", vec![bco.clone(), aco.clone(), real_col(v)], 1)?.remove(0).to_matrix()?;
+            Ok(r.data.clone())
+        };
+        let res: Vec<f64> = match method.as_str() {
+            "am" | "amdsb-sc" | "amssb" => {
+                let prod: Vec<f64> = (0..len).map(|k| col[k] * (tpi * fc * k as f64 / fs).cos()).collect();
+                lp(it, prod)?
+            }
+            "amdsb-tc" => {
+                let off = opt_scalar(0.0)?;
+                let prod: Vec<f64> = (0..len).map(|k| col[k] * (tpi * fc * k as f64 / fs).cos()).collect();
+                lp(it, prod)?.iter().map(|v| v - off).collect()
+            }
+            "qam" => {
+                let p1: Vec<f64> = (0..len).map(|k| col[k] * (tpi * fc * k as f64 / fs).cos()).collect();
+                let p2: Vec<f64> = (0..len).map(|k| col[k] * (tpi * fc * k as f64 / fs).sin()).collect();
+                let r1: Vec<f64> = lp(it, p1)?.iter().map(|v| 2.0 * v).collect();
+                let r2: Vec<f64> = lp(it, p2)?.iter().map(|v| 2.0 * v).collect();
+                for k in 0..len {
+                    x2[c * len + k] = r2[k];
+                }
+                r1
+            }
+            _ => {
+                // fm / pm: phase of the analytic signal after removing the carrier
+                let h = it.call_function("hilbert", vec![real_col(col.clone())], 1)?.remove(0).to_matrix()?;
+                let him = h.im.clone().unwrap_or_else(|| vec![0.0; len]);
+                let z: Vec<(f64, f64)> = (0..len)
+                    .map(|k| {
+                        let ph = -tpi * fc * k as f64 / fs;
+                        let (cr, ci) = (ph.cos(), ph.sin());
+                        (h.data[k] * cr - him[k] * ci, h.data[k] * ci + him[k] * cr)
+                    })
+                    .collect();
+                let ang = Matrix::from_dims(vec![len, 1], z.iter().map(|(r, i)| i.atan2(*r)).collect());
+                let un = it.call_function("unwrap", vec![Value::Num(ang)], 1)?.remove(0).to_matrix()?;
+                if method == "fm" {
+                    let kf = opt_scalar(1.0)?;
+                    (0..len).map(|k| if k == 0 { 0.0 } else { (un.data[k] - un.data[k - 1]) / kf }).collect()
+                } else {
+                    let kp = opt_scalar(1.0)?;
+                    un.data.iter().map(|v| v / kp).collect()
+                }
+            }
+        };
+        for k in 0..len {
+            x1[c * len + k] = res[k];
+        }
+    }
+    let cast = |v: Vec<f64>| -> Value {
+        let mut m = Matrix::from_dims(y.dims.clone(), v);
+        if single {
+            m.data.iter_mut().for_each(|e| *e = *e as f32 as f64);
+            m.kind = Kind::Single;
+        }
+        Value::Num(m)
+    };
+    let mut outs = vec![cast(x1)];
+    if method == "qam" && nargout > 1 {
+        outs.push(cast(x2));
+    }
+    out(outs)
+}
+
+fn iscola(a: &[Value], nargout: usize) -> Ret {
+    if a.len() < 2 {
+        return rt("Not enough input arguments.");
+    }
+    if a.len() > 3 {
+        return rt("Too many input arguments.");
+    }
+    if nargout > 3 {
+        return rt("Too many output arguments.");
+    }
+    let w = match &a[0] {
+        Value::Num(m) if matches!(m.kind, Kind::Double | Kind::Single) => m.clone(),
+        _ => return rt("Expected Window to be one of these types:  single, double"),
+    };
+    if w.numel() == 0 {
+        return rt("Expected Window to be nonempty.");
+    }
+    if w.dims.len() > 2 || (w.dims[0] != 1 && w.dims[1] != 1) {
+        return rt("Expected Window to be a vector.");
+    }
+    if w.im.is_some() {
+        return rt("Expected Window to be real.");
+    }
+    let n = w.numel();
+    let ov = match &a[1] {
+        Value::Num(m) if m.kind != Kind::Char => {
+            if m.numel() != 1 {
+                return rt("Expected OverlapLength to be a scalar.");
+            }
+            let v = m.data[0];
+            if v < 0.0 {
+                return rt("Expected OverlapLength to be nonnegative.");
+            }
+            if v.fract() != 0.0 {
+                return rt("Expected OverlapLength to be integer-valued.");
+            }
+            if v >= n as f64 {
+                return rt(format!("Expected OverlapLength to be a scalar with value < {n}."));
+            }
+            v as usize
+        }
+        _ => return rt("Expected OverlapLength to be numeric."),
+    };
+    let mut wola = true;
+    if let Some(v) = a.get(2) {
+        let opts = ["ola", "wola"];
+        match v {
+            Value::Num(m) if m.kind == Kind::Char => {
+                let t = v.text().unwrap_or_default();
+                let l = t.to_lowercase();
+                match opts.iter().position(|o| !l.is_empty() && o.starts_with(&l)) {
+                    Some(i) => wola = i == 1,
+                    None => return rt(format!("Expected Method to match one of these values:  'ola', 'wola'  The input, '{t}', did not match any of the valid values.")),
+                }
+            }
+            _ => return rt("Expected Method to match one of these values:  'ola', 'wola'  The input did not match any of the valid values."),
+        }
+    }
+    let hop = n - ov;
+    let mut sums = vec![0.0; hop];
+    for (i, v) in w.data.iter().enumerate() {
+        sums[i % hop] += if wola { v * v } else { *v };
+    }
+    let mut sorted = sums.clone();
+    sorted.sort_by(|x, y| x.partial_cmp(y).unwrap_or(std::cmp::Ordering::Equal));
+    let m = if hop % 2 == 1 { sorted[hop / 2] } else { (sorted[hop / 2 - 1] + sorted[hop / 2]) / 2.0 };
+    let dev = sums.iter().fold(0.0f64, |d, v| d.max((v - m).abs()));
+    let k = ((n + hop - 1) / hop) as f64;
+    let tol = if w.kind == Kind::Single { f32::EPSILON as f64 } else { f64::EPSILON } * k;
+    let tf = dev < tol;
+    let single = w.kind == Kind::Single;
+    let num = |v: f64| {
+        let mut mm = Matrix::from_dims(vec![1, 1], vec![v]);
+        if single {
+            mm.data[0] = v as f32 as f64;
+            mm.kind = Kind::Single;
+        }
+        Value::Num(mm)
+    };
+    let mut tfm = Matrix::from_dims(vec![1, 1], vec![if tf { 1.0 } else { 0.0 }]);
+    tfm.kind = Kind::Logical;
+    let mut outs = vec![Value::Num(tfm)];
+    if nargout > 1 {
+        outs.push(num(m));
+    }
+    if nargout > 2 {
+        outs.push(num(dev));
     }
     out(outs)
 }

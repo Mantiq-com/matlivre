@@ -10,7 +10,11 @@ figure export, which a browser does not give a program.
 
 ## Source and retained browser changes
 
-The upstream target is [`master` at `e66a9f6d67c0ffb015c19d967847835d0e94206b`](https://github.com/campuslivre/matlivre/commit/e66a9f6d67c0ffb015c19d967847835d0e94206b).
+The upstream target is [`master` at `87764fc0fbdae0999eabe163cfd10d022d5c4e8f`](https://github.com/campuslivre/matlivre/commit/87764fc0fbdae0999eabe163cfd10d022d5c4e8f),
+retrieved on 2026-11-17. The latest stable release at retrieval is
+[v0.1.9](https://github.com/campuslivre/matlivre/releases/tag/v0.1.9), commit
+`efcd31a39ef5b61ab8a2a96a3ab7e8de19e394b9`. This fork continues tracking
+the upstream default branch.
 The previous browser release is `host-bridge-2` at
 `65799972e1abeeeac73162fa4901ee94ca3a424a`. That published tag contains changes beyond
 the older `web-host` branch and supplies the browser changes carried here.
@@ -31,7 +35,48 @@ This upstream checkout declares workspace version `0.1.6`. The ready message the
 cannot identify this source revision on its own; identify an installed bundle by its
 source commit and archive checksum as well.
 
-### Validation on the selected master revision
+Upstream rewrote its history between the previous update and this one. The old
+base `e66a9f6d67c0ffb015c19d967847835d0e94206b` and its replacement `8fe0390`
+have the identical tree `919a448a36da57e4922ff4b9430b45d05a156d54`.
+The merge preserves both histories and carries the browser changes over that
+equivalent base. Native tests and recorded MATLAB fixtures come from upstream.
+
+### Browser validation on the selected source
+
+The release package builds with Rust 1.99.1 and wasm-bindgen 0.2.129. The
+`jit_log` field follows the same `jit` feature gate as its initializer, so
+the browser build excludes the native compiler's diagnostics state. The
+build reports eleven warnings in unchanged upstream signal-processing code.
+
+Hosted MLX and M creation, editing, Save As, ordinary save, export and reopening
+pass. Saved MLX packages preserve their title, explanatory text and code blocks.
+Export keeps the source filename and its unsaved changes. The new bundle and
+the published `host-bridge-2` bundle read each other's saved MLX files with the
+same blocks.
+
+Three fresh workers each return 42 for `disp(6 * 7);` with no startup failure.
+The Stop shortcut terminates an infinite loop, and a subsequent run returns 42
+in the editor. All observed runtime resources load from the host's own origin
+under a policy that blocks external connections. The host rejects messages from
+another origin or source window; disposal unloads the iframe and rejects further
+requests. These synthetic checks do not qualify authenticated application storage,
+autosave acknowledgements or permissions.
+
+The native workspace test command,
+`cargo test --locked --workspace -- --test-threads=2`, stops with 403 passes,
+one failure and one ignored test in the language integration suite. Case 6948
+matches the recorded MATLAB result but remains listed as a known deviation;
+`signal_matlab.rs` rejects such resolved exceptions. The unmodified selected
+upstream target produces the same failure and counts. The fixture and
+assertions remain unchanged.
+
+`cargo build --locked --workspace --bins` and `python tools/linux/smoke.py`
+pass, including CLI success and failure exits and headless MCP PNG/SVG exports.
+
+### Previous validation on the 2026-11-15 master revision
+
+The following results apply to upstream `e66a9f6d67c0ffb015c19d967847835d0e94206b`
+and do not qualify the newer source above.
 
 The browser build passes hosted MLX and M creation, editing, Save As, export and
 reopening checks. MLX files pass in both directions with `host-bridge-2`. An export

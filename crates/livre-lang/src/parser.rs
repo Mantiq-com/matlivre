@@ -180,7 +180,7 @@ impl Parser {
         if matches!(self.peek(), Tok::Kw(Kw::End)) {
             self.bump();
         }
-        Ok(Function { name, params, outputs, body, args })
+        Ok(Function { name, params, outputs, body, args, file: 0 })
     }
 
     /// `arguments` alone on its line, or with `(Input)`, `(Output)`, `(Repeating)`.

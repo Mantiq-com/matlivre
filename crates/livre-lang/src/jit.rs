@@ -633,13 +633,30 @@ impl<'a, 'b> Gen<'a, 'b> {
             Expr::Num(n) => Ok(V::F(self.fconst(*n))),
             Expr::Ident(n) => {
                 if let Some(s) = self.scalars.get(n) {
-                    if !self.defined.contains(n) {
-                        return reject(format!("'{n}' may be used before it is assigned"));
+                    let (var, ty, assigned, empty) = (s.var, s.ty, s.assigned, s.empty);
+                    let undefined = !self.defined.contains(n);
+                    let maybe_empty = self.maybe_empty.contains(n);
+                    if undefined || maybe_empty {
+                        // Not provably assigned (or non-empty) here. A kernel keeps run-time
+                        // flags for this: when the flag says no, the interpreter runs the
+                        // statement instead (and reports the error, if it is one).
+                        let (Some(assigned), Some(empty)) = (assigned, empty) else {
+                            return reject(if undefined { format!("'{n}' may be used before it is assigned") } else { format!("'{n}' may be empty after a loop") });
+                        };
+                        let mut bad = self.b.ins().iconst(types::I8, 0);
+                        if undefined {
+                            let a = self.b.use_var(assigned);
+                            let unset = self.b.ins().icmp_imm_s(IntCC::Equal, a, 0);
+                            bad = self.b.ins().bor(bad, unset);
+                        }
+                        if maybe_empty {
+                            let e = self.b.use_var(empty);
+                            let is_empty = self.b.ins().icmp_imm_s(IntCC::NotEqual, e, 0);
+                            bad = self.b.ins().bor(bad, is_empty);
+                        }
+                        let z = self.fconst(0.0);
+                        self.fail_if(bad, 8, z, z);
                     }
-                    if self.maybe_empty.contains(n) {
-                        return reject(format!("'{n}' may be empty after a loop"));
-                    }
-                    let (var, ty) = (s.var, s.ty);
                     let v = self.b.use_var(var);
                     return Ok(if ty == Ty::Bool { V::B(v) } else { V::F(v) });
                 }

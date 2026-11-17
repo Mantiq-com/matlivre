@@ -878,6 +878,10 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
                 let id = a.get(1).map(|v| v.text()).transpose()?.unwrap_or_default();
                 let new = (m.text()?, id);
                 if name == "lasterr" { it.last_error = new } else { it.last_warning = new }
+                // Setting the message alone returns nothing (and leaves no `ans`).
+                if nargout == 0 {
+                    return Ok(Some(Vec::new()));
+                }
             }
             let mut out = vec![Value::chars(&cur.0)];
             if nargout > 1 {
