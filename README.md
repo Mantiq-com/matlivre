@@ -1,11 +1,11 @@
 # MatLivre
 
 <!-- release-manager:download -->
-[![Download MatLivre 0.1.8](https://img.shields.io/badge/Download-v0.1.8-005FB8?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/campuslivre/matlivre/releases/download/v0.1.8/matlivre-win-Setup.exe)
+[![Download MatLivre 0.1.9](https://img.shields.io/badge/Download-v0.1.9-005FB8?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/campuslivre/matlivre/releases/download/v0.1.9/matlivre-win-Setup.exe)
 
-[matlivre-win-Setup.exe](https://github.com/campuslivre/matlivre/releases/download/v0.1.8/matlivre-win-Setup.exe) · Windows installer, version 0.1.8
+[matlivre-win-Setup.exe](https://github.com/campuslivre/matlivre/releases/download/v0.1.9/matlivre-win-Setup.exe) · Windows installer, version 0.1.9
 
-[MatLivre-0.1.8-macOS.dmg](https://github.com/campuslivre/matlivre/releases/download/v0.1.8/MatLivre-0.1.8-macOS.dmg) · macOS disk image (Apple Silicon and Intel), version 0.1.8
+[MatLivre-0.1.9-macOS.dmg](https://github.com/campuslivre/matlivre/releases/download/v0.1.9/MatLivre-0.1.9-macOS.dmg) · macOS disk image (Apple Silicon and Intel), version 0.1.9
 <!-- /release-manager:download -->
 
 **MatLivre is a fast live script editor and runtime for MATLAB code.** It opens, edits and runs

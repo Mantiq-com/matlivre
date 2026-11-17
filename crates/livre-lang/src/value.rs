@@ -758,6 +758,7 @@ impl Value {
         match self {
             Value::Num(m) => Ok(!m.is_empty() && (0..m.numel()).all(|i| (m.data[i] != 0.0 && !m.data[i].is_nan()) || m.im_at(i) != 0.0)),
             Value::Sym(s) => s.truth(),
+            Value::Object(_) if crate::class::is_on_off(self) => Ok(crate::class::on_off_state(self) == Some(true)),
             _ => rt(format!("Conversion to logical from {} is not possible.", self.class_name())),
         }
     }
