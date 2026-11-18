@@ -7,10 +7,10 @@ found in the toolbox folders, checked against MatLivre. Regenerate with
 
 | Status | Count |
 |---|---:|
-| Implemented | 2039 |
+| Implemented | 2042 |
 | In a branch not merged yet | 0 |
 | Language keyword (check it works) | 25 |
-| **To implement** | **445** |
+| **To implement** | **442** |
 | Out of scope | 1355 |
 
 Out of scope, by category of the function reference: app building, external language
@@ -316,7 +316,7 @@ Implemented: `&amp;`, `&gt;`, `&gt;=`, `&lt;`, `&lt;=`, `'`, `*`, `+`, `-`, `.'`
 
 Implemented: 84. To implement: 0. In a branch: 0. Out of scope: 0.
 
-Implemented: `addboundary`, `alphaShape`, `alphaSpectrum`, `alphaTriangulation`, `area`, `barycentricToCartesian`, `baryToCart`, `boundary`, `boundaryFacets`, `boundaryshape`, `boundingbox`, `cartesianToBarycentric`, `cartToBary`, `centroid`, `circumcenter`, `circumcenters`, `convexHull`, `convhull`, `convhulln`, `criticalAlpha`, `delaunay`, `delaunayn`, `DelaunayTri`, `delaunayTriangulation`, `dsearchn`, `edgeAttachments`, `edges`, `faceNormal`, `faceNormals`, `featureEdges`, `freeBoundary`, `holes`, `incenter`, `incenters`, `inOutStatus`, `inpolygon`, `inShape`, `isConnected`, `isEdge`, `ishole`, `isInterior`, `isinterior`, `issimplified`, `nearestNeighbor`, `nearestvertex`, `nsidedpoly`, `numboundaries`, `numRegions`, `numsides`, `overlaps`, `patch`, `perimeter`, `pointLocation`, `polyarea`, `polybuffer`, `polyshape`, `rectint`, `regions`, `rmboundary`, `rmholes`, `rmslivers`, `rotate`, `scale`, `sortboundaries`, `sortregions`, `stlread`, `stlwrite`, `subtract`, `surfaceArea`, `tetramesh`, `translate`, `triangulation`, `trimesh`, `triplot`, `TriRep`, `trisurf`, `tsearchn`, `turningdist`, `vertexAttachments`, `vertexNormal`, `volume`, `voronoi`, `voronoiDiagram`, `voronoin`
+Implemented: `addboundary`, `alphaShape`, `alphaSpectrum`, `alphaTriangulation`, `area`, `barycentricToCartesian`, `baryToCart`, `boundary`, `boundaryFacets`, `boundaryshape`, `boundingbox`, `cartesianToBarycentric`, `cartToBary`, `centroid`, `circumcenter`, `circumcenters`, `convexHull`, `convhull`, `convhulln`, `criticalAlpha`, `delaunay`, `delaunayn`, `DelaunayTri`, `delaunayTriangulation`, `dsearchn`, `edgeAttachments`, `edges`, `faceNormal`, `faceNormals`, `featureEdges`, `freeBoundary`, `holes`, `incenter`, `incenters`, `inOutStatus`, `inpolygon`, `inShape`, `isConnected`, `isEdge`, `ishole`, `isinterior`, `isInterior`, `issimplified`, `nearestNeighbor`, `nearestvertex`, `nsidedpoly`, `numboundaries`, `numRegions`, `numsides`, `overlaps`, `patch`, `perimeter`, `pointLocation`, `polyarea`, `polybuffer`, `polyshape`, `rectint`, `regions`, `rmboundary`, `rmholes`, `rmslivers`, `rotate`, `scale`, `sortboundaries`, `sortregions`, `stlread`, `stlwrite`, `subtract`, `surfaceArea`, `tetramesh`, `translate`, `triangulation`, `trimesh`, `triplot`, `TriRep`, `trisurf`, `tsearchn`, `turningdist`, `vertexAttachments`, `vertexNormal`, `volume`, `voronoi`, `voronoiDiagram`, `voronoin`
 
 ## MATLAB > Mathematics > Elementary Math
 
@@ -1094,7 +1094,7 @@ To implement:
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Hypothesis Tests
 
-Implemented: 7. To implement: 17. In a branch: 0. Out of scope: 0.
+Implemented: 9. To implement: 15. In a branch: 0. Out of scope: 0.
 
 To implement:
 
@@ -1107,8 +1107,6 @@ To implement:
 - [ ] `friedman`
 - [ ] `gardnerAltmanPlot`
 - [ ] `jbtest`
-- [ ] `kstest`
-- [ ] `kstest2`
 - [ ] `lillietest`
 - [ ] `meanEffectSize`
 - [ ] `multcompare`
@@ -1116,7 +1114,7 @@ To implement:
 - [ ] `sampsizepwr`
 - [ ] `vartestn`
 
-Implemented: `kruskalwallis`, `ranksum`, `signrank`, `signtest`, `vartest`, `vartest2`, `ztest`
+Implemented: `kruskalwallis`, `kstest`, `kstest2`, `ranksum`, `signrank`, `signtest`, `vartest`, `vartest2`, `ztest`
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Multivariate Distributions
 
@@ -1292,11 +1290,10 @@ Out of scope: `incrementalConceptDriftDetector` (Incremental Learning), `increme
 
 ## Statistics and Machine Learning Toolbox > Regression > Linear Regression
 
-Implemented: 2. To implement: 21. In a branch: 0. Out of scope: 1.
+Implemented: 3. To implement: 20. In a branch: 0. Out of scope: 1.
 
 To implement:
 
-- [ ] `fitlm`
 - [ ] `fitlme`
 - [ ] `fitlmematrix`
 - [ ] `fitrlinear`
@@ -1318,7 +1315,7 @@ To implement:
 - [ ] `stepwisefit`
 - [ ] `stepwiselm`
 
-Implemented: `regress`, `x2fx`
+Implemented: `fitlm`, `regress`, `x2fx`
 
 Out of scope: `Polynomial Fitting Tool` (App)
 
