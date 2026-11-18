@@ -3797,7 +3797,7 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
 }
 
 fn arg_or<'a>(a: &'a [Value], i: usize, name: &str) -> R<&'a Value> {
-    a.get(i).ok_or_else(|| LangError::new(format!("Not enough input arguments for '{name}'."), 0))
+    a.get(i).ok_or_else(|| LangError::new("Not enough input arguments.", 0))
 }
 
 fn fmt_g(x: f64) -> String {

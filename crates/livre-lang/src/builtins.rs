@@ -75,7 +75,7 @@ fn mat(m: Matrix) -> Ret {
 }
 
 pub(crate) fn arg<'a>(args: &'a [Value], i: usize, fname: &str) -> R<&'a Value> {
-    args.get(i).ok_or_else(|| LangError::new(format!("Not enough input arguments for '{fname}'."), 0))
+    args.get(i).ok_or_else(|| LangError::new("Not enough input arguments.", 0))
 }
 
 pub(crate) fn m_arg(args: &[Value], i: usize, fname: &str) -> R<Matrix> {
