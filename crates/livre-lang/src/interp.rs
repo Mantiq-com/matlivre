@@ -1543,6 +1543,9 @@ impl Interpreter {
                     if !o.has_prop(f) {
                         return rt(format!("Unrecognized property '{f}' for class '{}'.", o.class.name));
                     }
+                    if o.class.name == "GeneralizedLinearModel" {
+                        return rt(format!("The {f} property for class GeneralizedLinearModel is read-only."));
+                    }
                     if o.class.name == "LinearModel" {
                         return rt(format!("The {f} property for class LinearModel is read-only."));
                     }

@@ -513,6 +513,11 @@ impl Object {
 /// Default display: `obj = \n  Foo with properties:\n\n    Name: 'x'`. `values` may carry
 /// computed Dependent values (otherwise the stored ones are shown).
 pub fn format_object(name: &str, o: &Object, values: &[Value], f: NumFormat) -> String {
+    if o.class.name == "GeneralizedLinearModel" {
+        if let Some(t) = crate::stats::glmodel::object_text(o) {
+            return format!("\n{name} = \n\n\n{t}");
+        }
+    }
     if o.class.name == "LinearModel" {
         if let Some(t) = crate::stats::linmodel::object_text(o) {
             return format!("\n{name} = \n\n\n{t}");

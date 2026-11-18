@@ -51,11 +51,11 @@ fn class_def() -> Rc<ClassDef> {
     })
 }
 
-fn prop(o: &Object, name: &str) -> Value {
+pub(crate) fn prop(o: &Object, name: &str) -> Value {
     o.class.prop_index(name).map(|i| o.props.borrow()[i].clone()).unwrap_or_else(Value::empty)
 }
 
-fn col(v: Vec<f64>) -> Value {
+pub(crate) fn col(v: Vec<f64>) -> Value {
     let n = v.len();
     Value::Num(Matrix::from_dims(vec![n, 1], v))
 }
@@ -64,14 +64,14 @@ fn cellstr_col(v: &[String]) -> Value {
     Value::Cell(CellArray::col(v.iter().map(|s| Value::chars(s)).collect()))
 }
 
-fn table_of(names: &[&str], vars: Vec<Value>, rows: Option<Vec<String>>) -> Res<Value> {
+pub(crate) fn table_of(names: &[&str], vars: Vec<Value>, rows: Option<Vec<String>>) -> Res<Value> {
     let mut t = Table::new(names.iter().map(|s| s.to_string()).collect(), vars)?;
     t.row_names = rows;
     Ok(Value::Table(Box::new(t)))
 }
 
 /// Terms of a model: exponent rows over the predictors.
-fn terms_of(spec: &str, p: usize, intercept: bool) -> Option<Vec<Vec<usize>>> {
+pub(crate) fn terms_of(spec: &str, p: usize, intercept: bool) -> Option<Vec<Vec<usize>>> {
     let zero = vec![0usize; p];
     let mut t: Vec<Vec<usize>> = Vec::new();
     let low = spec.to_lowercase();
@@ -156,7 +156,7 @@ fn terms_of(spec: &str, p: usize, intercept: bool) -> Option<Vec<Vec<usize>>> {
     Some(t)
 }
 
-fn term_name(r: &[usize], names: &[String]) -> String {
+pub(crate) fn term_name(r: &[usize], names: &[String]) -> String {
     if r.iter().all(|&e| e == 0) {
         return "(Intercept)".into();
     }
@@ -169,7 +169,7 @@ fn term_name(r: &[usize], names: &[String]) -> String {
     parts.join(":")
 }
 
-fn formula_text(resp: &str, terms: &[Vec<usize>], names: &[String]) -> String {
+pub(crate) fn formula_text(resp: &str, terms: &[Vec<usize>], names: &[String]) -> String {
     let p = names.len();
     let has_main = |i: usize| terms.iter().any(|r| r.iter().enumerate().all(|(j, &e)| if j == i { e == 1 } else { e == 0 }));
     let mut parts: Vec<String> = Vec::new();
@@ -198,12 +198,12 @@ fn formula_text(resp: &str, terms: &[Vec<usize>], names: &[String]) -> String {
     format!("{resp} ~ {}", parts.join(" + "))
 }
 
-fn design(x: &Matrix, terms: &[Vec<usize>]) -> Vec<Vec<f64>> {
+pub(crate) fn design(x: &Matrix, terms: &[Vec<usize>]) -> Vec<Vec<f64>> {
     let n = x.dims[0];
     (0..n).map(|i| terms.iter().map(|t| t.iter().enumerate().map(|(j, &e)| if e == 0 { 1.0 } else { x.data[j * n + i].powi(e as i32) }).product()).collect()).collect()
 }
 
-fn g3(v: f64) -> String {
+pub(crate) fn g3(v: f64) -> String {
     // %.3g
     if v == 0.0 {
         return "0".into();
@@ -212,7 +212,7 @@ fn g3(v: f64) -> String {
         return "NaN".into();
     }
     let exp = v.abs().log10().floor() as i32;
-    let s = if !(-5..3).contains(&exp) {
+    let s = if !(-4..3).contains(&exp) {
         let m = v / 10f64.powi(exp);
         let mut ms = format!("{:.2}", m);
         if ms.contains('.') {
@@ -232,7 +232,7 @@ fn g3(v: f64) -> String {
 }
 
 /// MATLAB's `<strong>` markup around the headers and row names of a displayed table.
-fn strong_markup(body: &str, rows: &[String]) -> String {
+pub(crate) fn strong_markup(body: &str, rows: &[String]) -> String {
     let width = rows.iter().map(|r| r.chars().count()).max().unwrap_or(0);
     let mut out = Vec::new();
     for (i, line) in body.lines().enumerate() {
@@ -515,7 +515,7 @@ fn fit(it: &mut Interpreter, a: &[Value]) -> Ret {
     Ok(Some(vec![Value::Object(o)]))
 }
 
-fn design_row_values(o: &Object, xnew: &Matrix) -> Res<(Vec<Vec<f64>>, Vec<usize>)> {
+pub(crate) fn design_row_values(o: &Object, xnew: &Matrix) -> Res<(Vec<Vec<f64>>, Vec<usize>)> {
     let p = prop(o, "NumPredictors").scalar().unwrap_or(0.0) as usize;
     if xnew.dims[1] != p {
         return rt(format!("X must have {p} columns."));
