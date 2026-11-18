@@ -1,6 +1,7 @@
 //! Statistics and Machine Learning Toolbox. Each area has its own module with a `NAMES` list and a
 //! `call` dispatcher; `call` here routes a name to its module (see docs/stats-coverage-plan.md).
 
+pub mod anova;
 pub mod corr;
 pub mod descr;
 pub mod dist;
@@ -53,6 +54,9 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
     if nonpar::NAMES.contains(&name) {
         return nonpar::call(it, name, a, nargout);
     }
+    if anova::NAMES.contains(&name) {
+        return anova::call(it, name, a, nargout);
+    }
     if rnd::NAMES.contains(&name) {
         return rnd::call(it, name, a, nargout);
     }
@@ -64,5 +68,5 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
 
 /// Every name the stats modules provide.
 pub fn names() -> Vec<&'static str> {
-    [descr::NAMES, corr::NAMES, dist::NAMES, rnd::NAMES, htest::NAMES, dist_matrix::NAMES, hier::NAMES, pca::NAMES, regress::NAMES, kmeans::NAMES, sampling::NAMES, nonpar::NAMES].concat()
+    [descr::NAMES, corr::NAMES, dist::NAMES, rnd::NAMES, htest::NAMES, dist_matrix::NAMES, hier::NAMES, pca::NAMES, regress::NAMES, kmeans::NAMES, sampling::NAMES, nonpar::NAMES, anova::NAMES].concat()
 }
