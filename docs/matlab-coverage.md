@@ -7,10 +7,10 @@ found in the toolbox folders, checked against MatLivre. Regenerate with
 
 | Status | Count |
 |---|---:|
-| Implemented | 2021 |
+| Implemented | 2039 |
 | In a branch not merged yet | 0 |
 | Language keyword (check it works) | 25 |
-| **To implement** | **463** |
+| **To implement** | **445** |
 | Out of scope | 1355 |
 
 Out of scope, by category of the function reference: app building, external language
@@ -316,7 +316,7 @@ Implemented: `&amp;`, `&gt;`, `&gt;=`, `&lt;`, `&lt;=`, `'`, `*`, `+`, `-`, `.'`
 
 Implemented: 84. To implement: 0. In a branch: 0. Out of scope: 0.
 
-Implemented: `addboundary`, `alphaShape`, `alphaSpectrum`, `alphaTriangulation`, `area`, `barycentricToCartesian`, `baryToCart`, `boundary`, `boundaryFacets`, `boundaryshape`, `boundingbox`, `cartesianToBarycentric`, `cartToBary`, `centroid`, `circumcenter`, `circumcenters`, `convexHull`, `convhull`, `convhulln`, `criticalAlpha`, `delaunay`, `delaunayn`, `DelaunayTri`, `delaunayTriangulation`, `dsearchn`, `edgeAttachments`, `edges`, `faceNormal`, `faceNormals`, `featureEdges`, `freeBoundary`, `holes`, `incenter`, `incenters`, `inOutStatus`, `inpolygon`, `inShape`, `isConnected`, `isEdge`, `ishole`, `isinterior`, `isInterior`, `issimplified`, `nearestNeighbor`, `nearestvertex`, `nsidedpoly`, `numboundaries`, `numRegions`, `numsides`, `overlaps`, `patch`, `perimeter`, `pointLocation`, `polyarea`, `polybuffer`, `polyshape`, `rectint`, `regions`, `rmboundary`, `rmholes`, `rmslivers`, `rotate`, `scale`, `sortboundaries`, `sortregions`, `stlread`, `stlwrite`, `subtract`, `surfaceArea`, `tetramesh`, `translate`, `triangulation`, `trimesh`, `triplot`, `TriRep`, `trisurf`, `tsearchn`, `turningdist`, `vertexAttachments`, `vertexNormal`, `volume`, `voronoi`, `voronoiDiagram`, `voronoin`
+Implemented: `addboundary`, `alphaShape`, `alphaSpectrum`, `alphaTriangulation`, `area`, `barycentricToCartesian`, `baryToCart`, `boundary`, `boundaryFacets`, `boundaryshape`, `boundingbox`, `cartesianToBarycentric`, `cartToBary`, `centroid`, `circumcenter`, `circumcenters`, `convexHull`, `convhull`, `convhulln`, `criticalAlpha`, `delaunay`, `delaunayn`, `DelaunayTri`, `delaunayTriangulation`, `dsearchn`, `edgeAttachments`, `edges`, `faceNormal`, `faceNormals`, `featureEdges`, `freeBoundary`, `holes`, `incenter`, `incenters`, `inOutStatus`, `inpolygon`, `inShape`, `isConnected`, `isEdge`, `ishole`, `isInterior`, `isinterior`, `issimplified`, `nearestNeighbor`, `nearestvertex`, `nsidedpoly`, `numboundaries`, `numRegions`, `numsides`, `overlaps`, `patch`, `perimeter`, `pointLocation`, `polyarea`, `polybuffer`, `polyshape`, `rectint`, `regions`, `rmboundary`, `rmholes`, `rmslivers`, `rotate`, `scale`, `sortboundaries`, `sortregions`, `stlread`, `stlwrite`, `subtract`, `surfaceArea`, `tetramesh`, `translate`, `triangulation`, `trimesh`, `triplot`, `TriRep`, `trisurf`, `tsearchn`, `turningdist`, `vertexAttachments`, `vertexNormal`, `volume`, `voronoi`, `voronoiDiagram`, `voronoin`
 
 ## MATLAB > Mathematics > Elementary Math
 
@@ -711,16 +711,17 @@ Out of scope: `allMuPADNotebooks` (desktop, IDE, GUI, printing or interactive to
 
 ## Statistics and Machine Learning Toolbox > ANOVA > Analysis of Variance and Covariance
 
-Implemented: 0. To implement: 6. In a branch: 0. Out of scope: 0.
+Implemented: 1. To implement: 5. In a branch: 0. Out of scope: 0.
 
 To implement:
 
 - [ ] `anova`
-- [ ] `anova1`
 - [ ] `anova2`
 - [ ] `anovan`
 - [ ] `aoctool`
 - [ ] `canoncorr`
+
+Implemented: `anova1`
 
 ## Statistics and Machine Learning Toolbox > ANOVA > Repeated Measures and MANOVA
 
@@ -929,14 +930,13 @@ To implement:
 
 ## Statistics and Machine Learning Toolbox > Cluster Analysis and Anomaly Detection > k-Means and k-Medoids Clustering
 
-Implemented: 1. To implement: 2. In a branch: 0. Out of scope: 0.
+Implemented: 2. To implement: 1. In a branch: 0. Out of scope: 0.
 
 To implement:
 
-- [ ] `kmeans`
 - [ ] `kmedoids`
 
-Implemented: `mahal`
+Implemented: `kmeans`, `mahal`
 
 ## Statistics and Machine Learning Toolbox > Descriptive Statistics and Visualization > Descriptive Statistics
 
@@ -1094,7 +1094,7 @@ To implement:
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Hypothesis Tests
 
-Implemented: 3. To implement: 21. In a branch: 0. Out of scope: 0.
+Implemented: 7. To implement: 17. In a branch: 0. Out of scope: 0.
 
 To implement:
 
@@ -1107,20 +1107,16 @@ To implement:
 - [ ] `friedman`
 - [ ] `gardnerAltmanPlot`
 - [ ] `jbtest`
-- [ ] `kruskalwallis`
 - [ ] `kstest`
 - [ ] `kstest2`
 - [ ] `lillietest`
 - [ ] `meanEffectSize`
 - [ ] `multcompare`
-- [ ] `ranksum`
 - [ ] `runstest`
 - [ ] `sampsizepwr`
-- [ ] `signrank`
-- [ ] `signtest`
 - [ ] `vartestn`
 
-Implemented: `vartest`, `vartest2`, `ztest`
+Implemented: `kruskalwallis`, `ranksum`, `signrank`, `signtest`, `vartest`, `vartest2`, `ztest`
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Multivariate Distributions
 
@@ -1158,7 +1154,7 @@ To implement:
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Resampling Techniques
 
-Implemented: 0. To implement: 7. In a branch: 0. Out of scope: 0.
+Implemented: 2. To implement: 5. In a branch: 0. Out of scope: 0.
 
 To implement:
 
@@ -1166,13 +1162,13 @@ To implement:
 - [ ] `bootstrp`
 - [ ] `combnk`
 - [ ] `crossval`
-- [ ] `datasample`
 - [ ] `jackknife`
-- [ ] `randsample`
+
+Implemented: `datasample`, `randsample`
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions
 
-Implemented: 67. To implement: 52. In a branch: 0. Out of scope: 0.
+Implemented: 75. To implement: 44. In a branch: 0. Out of scope: 0.
 
 To implement:
 
@@ -1183,8 +1179,6 @@ To implement:
 - [ ] `chi2rnd`
 - [ ] `evfit`
 - [ ] `evlike`
-- [ ] `expfit`
-- [ ] `explike`
 - [ ] `frnd`
 - [ ] `gamfit`
 - [ ] `gamlike`
@@ -1195,8 +1189,6 @@ To implement:
 - [ ] `gplike`
 - [ ] `histfit`
 - [ ] `ksdensity`
-- [ ] `lognfit`
-- [ ] `lognlike`
 - [ ] `mlecov`
 - [ ] `mvksdensity`
 - [ ] `ncfcdf`
@@ -1214,30 +1206,25 @@ To implement:
 - [ ] `ncx2pdf`
 - [ ] `ncx2rnd`
 - [ ] `ncx2stat`
-- [ ] `normfit`
-- [ ] `normlike`
 - [ ] `normplot`
 - [ ] `normspec`
 - [ ] `pearscdf`
 - [ ] `pearspdf`
 - [ ] `pearsrnd`
 - [ ] `randg`
-- [ ] `raylfit`
 - [ ] `trnd`
-- [ ] `unifit`
 - [ ] `wblfit`
 - [ ] `wbllike`
 - [ ] `wblplot`
 
-Implemented: `betacdf`, `betainv`, `betapdf`, `betastat`, `chi2cdf`, `chi2inv`, `chi2pdf`, `chi2stat`, `evcdf`, `evinv`, `evpdf`, `evrnd`, `evstat`, `expcdf`, `expinv`, `exppdf`, `exprnd`, `expstat`, `fcdf`, `finv`, `fpdf`, `fstat`, `gamcdf`, `gaminv`, `gampdf`, `gamstat`, `gevcdf`, `gevinv`, `gevpdf`, `gevrnd`, `gevstat`, `gpcdf`, `gpinv`, `gppdf`, `gprnd`, `gpstat`, `logncdf`, `logninv`, `lognpdf`, `lognrnd`, `lognstat`, `normcdf`, `norminv`, `normpdf`, `normrnd`, `normstat`, `raylcdf`, `raylinv`, `raylpdf`, `raylrnd`, `raylstat`, `tcdf`, `tinv`, `tpdf`, `tstat`, `ttest`, `ttest2`, `unifcdf`, `unifinv`, `unifpdf`, `unifrnd`, `unifstat`, `wblcdf`, `wblinv`, `wblpdf`, `wblrnd`, `wblstat`
+Implemented: `betacdf`, `betainv`, `betapdf`, `betastat`, `chi2cdf`, `chi2inv`, `chi2pdf`, `chi2stat`, `evcdf`, `evinv`, `evpdf`, `evrnd`, `evstat`, `expcdf`, `expfit`, `expinv`, `explike`, `exppdf`, `exprnd`, `expstat`, `fcdf`, `finv`, `fpdf`, `fstat`, `gamcdf`, `gaminv`, `gampdf`, `gamstat`, `gevcdf`, `gevinv`, `gevpdf`, `gevrnd`, `gevstat`, `gpcdf`, `gpinv`, `gppdf`, `gprnd`, `gpstat`, `logncdf`, `lognfit`, `logninv`, `lognlike`, `lognpdf`, `lognrnd`, `lognstat`, `normcdf`, `normfit`, `norminv`, `normlike`, `normpdf`, `normrnd`, `normstat`, `raylcdf`, `raylfit`, `raylinv`, `raylpdf`, `raylrnd`, `raylstat`, `tcdf`, `tinv`, `tpdf`, `tstat`, `ttest`, `ttest2`, `unifcdf`, `unifinv`, `unifit`, `unifpdf`, `unifrnd`, `unifstat`, `wblcdf`, `wblinv`, `wblpdf`, `wblrnd`, `wblstat`
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions
 
-Implemented: 27. To implement: 12. In a branch: 0. Out of scope: 0.
+Implemented: 29. To implement: 10. In a branch: 0. Out of scope: 0.
 
 To implement:
 
-- [ ] `binofit`
 - [ ] `ecdf`
 - [ ] `ecdfhist`
 - [ ] `fitdist`
@@ -1245,12 +1232,11 @@ To implement:
 - [ ] `mle`
 - [ ] `nbinfit`
 - [ ] `nbinrnd`
-- [ ] `poissfit`
 - [ ] `poissrnd`
 - [ ] `poisstat`
 - [ ] `qqplot`
 
-Implemented: `binocdf`, `binoinv`, `binopdf`, `binornd`, `binostat`, `geocdf`, `geoinv`, `geopdf`, `geornd`, `geostat`, `hygecdf`, `hygeinv`, `hygepdf`, `hygernd`, `hygestat`, `nbincdf`, `nbininv`, `nbinpdf`, `nbinstat`, `poisscdf`, `poissinv`, `poisspdf`, `unidcdf`, `unidinv`, `unidpdf`, `unidrnd`, `unidstat`
+Implemented: `binocdf`, `binofit`, `binoinv`, `binopdf`, `binornd`, `binostat`, `geocdf`, `geoinv`, `geopdf`, `geornd`, `geostat`, `hygecdf`, `hygeinv`, `hygepdf`, `hygernd`, `hygestat`, `nbincdf`, `nbininv`, `nbinpdf`, `nbinstat`, `poisscdf`, `poissfit`, `poissinv`, `poisspdf`, `unidcdf`, `unidinv`, `unidpdf`, `unidrnd`, `unidstat`
 
 ## Statistics and Machine Learning Toolbox > Regression > Direct Forecasting
 
