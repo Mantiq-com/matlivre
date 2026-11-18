@@ -37,7 +37,7 @@ The coverage checklist (`tools/coverage/update.sh`, `coverage.pl`) reads `stats.
 | Functions and classes in scope list (`stats.tsv`, R2023b-era) | 485 |
 | Out of scope (see below) | 15 |
 | In scope | 470 |
-| Implemented in MatLivre | 0 |
+| Implemented in MatLivre (`crates/livre-lang/src/stats/`) | 132 |
 | Class methods (`stats_methods.tsv`), implemented with their classes | 510 |
 
 Names per table-of-contents category (first listing): Probability distributions and hypothesis
@@ -165,3 +165,7 @@ Like `signal_matlab.rs`:
 - **Methods inventory**: `stats_methods.tsv` has the methods the reference lists; the classes
   themselves (`LinearModel`, `ClassificationTree`, ...) are not top-level entries in the
   reference's table of contents, so they are not counted in the 485.
+
+## Status
+
+MATLAB R2023b with the toolbox is installed. Done and recorded (`tools/stats/cases*.txt`, 1900 cases): descriptive statistics, `corr`, pdf/cdf/inv/stat of 20 families, rnd of the `rand`-based families, `ttest`/`ttest2`/`ztest`/`vartest`/`vartest2`, `pdist`/`pdist2`/`squareform`/`mahal`, `linkage`/`cluster`/`clusterdata`/`cophenet`/`inconsistent`, `pca`/`pcacov`/`pcares`/`cmdscale`/`corrcov`, `regress`/`dummyvar`/`x2fx`. Not recovered: `randn`'s Ziggurat (so `normrnd`, `gamrnd` and the other randn/randg-based generators). Next: `kmeans`, `fitlm`/`fitglm`, `anova1`, nonparametric tests, `fit`/`like`/`mle`, `makedist`/`fitdist`, learners.
