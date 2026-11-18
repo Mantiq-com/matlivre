@@ -23,6 +23,7 @@ pub mod harmonic;
 pub mod fillgaps;
 pub mod magrec;
 pub mod strips;
+pub mod specdesc;
 pub mod framing;
 pub mod stfts;
 pub mod maxflat;
@@ -98,7 +99,7 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
 }
 
 /// Functions whose outputs do not all follow a single-precision input.
-const OWN_PRECISION: &[&str] = &["tripuls", "gauspuls", "zp2tf", "impinvar", "buttord", "cheb1ord", "cheb2ord", "ellipord", "kaiserord", "fir2", "firls", "firpm", "firpmord", "gaussdesign", "rcosdesign", "firtype", "filtord", "filternorm", "impzlength", "enbw", "finddelay", "cusum", "dtw", "edr", "alignsignals", "decimate", "interp", "zerocrossrate", "findchangepts", "envelope", "invfreqz", "invfreqs", "stmcb", "yulewalk", "buffer", "shiftdata", "unshiftdata", "uencode", "udecode", "taylorwin", "pulstran", "vco", "modulate", "dpss", "marcumq", "rainflow", "demod", "iscola", "stft", "istft", "maxflat", "findsignal", "fircls", "fircls1", "pmusic", "peig", "rootmusic", "rooteig", "zplane", "cfirpm", "rpmfreqmap", "rpmordermap", "pspectrum", "modalfit", "modalsd", "instfreq", "instbw", "xspectrogram", "ifsst", "tfridge", "orderspectrum", "designfilt", "lowpass", "highpass", "bandpass", "bandstop", "window", "db", "scaleFilterSections", "thd", "sfdr", "toi", "snr", "sinad", "fillgaps", "stftmag2sig", "strips"];
+const OWN_PRECISION: &[&str] = &["tripuls", "gauspuls", "zp2tf", "impinvar", "buttord", "cheb1ord", "cheb2ord", "ellipord", "kaiserord", "fir2", "firls", "firpm", "firpmord", "gaussdesign", "rcosdesign", "firtype", "filtord", "filternorm", "impzlength", "enbw", "finddelay", "cusum", "dtw", "edr", "alignsignals", "decimate", "interp", "zerocrossrate", "findchangepts", "envelope", "invfreqz", "invfreqs", "stmcb", "yulewalk", "buffer", "shiftdata", "unshiftdata", "uencode", "udecode", "taylorwin", "pulstran", "vco", "modulate", "dpss", "marcumq", "rainflow", "demod", "iscola", "stft", "istft", "maxflat", "findsignal", "fircls", "fircls1", "pmusic", "peig", "rootmusic", "rooteig", "zplane", "cfirpm", "rpmfreqmap", "rpmordermap", "pspectrum", "modalfit", "modalsd", "instfreq", "instbw", "xspectrogram", "ifsst", "tfridge", "orderspectrum", "designfilt", "lowpass", "highpass", "bandpass", "bandstop", "window", "db", "scaleFilterSections", "thd", "sfdr", "toi", "snr", "sinad", "fillgaps", "stftmag2sig", "strips", "spectralCrest", "spectralEntropy", "spectralFlatness", "spectralKurtosis", "spectralSkewness"];
 
 /// A matrix with its values rounded to single precision (the class is left to the caller).
 pub(crate) fn cast_single_values(mut m: Matrix) -> Matrix {
@@ -174,6 +175,9 @@ fn dispatch(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
     }
     if modalfit::NAMES.contains(&name) {
         return modalfit::call(it, name, a, nargout);
+    }
+    if specdesc::NAMES.contains(&name) {
+        return specdesc::call(it, name, a, nargout);
     }
     if strips::NAMES.contains(&name) {
         return strips::call(it, a, nargout);
