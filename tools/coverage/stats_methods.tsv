@@ -1,0 +1,510 @@
+Descriptive Statistics and Visualization > Managing Data	dataset.dataset2cell
+Descriptive Statistics and Visualization > Managing Data	dataset.dataset2struct
+Descriptive Statistics and Visualization > Managing Data	dataset.cat
+Descriptive Statistics and Visualization > Managing Data	dataset.cellstr
+Descriptive Statistics and Visualization > Managing Data	dataset.disp
+Descriptive Statistics and Visualization > Managing Data	dataset.display
+Descriptive Statistics and Visualization > Managing Data	dataset.double
+Descriptive Statistics and Visualization > Managing Data	dataset.end
+Descriptive Statistics and Visualization > Managing Data	dataset.export
+Descriptive Statistics and Visualization > Managing Data	dataset.get
+Descriptive Statistics and Visualization > Managing Data	dataset.horzcat
+Descriptive Statistics and Visualization > Managing Data	dataset.intersect
+Descriptive Statistics and Visualization > Managing Data	dataset.isempty
+Descriptive Statistics and Visualization > Managing Data	dataset.ismember
+Descriptive Statistics and Visualization > Managing Data	dataset.ismissing
+Descriptive Statistics and Visualization > Managing Data	dataset.join
+Descriptive Statistics and Visualization > Managing Data	dataset.length
+Descriptive Statistics and Visualization > Managing Data	dataset.ndims
+Descriptive Statistics and Visualization > Managing Data	dataset.numel
+Descriptive Statistics and Visualization > Managing Data	dataset.sortrows
+Descriptive Statistics and Visualization > Managing Data	dataset.stack
+Descriptive Statistics and Visualization > Managing Data	dataset.subsasgn
+Descriptive Statistics and Visualization > Managing Data	dataset.subsref
+Descriptive Statistics and Visualization > Managing Data	dataset.summary
+Descriptive Statistics and Visualization > Managing Data	dataset.union
+Descriptive Statistics and Visualization > Managing Data	dataset.unique
+Descriptive Statistics and Visualization > Managing Data	dataset.unstack
+Descriptive Statistics and Visualization > Managing Data	dataset.vertcat
+Descriptive Statistics and Visualization > Managing Data	dataset.replacedata
+Descriptive Statistics and Visualization > Managing Data	dataset.replacewithmissing
+Descriptive Statistics and Visualization > Managing Data	dataset.set
+Descriptive Statistics and Visualization > Managing Data	dataset.setdiff
+Descriptive Statistics and Visualization > Managing Data	dataset.setxor
+Descriptive Statistics and Visualization > Managing Data	dataset.single
+Descriptive Statistics and Visualization > Managing Data	dataset.size
+Descriptive Statistics and Visualization > Managing Data	nominal.addlevels
+Descriptive Statistics and Visualization > Managing Data	dataset.datasetfun
+Descriptive Statistics and Visualization > Managing Data	nominal.droplevels
+Descriptive Statistics and Visualization > Managing Data	nominal.getlabels
+Descriptive Statistics and Visualization > Managing Data	nominal.getlevels
+Descriptive Statistics and Visualization > Managing Data	nominal.islevel
+Descriptive Statistics and Visualization > Managing Data	nominal.levelcounts
+Descriptive Statistics and Visualization > Managing Data	nominal.mergelevels
+Descriptive Statistics and Visualization > Managing Data	nominal.setlabels
+Descriptive Statistics and Visualization > Managing Data	nominal.reorderlevels
+Descriptive Statistics and Visualization > Statistical Visualization	tall.binscatterplot
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	prob.normaldistribution.cdf
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	prob.normaldistribution.icdf
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	prob.normaldistribution.pdf
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	prob.normaldistribution.random
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	linearmodel.gather
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	prob.normaldistribution.iqr
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	prob.normaldistribution.mean
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	prob.normaldistribution.median
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	prob.normaldistribution.negloglik
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	prob.normaldistribution.paramci
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	prob.normaldistribution.plot
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	prob.normaldistribution.proflik
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	prob.normaldistribution.std
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	prob.normaldistribution.truncate
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	prob.normaldistribution.var
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	paretotails.boundary
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	paretotails.lowerparams
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	paretotails.nsegments
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	paretotails.segment
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	paretotails.upperparams
+Probability Distributions and Hypothesis Tests > Multivariate Distributions	gmdistribution.cdf
+Probability Distributions and Hypothesis Tests > Multivariate Distributions	gmdistribution.cluster
+Probability Distributions and Hypothesis Tests > Multivariate Distributions	gmdistribution.mahal
+Probability Distributions and Hypothesis Tests > Multivariate Distributions	gmdistribution.pdf
+Probability Distributions and Hypothesis Tests > Multivariate Distributions	gmdistribution.posterior
+Probability Distributions and Hypothesis Tests > Multivariate Distributions	gmdistribution.random
+Probability Distributions and Hypothesis Tests > Pseudorandom and Quasirandom Number Generation	haltonset.net
+Probability Distributions and Hypothesis Tests > Pseudorandom and Quasirandom Number Generation	haltonset.scramble
+Probability Distributions and Hypothesis Tests > Pseudorandom and Quasirandom Number Generation	sobolset.reducedimensions
+Probability Distributions and Hypothesis Tests > Pseudorandom and Quasirandom Number Generation	qrandstream.qrand
+Probability Distributions and Hypothesis Tests > Pseudorandom and Quasirandom Number Generation	qrandstream.rand
+Probability Distributions and Hypothesis Tests > Pseudorandom and Quasirandom Number Generation	qrandstream.reset
+Probability Distributions and Hypothesis Tests > Pseudorandom and Quasirandom Number Generation	hamiltoniansampler.tunesampler
+Probability Distributions and Hypothesis Tests > Pseudorandom and Quasirandom Number Generation	hamiltoniansampler.diagnostics
+Probability Distributions and Hypothesis Tests > Pseudorandom and Quasirandom Number Generation	hamiltoniansampler.drawsamples
+Probability Distributions and Hypothesis Tests > Pseudorandom and Quasirandom Number Generation	hamiltoniansampler.estimatemap
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	stats.drift.driftdiagnostics
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	driftdiagnostics.summary
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	driftdiagnostics.ecdf
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	driftdiagnostics.histcounts
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	driftdiagnostics.plotdriftstatus
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	driftdiagnostics.plotempiricalcdf
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	driftdiagnostics.plothistogram
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	driftdiagnostics.plotpermutationresults
+Industrial Statistics > Analysis of Lifetime Data	coxmodel.plotsurvival
+Industrial Statistics > Analysis of Lifetime Data	coxmodel.coefci
+Industrial Statistics > Analysis of Lifetime Data	coxmodel.discardresiduals
+Industrial Statistics > Analysis of Lifetime Data	coxmodel.hazardratio
+Industrial Statistics > Analysis of Lifetime Data	coxmodel.linhyptest
+Industrial Statistics > Analysis of Lifetime Data	coxmodel.survival
+ANOVA > Analysis of Variance and Covariance	anova.boxchart
+ANOVA > Analysis of Variance and Covariance	anova.groupmeans
+ANOVA > Analysis of Variance and Covariance	anova.multcompare
+ANOVA > Analysis of Variance and Covariance	anova.plotcomparisons
+ANOVA > Analysis of Variance and Covariance	anova.stats
+ANOVA > Analysis of Variance and Covariance	anova.variancecomponent
+ANOVA > Repeated Measures and MANOVA	repeatedmeasuresmodel.ranova
+ANOVA > Repeated Measures and MANOVA	repeatedmeasuresmodel.anova
+ANOVA > Repeated Measures and MANOVA	repeatedmeasuresmodel.mauchly
+ANOVA > Repeated Measures and MANOVA	repeatedmeasuresmodel.epsilon
+ANOVA > Repeated Measures and MANOVA	repeatedmeasuresmodel.multcompare
+ANOVA > Repeated Measures and MANOVA	repeatedmeasuresmodel.manova
+ANOVA > Repeated Measures and MANOVA	repeatedmeasuresmodel.coeftest
+ANOVA > Repeated Measures and MANOVA	repeatedmeasuresmodel.grpstats
+ANOVA > Repeated Measures and MANOVA	repeatedmeasuresmodel.margmean
+ANOVA > Repeated Measures and MANOVA	repeatedmeasuresmodel.plot
+ANOVA > Repeated Measures and MANOVA	repeatedmeasuresmodel.plotprofile
+ANOVA > Repeated Measures and MANOVA	repeatedmeasuresmodel.predict
+ANOVA > Repeated Measures and MANOVA	repeatedmeasuresmodel.random
+ANOVA > Repeated Measures and MANOVA	manova.barttest
+ANOVA > Repeated Measures and MANOVA	manova.boxchart
+ANOVA > Repeated Measures and MANOVA	manova.canonvars
+ANOVA > Repeated Measures and MANOVA	manova.coeftest
+ANOVA > Repeated Measures and MANOVA	manova.groupmeans
+ANOVA > Repeated Measures and MANOVA	manova.multcompare
+ANOVA > Repeated Measures and MANOVA	manova.plotprofile
+ANOVA > Repeated Measures and MANOVA	manova.stats
+Regression > Linear Regression > Multiple Linear Regression	linearmodel.compact
+Regression > Linear Regression > Multiple Linear Regression	linearmodel.addterms
+Regression > Linear Regression > Multiple Linear Regression	linearmodel.removeterms
+Regression > Linear Regression > Multiple Linear Regression	linearmodel.step
+Regression > Linear Regression > Multiple Linear Regression	linearmodel.feval
+Regression > Linear Regression > Multiple Linear Regression	linearmodel.predict
+Regression > Linear Regression > Multiple Linear Regression	linearmodel.random
+Regression > Linear Regression > Multiple Linear Regression	linearmodel.anova
+Regression > Linear Regression > Multiple Linear Regression	linearmodel.coefci
+Regression > Linear Regression > Multiple Linear Regression	linearmodel.coeftest
+Regression > Linear Regression > Multiple Linear Regression	linearmodel.dwtest
+Regression > Linear Regression > Multiple Linear Regression	regressiontree.partialdependence
+Regression > Linear Regression > Multiple Linear Regression	linearmodel.plot
+Regression > Linear Regression > Multiple Linear Regression	linearmodel.plotadded
+Regression > Linear Regression > Multiple Linear Regression	linearmodel.plotadjustedresponse
+Regression > Linear Regression > Multiple Linear Regression	linearmodel.plotdiagnostics
+Regression > Linear Regression > Multiple Linear Regression	linearmodel.ploteffects
+Regression > Linear Regression > Multiple Linear Regression	linearmodel.plotinteraction
+Regression > Linear Regression > Multiple Linear Regression	regressiontree.plotpartialdependence
+Regression > Linear Regression > Multiple Linear Regression	linearmodel.plotresiduals
+Regression > Linear Regression > Multiple Linear Regression	linearmodel.plotslice
+Regression > Linear Regression > Multiple Linear Regression	regressionlinear.predict
+Regression > Linear Regression > Multiple Linear Regression	regressionlinear.loss
+Regression > Linear Regression > Multiple Linear Regression	regressionlinear.selectmodels
+Regression > Linear Regression > Multiple Linear Regression	classreg.learning.partition.regressionpartitionedlinear.kfoldloss
+Regression > Linear Regression > Multiple Linear Regression	classreg.learning.partition.regressionpartitionedlinear.kfoldpredict
+Regression > Linear Regression > Multiple Linear Regression	classificationsvm.compact
+Regression > Linear Regression > Multiple Linear Regression	classificationsvm.crossval
+Regression > Linear Regression > Mixed Effects	linearmixedmodel.predict
+Regression > Linear Regression > Mixed Effects	linearmixedmodel.random
+Regression > Linear Regression > Mixed Effects	linearmixedmodel.fixedeffects
+Regression > Linear Regression > Mixed Effects	linearmixedmodel.randomeffects
+Regression > Linear Regression > Mixed Effects	linearmixedmodel.fitted
+Regression > Linear Regression > Mixed Effects	linearmixedmodel.anova
+Regression > Linear Regression > Mixed Effects	linearmixedmodel.coefci
+Regression > Linear Regression > Mixed Effects	linearmixedmodel.coeftest
+Regression > Linear Regression > Mixed Effects	linearmixedmodel.compare
+Regression > Linear Regression > Mixed Effects	linearmixedmodel.designmatrix
+Regression > Linear Regression > Mixed Effects	linearmixedmodel.covarianceparameters
+Regression > Linear Regression > Mixed Effects	linearmixedmodel.residuals
+Regression > Linear Regression > Mixed Effects	linearmixedmodel.response
+Regression > Linear Regression > Mixed Effects	linearmixedmodel.plotresiduals
+Regression > Generalized Linear Models > Generalized Linear Regression	generalizedlinearmodel.compact
+Regression > Generalized Linear Models > Generalized Linear Regression	generalizedlinearmodel.addterms
+Regression > Generalized Linear Models > Generalized Linear Regression	generalizedlinearmodel.removeterms
+Regression > Generalized Linear Models > Generalized Linear Regression	generalizedlinearmodel.step
+Regression > Generalized Linear Models > Generalized Linear Regression	generalizedlinearmodel.feval
+Regression > Generalized Linear Models > Generalized Linear Regression	generalizedlinearmodel.predict
+Regression > Generalized Linear Models > Generalized Linear Regression	generalizedlinearmodel.random
+Regression > Generalized Linear Models > Generalized Linear Regression	generalizedlinearmodel.coefci
+Regression > Generalized Linear Models > Generalized Linear Regression	generalizedlinearmodel.coeftest
+Regression > Generalized Linear Models > Generalized Linear Regression	generalizedlinearmodel.deviancetest
+Regression > Generalized Linear Models > Generalized Linear Regression	generalizedlinearmodel.plotdiagnostics
+Regression > Generalized Linear Models > Generalized Linear Regression	generalizedlinearmodel.plotresiduals
+Regression > Generalized Linear Models > Generalized Linear Regression	generalizedlinearmodel.plotslice
+Regression > Generalized Linear Models > Generalized Linear Regression	multinomialregression.coefci
+Regression > Generalized Linear Models > Generalized Linear Regression	multinomialregression.coeftest
+Regression > Generalized Linear Models > Generalized Linear Regression	multinomialregression.feval
+Regression > Generalized Linear Models > Generalized Linear Regression	multinomialregression.plotresiduals
+Regression > Generalized Linear Models > Generalized Linear Regression	multinomialregression.plotslice
+Regression > Generalized Linear Models > Generalized Linear Regression	multinomialregression.predict
+Regression > Generalized Linear Models > Generalized Linear Regression	multinomialregression.random
+Regression > Generalized Linear Models > Generalized Linear Regression	multinomialregression.testdeviance
+Regression > Generalized Linear Models > Generalized Linear Regression	classificationlinear.predict
+Regression > Generalized Linear Models > Generalized Linear Regression	classificationecoc.predict
+Regression > Generalized Linear Models > Generalized Linear Regression	classificationkernel.predict
+Regression > Generalized Linear Models > Generalized Linear Regression	classificationkernel.edge
+Regression > Generalized Linear Models > Generalized Linear Regression	classificationkernel.loss
+Regression > Generalized Linear Models > Generalized Linear Regression	classificationkernel.margin
+Regression > Generalized Linear Models > Generalized Linear Regression	classificationkernel.resume
+Regression > Generalized Linear Models > Mixed Effects	generalizedlinearmixedmodel.refit
+Regression > Generalized Linear Models > Mixed Effects	generalizedlinearmixedmodel.predict
+Regression > Generalized Linear Models > Mixed Effects	generalizedlinearmixedmodel.random
+Regression > Generalized Linear Models > Mixed Effects	generalizedlinearmixedmodel.fitted
+Regression > Generalized Linear Models > Mixed Effects	generalizedlinearmixedmodel.fixedeffects
+Regression > Generalized Linear Models > Mixed Effects	generalizedlinearmixedmodel.randomeffects
+Regression > Generalized Linear Models > Mixed Effects	generalizedlinearmixedmodel.anova
+Regression > Generalized Linear Models > Mixed Effects	generalizedlinearmixedmodel.coefci
+Regression > Generalized Linear Models > Mixed Effects	generalizedlinearmixedmodel.coeftest
+Regression > Generalized Linear Models > Mixed Effects	generalizedlinearmixedmodel.compare
+Regression > Generalized Linear Models > Mixed Effects	generalizedlinearmixedmodel.covarianceparameters
+Regression > Generalized Linear Models > Mixed Effects	generalizedlinearmixedmodel.designmatrix
+Regression > Generalized Linear Models > Mixed Effects	generalizedlinearmixedmodel.residuals
+Regression > Generalized Linear Models > Mixed Effects	generalizedlinearmixedmodel.response
+Regression > Generalized Linear Models > Mixed Effects	generalizedlinearmixedmodel.plotresiduals
+Regression > Nonlinear Regression	nonlinearmodel.feval
+Regression > Nonlinear Regression	nonlinearmodel.predict
+Regression > Nonlinear Regression	nonlinearmodel.random
+Regression > Nonlinear Regression	nonlinearmodel.plotresiduals
+Regression > Support Vector Machine Regression	regressionsvm.predict
+Regression > Support Vector Machine Regression	regressionkernel.predict
+Regression > Support Vector Machine Regression	regressionsvm.discardsupportvectors
+Regression > Support Vector Machine Regression	regressionsvm.incrementallearner
+Regression > Support Vector Machine Regression	regressionsvm.loss
+Regression > Support Vector Machine Regression	regressiongam.resubloss
+Regression > Support Vector Machine Regression	regressiongam.resubpredict
+Regression > Support Vector Machine Regression	regressionsvm.resume
+Regression > Support Vector Machine Regression	regressionlinear.incrementallearner
+Regression > Support Vector Machine Regression	classreg.learning.classif.compactclassificationsvm.update
+Regression > Support Vector Machine Regression	classreg.learning.partition.regressionpartitionedkernel.kfoldloss
+Regression > Support Vector Machine Regression	classreg.learning.partition.regressionpartitionedkernel.kfoldpredict
+Regression > Support Vector Machine Regression	regressionkernel.incrementallearner
+Regression > Support Vector Machine Regression	regressionkernel.loss
+Regression > Support Vector Machine Regression	regressionkernel.resume
+Regression > Gaussian Process Regression	classreg.learning.partition.regressionpartitionedmodel.kfoldloss
+Regression > Gaussian Process Regression	classreg.learning.partition.regressionpartitionedmodel.kfoldpredict
+Regression > Gaussian Process Regression	classreg.learning.partition.regressionpartitionedmodel.kfoldfun
+Regression > Gaussian Process Regression	regressiongp.loss
+Regression > Gaussian Process Regression	regressiongp.postfitstatistics
+Regression > Gaussian Process Regression	regressiongp.predict
+Regression > Regression Trees	regressiontree.prune
+Regression > Regression Trees	classreg.learning.classif.compactclassificationtree.nodevariablerange
+Regression > Regression Trees	regressiontree.predictorimportance
+Regression > Regression Trees	regressiontree.surrogateassociation
+Regression > Regression Trees	regressiontree.view
+Regression > Regression Trees	regressiontree.cvloss
+Regression > Regression Trees	regressiontree.loss
+Regression > Regression Trees	regressiontree.resubloss
+Regression > Regression Trees	regressiontree.predict
+Regression > Regression Trees	regressiontree.resubpredict
+Regression > Regression Tree Ensembles	classreg.learning.regr.regressionensemble.regularize
+Regression > Regression Tree Ensembles	classreg.learning.regr.compactregressionensemble.removelearners
+Regression > Regression Tree Ensembles	classreg.learning.regr.regressionensemble.resume
+Regression > Regression Tree Ensembles	classreg.learning.regr.regressionensemble.shrink
+Regression > Regression Tree Ensembles	regressionensemble.cvshrink
+Regression > Regression Tree Ensembles	classreg.learning.regr.compactregressionensemble.loss
+Regression > Regression Tree Ensembles	classreg.learning.regr.regressionensemble.resubloss
+Regression > Regression Tree Ensembles	classreg.learning.regr.compactregressionensemble.predict
+Regression > Regression Tree Ensembles	regressionensemble.resubpredict
+Regression > Regression Tree Ensembles	treebagger.predict
+Regression > Regression Tree Ensembles	treebagger.oobpredict
+Regression > Regression Tree Ensembles	treebagger.quantilepredict
+Regression > Regression Tree Ensembles	treebagger.oobquantilepredict
+Regression > Regression Tree Ensembles	classreg.learning.regr.compactregressionensemble.predictorimportance
+Regression > Regression Tree Ensembles	classreg.learning.regr.regressionbaggedensemble.oobpredict
+Regression > Regression Tree Ensembles	classreg.learning.regr.regressionbaggedensemble.oobpermutedpredictorimportance
+Regression > Regression Tree Ensembles	treebagger.quantileerror
+Regression > Regression Tree Ensembles	treebagger.oobquantileerror
+Regression > Regression Tree Ensembles	regressionpartitionedensemble.resume
+Regression > Regression Tree Ensembles	treebagger.append
+Regression > Regression Tree Ensembles	treebagger.compact
+Regression > Regression Tree Ensembles	treebagger.error
+Regression > Regression Tree Ensembles	treebagger.fillprox
+Regression > Regression Tree Ensembles	treebagger.growtrees
+Regression > Regression Tree Ensembles	treebagger.mdsprox
+Regression > Regression Tree Ensembles	treebagger.ooberror
+Regression > Regression Tree Ensembles	compacttreebagger.combine
+Regression > Regression Tree Ensembles	compacttreebagger.error
+Regression > Regression Tree Ensembles	compacttreebagger.mdsprox
+Regression > Regression Tree Ensembles	compacttreebagger.outliermeasure
+Regression > Regression Tree Ensembles	compacttreebagger.predict
+Regression > Regression Tree Ensembles	compacttreebagger.proximity
+Regression > Regression Tree Ensembles	compacttreebagger.setdefaultyfit
+Regression > Regression Tree Ensembles	classreg.learning.regr.regressionbaggedensemble.oobloss
+Regression > Generalized Additive Model	classificationgam.addinteractions
+Regression > Generalized Additive Model	classificationgam.resume
+Regression > Generalized Additive Model	classificationgam.plotlocaleffects
+Regression > Generalized Additive Model	regressiongam.predict
+Regression > Generalized Additive Model	regressiongam.loss
+Regression > Neural Networks	regressionneuralnetwork.loss
+Regression > Neural Networks	regressionneuralnetwork.predict
+Regression > Incremental Learning	incrementaldriftawarelearner.fit
+Regression > Incremental Learning	incrementaldriftawarelearner.updatemetrics
+Regression > Incremental Learning	incrementaldriftawarelearner.updatemetricsandfit
+Regression > Incremental Learning	incrementaldriftawarelearner.loss
+Regression > Incremental Learning	incrementaldriftawarelearner.perobservationloss
+Regression > Incremental Learning	incrementaldriftawarelearner.predict
+Regression > Incremental Learning	incrementaldriftawarelearner.reset
+Regression > Incremental Learning	incrementalclassificationkernel.fit
+Regression > Incremental Learning	incrementalclassificationkernel.updatemetrics
+Regression > Incremental Learning	incrementalclassificationkernel.updatemetricsandfit
+Regression > Incremental Learning	incrementalclassificationkernel.predict
+Regression > Incremental Learning	incrementalclassificationkernel.loss
+Regression > Incremental Learning	incrementalregressionlinear.perobservationloss
+Regression > Incremental Learning	incrementalregressionlinear.reset
+Regression > Incremental Learning	incrementalregressionlinear.fit
+Regression > Incremental Learning	incrementalregressionlinear.updatemetrics
+Regression > Incremental Learning	incrementalregressionlinear.updatemetricsandfit
+Regression > Incremental Learning	incrementalregressionlinear.predict
+Regression > Incremental Learning	incrementalregressionlinear.loss
+Regression > Incremental Learning	incremental.drift.driftdetectionmethod.detectdrift
+Regression > Incremental Learning	incremental.drift.driftdetectionmethod.reset
+Regression > Direct Forecasting	timeseries.forecaster.directforecaster.compact
+Regression > Direct Forecasting	timeseries.forecaster.directforecaster.crossval
+Regression > Direct Forecasting	timeseries.forecaster.directforecaster.loss
+Regression > Direct Forecasting	timeseries.forecaster.directforecaster.predict
+Regression > Direct Forecasting	timeseries.forecaster.directforecaster.forecast
+Regression > Direct Forecasting	timeseries.forecaster.directforecaster.preparedpredictors
+Regression > Direct Forecasting	timeseries.forecaster.partitioneddirectforecaster.cvloss
+Regression > Direct Forecasting	timeseries.forecaster.partitioneddirectforecaster.cvpredict
+Regression > Interpretability	lime.fit
+Regression > Interpretability	lime.plot
+Regression > Interpretability	shapley.fit
+Regression > Interpretability	shapley.plot
+Regression > Model Building and Assessment	featureselectionncaclassification.selectfeatures
+Regression > Model Building and Assessment	featuretransformer.describe
+Regression > Model Building and Assessment	featuretransformer.transform
+Regression > Model Building and Assessment	cvpartition.repartition
+Regression > Model Building and Assessment	cvpartition.test
+Regression > Model Building and Assessment	cvpartition.training
+Regression > Model Building and Assessment	tspartition.test
+Regression > Model Building and Assessment	tspartition.training
+Regression > Model Building and Assessment	nonlinearmodel.coefci
+Regression > Model Building and Assessment	nonlinearmodel.coeftest
+Regression > Model Building and Assessment	nonlinearmodel.plotdiagnostics
+Regression > Model Building and Assessment	nonlinearmodel.plotslice
+Regression > Model Building and Assessment	bayesianoptimization.bestpoint
+Regression > Model Building and Assessment	bayesianoptimization.plot
+Regression > Model Building and Assessment	bayesianoptimization.predictconstraints
+Regression > Model Building and Assessment	bayesianoptimization.predicterror
+Regression > Model Building and Assessment	bayesianoptimization.predictobjective
+Regression > Model Building and Assessment	bayesianoptimization.predictobjectiveevaluationtime
+Regression > Model Building and Assessment	bayesianoptimization.resume
+Regression > Model Building and Assessment	featureselectionncaregression.refit
+Regression > Model Building and Assessment	featureselectionncaregression.predict
+Regression > Model Building and Assessment	featureselectionncaregression.loss
+Classification > Classification Trees	classificationtree.prune
+Classification > Classification Trees	classificationtree.cvloss
+Classification > Classification Trees	classificationtree.predictorimportance
+Classification > Classification Trees	classificationtree.surrogateassociation
+Classification > Classification Trees	classificationtree.view
+Classification > Classification Trees	classreg.learning.partition.classificationpartitionedmodel.kfoldedge
+Classification > Classification Trees	classreg.learning.partition.classificationpartitionedmodel.kfoldloss
+Classification > Classification Trees	classreg.learning.partition.classificationpartitionedmodel.kfoldmargin
+Classification > Classification Trees	classreg.learning.partition.classificationpartitionedmodel.kfoldpredict
+Classification > Classification Trees	classreg.learning.partition.classificationpartitionedmodel.kfoldfun
+Classification > Classification Trees	classificationtree.loss
+Classification > Classification Trees	classificationtree.resubloss
+Classification > Classification Trees	classificationknn.compareholdout
+Classification > Classification Trees	classificationtree.edge
+Classification > Classification Trees	classificationtree.margin
+Classification > Classification Trees	classificationtree.resubedge
+Classification > Classification Trees	classificationtree.resubmargin
+Classification > Classification Trees	classificationtree.predict
+Classification > Classification Trees	classificationtree.resubpredict
+Classification > Discriminant Analysis	classificationdiscriminant.cvshrink
+Classification > Discriminant Analysis	classificationdiscriminant.loss
+Classification > Discriminant Analysis	classificationdiscriminant.resubloss
+Classification > Discriminant Analysis	classificationdiscriminant.logp
+Classification > Discriminant Analysis	classificationdiscriminant.mahal
+Classification > Discriminant Analysis	classificationdiscriminant.nlinearcoeffs
+Classification > Discriminant Analysis	classificationdiscriminant.edge
+Classification > Discriminant Analysis	classificationdiscriminant.margin
+Classification > Discriminant Analysis	classificationdiscriminant.resubedge
+Classification > Discriminant Analysis	classificationdiscriminant.resubmargin
+Classification > Discriminant Analysis	classificationdiscriminant.predict
+Classification > Discriminant Analysis	classificationdiscriminant.resubpredict
+Classification > Naive Bayes	classificationnaivebayes.loss
+Classification > Naive Bayes	classificationsvm.resubloss
+Classification > Naive Bayes	classificationnaivebayes.logp
+Classification > Naive Bayes	classificationnaivebayes.edge
+Classification > Naive Bayes	classificationnaivebayes.margin
+Classification > Naive Bayes	classificationsvm.resubedge
+Classification > Naive Bayes	classificationsvm.resubmargin
+Classification > Naive Bayes	classificationnaivebayes.predict
+Classification > Naive Bayes	classificationsvm.resubpredict
+Classification > Naive Bayes	classificationnaivebayes.incrementallearner
+Classification > Nearest Neighbors	classificationknn.loss
+Classification > Nearest Neighbors	classificationknn.edge
+Classification > Nearest Neighbors	classificationknn.margin
+Classification > Nearest Neighbors	classificationknn.predict
+Classification > Nearest Neighbors	exhaustivesearcher.knnsearch
+Classification > Nearest Neighbors	exhaustivesearcher.rangesearch
+Classification > Support Vector Machine Classification	classreg.learning.classif.compactclassificationsvm.discardsupportvectors
+Classification > Support Vector Machine Classification	classificationsvm.incrementallearner
+Classification > Support Vector Machine Classification	classificationsvm.resume
+Classification > Support Vector Machine Classification	classreg.learning.classif.compactclassificationsvm.loss
+Classification > Support Vector Machine Classification	classreg.learning.classif.compactclassificationsvm.edge
+Classification > Support Vector Machine Classification	classreg.learning.classif.compactclassificationsvm.margin
+Classification > Support Vector Machine Classification	classreg.learning.classif.compactclassificationsvm.fitposterior
+Classification > Support Vector Machine Classification	classreg.learning.classif.compactclassificationsvm.predict
+Classification > Support Vector Machine Classification	classificationecoc.loss
+Classification > Support Vector Machine Classification	classificationecoc.discardsupportvectors
+Classification > Support Vector Machine Classification	classificationlinear.loss
+Classification > Support Vector Machine Classification	classificationsvm.fitposterior
+Classification > Support Vector Machine Classification	classificationecoc.resubedge
+Classification > Support Vector Machine Classification	classificationecoc.resubloss
+Classification > Support Vector Machine Classification	classificationecoc.resubmargin
+Classification > Support Vector Machine Classification	classificationecoc.resubpredict
+Classification > Support Vector Machine Classification	classificationecoc.edge
+Classification > Support Vector Machine Classification	classificationecoc.margin
+Classification > Support Vector Machine Classification	classificationlinear.edge
+Classification > Support Vector Machine Classification	classificationlinear.incrementallearner
+Classification > Support Vector Machine Classification	classificationlinear.margin
+Classification > Support Vector Machine Classification	classreg.learning.classif.compactclassificationecoc.selectmodels
+Classification > Support Vector Machine Classification	classificationlinear.selectmodels
+Classification > Support Vector Machine Classification	classreg.learning.partition.classificationpartitionedecoc.kfoldedge
+Classification > Support Vector Machine Classification	classreg.learning.partition.classificationpartitionedecoc.kfoldloss
+Classification > Support Vector Machine Classification	classreg.learning.partition.classificationpartitionedecoc.kfoldfun
+Classification > Support Vector Machine Classification	classreg.learning.partition.classificationpartitionedecoc.kfoldmargin
+Classification > Support Vector Machine Classification	classreg.learning.partition.classificationpartitionedecoc.kfoldpredict
+Classification > Support Vector Machine Classification	classificationpartitionedlinearecoc.kfoldedge
+Classification > Support Vector Machine Classification	classificationpartitionedlinearecoc.kfoldloss
+Classification > Support Vector Machine Classification	classificationpartitionedlinearecoc.kfoldmargin
+Classification > Support Vector Machine Classification	classificationpartitionedlinearecoc.kfoldpredict
+Classification > Support Vector Machine Classification	classreg.learning.partition.classificationpartitionedlinear.kfoldedge
+Classification > Support Vector Machine Classification	classreg.learning.partition.classificationpartitionedlinear.kfoldloss
+Classification > Support Vector Machine Classification	classreg.learning.partition.classificationpartitionedlinear.kfoldmargin
+Classification > Support Vector Machine Classification	classreg.learning.partition.classificationpartitionedlinear.kfoldpredict
+Classification > Support Vector Machine Classification	classificationecoc.incrementallearner
+Classification > Support Vector Machine Classification	classificationkernel.incrementallearner
+Classification > Support Vector Machine Classification	classreg.learning.partition.classificationpartitionedkernel.kfoldedge
+Classification > Support Vector Machine Classification	classreg.learning.partition.classificationpartitionedkernel.kfoldloss
+Classification > Support Vector Machine Classification	classreg.learning.partition.classificationpartitionedkernel.kfoldmargin
+Classification > Support Vector Machine Classification	classreg.learning.partition.classificationpartitionedkernel.kfoldpredict
+Classification > Support Vector Machine Classification	classreg.learning.partition.classificationpartitionedkernelecoc.kfoldedge
+Classification > Support Vector Machine Classification	classreg.learning.partition.classificationpartitionedkernelecoc.kfoldloss
+Classification > Support Vector Machine Classification	classreg.learning.partition.classificationpartitionedkernelecoc.kfoldmargin
+Classification > Support Vector Machine Classification	classreg.learning.partition.classificationpartitionedkernelecoc.kfoldpredict
+Classification > Classification Ensembles	classreg.learning.classif.classificationensemble.resume
+Classification > Classification Ensembles	classreg.learning.classif.compactclassificationensemble.removelearners
+Classification > Classification Ensembles	classreg.learning.classif.compactclassificationensemble.predictorimportance
+Classification > Classification Ensembles	classreg.learning.classif.compactclassificationensemble.loss
+Classification > Classification Ensembles	classreg.learning.classif.classificationensemble.resubloss
+Classification > Classification Ensembles	classreg.learning.classif.compactclassificationensemble.edge
+Classification > Classification Ensembles	classreg.learning.classif.compactclassificationensemble.margin
+Classification > Classification Ensembles	classreg.learning.classif.classificationensemble.resubedge
+Classification > Classification Ensembles	classreg.learning.classif.classificationensemble.resubmargin
+Classification > Classification Ensembles	classreg.learning.classif.compactclassificationensemble.predict
+Classification > Classification Ensembles	classreg.learning.classif.classificationensemble.resubpredict
+Classification > Classification Ensembles	classreg.learning.classif.classificationbaggedensemble.oobpredict
+Classification > Classification Ensembles	classreg.learning.classif.classificationbaggedensemble.oobpermutedpredictorimportance
+Classification > Classification Ensembles	classreg.learning.classif.classificationbaggedensemble.oobloss
+Classification > Classification Ensembles	classreg.learning.classif.classificationbaggedensemble.oobedge
+Classification > Classification Ensembles	classreg.learning.classif.classificationbaggedensemble.oobmargin
+Classification > Classification Ensembles	treebagger.margin
+Classification > Classification Ensembles	treebagger.meanmargin
+Classification > Classification Ensembles	treebagger.oobmargin
+Classification > Classification Ensembles	treebagger.oobmeanmargin
+Classification > Classification Ensembles	compacttreebagger.margin
+Classification > Classification Ensembles	compacttreebagger.meanmargin
+Classification > Classification Ensembles	classificationpartitionedensemble.resume
+Classification > Generalized Additive Model	classificationgam.predict
+Classification > Generalized Additive Model	classificationgam.loss
+Classification > Generalized Additive Model	classificationgam.margin
+Classification > Generalized Additive Model	classificationgam.edge
+Classification > Neural Networks	classificationneuralnetwork.loss
+Classification > Neural Networks	classificationneuralnetwork.edge
+Classification > Neural Networks	classificationneuralnetwork.margin
+Classification > Neural Networks	classificationneuralnetwork.predict
+Classification > Incremental Learning	incrementalclassificationlinear.perobservationloss
+Classification > Incremental Learning	incrementalclassificationlinear.reset
+Classification > Incremental Learning	incrementalclassificationecoc.fit
+Classification > Incremental Learning	incrementalclassificationecoc.updatemetrics
+Classification > Incremental Learning	incrementalclassificationecoc.updatemetricsandfit
+Classification > Incremental Learning	incrementalclassificationecoc.predict
+Classification > Incremental Learning	incrementalclassificationecoc.loss
+Classification > Incremental Learning	incrementalclassificationnaivebayes.fit
+Classification > Incremental Learning	incrementalclassificationnaivebayes.updatemetrics
+Classification > Incremental Learning	incrementalclassificationnaivebayes.updatemetricsandfit
+Classification > Incremental Learning	incrementalclassificationnaivebayes.predict
+Classification > Incremental Learning	incrementalclassificationnaivebayes.loss
+Classification > Incremental Learning	incrementalclassificationnaivebayes.logp
+Classification > Semi-Supervised Learning for Classification	semisupervisedgraphmodel.predict
+Classification > Semi-Supervised Learning for Classification	semisupervisedselftrainingmodel.predict
+Classification > Fairness in Binary Classification	fairnessmetrics.report
+Classification > Fairness in Binary Classification	fairnessmetrics.plot
+Classification > Fairness in Binary Classification	disparateimpactremover.transform
+Classification > Fairness in Binary Classification	fairnessthresholder.loss
+Classification > Fairness in Binary Classification	fairnessthresholder.predict
+Classification > Model Building and Assessment	rocmetrics.addmetrics
+Classification > Model Building and Assessment	rocmetrics.average
+Classification > Model Building and Assessment	rocmetrics.plot
+Classification > Model Building and Assessment	mlearnlib.graphics.chart.confusionmatrixchart.sortclasses
+Classification > Model Building and Assessment	featureselectionncaclassification.refit
+Classification > Model Building and Assessment	featureselectionncaclassification.predict
+Classification > Model Building and Assessment	featureselectionncaclassification.loss
+Cluster Analysis and Anomaly Detection > Anomaly Detection	isolationforest.isanomaly
+Cluster Analysis and Anomaly Detection > Anomaly Detection	robustrandomcutforest.isanomaly
+Cluster Analysis and Anomaly Detection > Anomaly Detection	localoutlierfactor.isanomaly
+Cluster Analysis and Anomaly Detection > Anomaly Detection	oneclasssvm.isanomaly
+Cluster Analysis and Anomaly Detection > Anomaly Detection	robustrandomcutforest.incrementallearner
+Cluster Analysis and Anomaly Detection > Anomaly Detection	incrementalrobustrandomcutforest.fit
+Cluster Analysis and Anomaly Detection > Anomaly Detection	incrementalrobustrandomcutforest.isanomaly
+Cluster Analysis and Anomaly Detection > Anomaly Detection	incrementalrobustrandomcutforest.reset
+Cluster Analysis and Anomaly Detection > Anomaly Detection	oneclasssvm.incrementallearner
+Cluster Analysis and Anomaly Detection > Anomaly Detection	incrementaloneclasssvm.fit
+Cluster Analysis and Anomaly Detection > Anomaly Detection	incrementaloneclasssvm.isanomaly
+Cluster Analysis and Anomaly Detection > Anomaly Detection	incrementaloneclasssvm.reset
+Cluster Analysis and Anomaly Detection > Cluster Visualization and Evaluation	clustering.evaluation.calinskiharabaszevaluation.addk
+Cluster Analysis and Anomaly Detection > Cluster Visualization and Evaluation	clustering.evaluation.calinskiharabaszevaluation.compact
+Cluster Analysis and Anomaly Detection > Cluster Visualization and Evaluation	clustering.evaluation.gapevaluation.increaseb
+Cluster Analysis and Anomaly Detection > Cluster Visualization and Evaluation	clustering.evaluation.calinskiharabaszevaluation.plot
+Dimensionality Reduction and Feature Extraction	reconstructionica.transform
+Simulink and Code Generation > Code Generation for Statistics and Machine Learning Functions	classreg.learning.coder.config.svm.classificationsvmcoderconfigurer.generatecode
+Simulink and Code Generation > Code Generation for Statistics and Machine Learning Functions	classreg.learning.coder.config.svm.classificationsvmcoderconfigurer.generatefiles
+Simulink and Code Generation > Code Generation for Statistics and Machine Learning Functions	classreg.learning.coder.config.svm.classificationsvmcoderconfigurer.validatedupdateinputs

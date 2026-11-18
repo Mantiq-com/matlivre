@@ -1,0 +1,485 @@
+ANOVA > Analysis of Variance and Covariance	anova
+ANOVA > Analysis of Variance and Covariance	anova1
+ANOVA > Analysis of Variance and Covariance	anova2
+ANOVA > Analysis of Variance and Covariance	anovan
+ANOVA > Analysis of Variance and Covariance	canoncorr
+ANOVA > Analysis of Variance and Covariance	aoctool
+ANOVA > Repeated Measures and MANOVA	fitrm
+ANOVA > Repeated Measures and MANOVA	manova
+ANOVA > Repeated Measures and MANOVA	manova1
+ANOVA > Repeated Measures and MANOVA	manovacluster
+Classification > Classification Ensembles	templateDiscriminant
+Classification > Classification Ensembles	templateEnsemble
+Classification > Classification Ensembles	templateKNN
+Classification > Classification Ensembles	templateNaiveBayes
+Classification > Classification Ensembles	templateTree
+Classification > Classification Ensembles	fitcensemble
+Classification > Classification Trees	fitctree
+Classification > Classification Trees	testckfold
+Classification > Discriminant Analysis	fitcdiscr
+Classification > Discriminant Analysis	makecdiscr
+Classification > Discriminant Analysis	classify
+Classification > Fairness in Binary Classification	fairnessMetrics
+Classification > Fairness in Binary Classification	fairnessWeights
+Classification > Fairness in Binary Classification	disparateImpactRemover
+Classification > Fairness in Binary Classification	fairnessThresholder
+Classification > Generalized Additive Model	fitcgam
+Classification > Incremental Learning	incrementalClassificationKernel
+Classification > Incremental Learning	incrementalClassificationLinear
+Classification > Incremental Learning	incrementalClassificationECOC
+Classification > Incremental Learning	incrementalClassificationNaiveBayes
+Classification > Model Building and Assessment	fscchi2
+Classification > Model Building and Assessment	fscmrmr
+Classification > Model Building and Assessment	fscnca
+Classification > Model Building and Assessment	gencfeatures
+Classification > Model Building and Assessment	fitcauto
+Classification > Model Building and Assessment	confusionchart
+Classification > Model Building and Assessment	confusionmat
+Classification > Model Building and Assessment	rocmetrics
+Classification > Model Building and Assessment	perfcurve
+Classification > Model Building and Assessment	testcholdout
+Classification > Naive Bayes	fitcnb
+Classification > Nearest Neighbors	fitcknn
+Classification > Nearest Neighbors	ExhaustiveSearcher
+Classification > Nearest Neighbors	KDTreeSearcher
+Classification > Nearest Neighbors	createns
+Classification > Nearest Neighbors	pdist
+Classification > Nearest Neighbors	pdist2
+Classification > Nearest Neighbors	knnsearch
+Classification > Nearest Neighbors	rangesearch
+Classification > Neural Networks	fitcnet
+Classification > Semi-Supervised Learning for Classification	fitsemigraph
+Classification > Semi-Supervised Learning for Classification	fitsemiself
+Classification > Support Vector Machine Classification	fitcsvm
+Classification > Support Vector Machine Classification	templateSVM
+Classification > Support Vector Machine Classification	fitSVMPosterior
+Classification > Support Vector Machine Classification	templateKernel
+Classification > Support Vector Machine Classification	templateECOC
+Classification > Support Vector Machine Classification	designecoc
+Cluster Analysis and Anomaly Detection > Anomaly Detection	iforest
+Cluster Analysis and Anomaly Detection > Anomaly Detection	rrcforest
+Cluster Analysis and Anomaly Detection > Anomaly Detection	lof
+Cluster Analysis and Anomaly Detection > Anomaly Detection	ocsvm
+Cluster Analysis and Anomaly Detection > Anomaly Detection	incrementalRobustRandomCutForest
+Cluster Analysis and Anomaly Detection > Anomaly Detection	incrementalOneClassSVM
+Cluster Analysis and Anomaly Detection > Cluster Visualization and Evaluation	dendrogram
+Cluster Analysis and Anomaly Detection > Cluster Visualization and Evaluation	optimalleaforder
+Cluster Analysis and Anomaly Detection > Cluster Visualization and Evaluation	silhouette
+Cluster Analysis and Anomaly Detection > Cluster Visualization and Evaluation	evalclusters
+Cluster Analysis and Anomaly Detection > Density-Based Spatial Clustering of Applications with Noise	dbscan
+Cluster Analysis and Anomaly Detection > Gaussian Mixture Models	fitgmdist
+Cluster Analysis and Anomaly Detection > Gaussian Mixture Models	gmdistribution
+Cluster Analysis and Anomaly Detection > Hidden Markov Models	hmmdecode
+Cluster Analysis and Anomaly Detection > Hidden Markov Models	hmmestimate
+Cluster Analysis and Anomaly Detection > Hidden Markov Models	hmmgenerate
+Cluster Analysis and Anomaly Detection > Hidden Markov Models	hmmtrain
+Cluster Analysis and Anomaly Detection > Hidden Markov Models	hmmviterbi
+Cluster Analysis and Anomaly Detection > Hierarchical Clustering	cluster
+Cluster Analysis and Anomaly Detection > Hierarchical Clustering	clusterdata
+Cluster Analysis and Anomaly Detection > Hierarchical Clustering	cophenet
+Cluster Analysis and Anomaly Detection > Hierarchical Clustering	inconsistent
+Cluster Analysis and Anomaly Detection > Hierarchical Clustering	linkage
+Cluster Analysis and Anomaly Detection > Hierarchical Clustering	squareform
+Cluster Analysis and Anomaly Detection > Spectral Clustering	spectralcluster
+Cluster Analysis and Anomaly Detection > k-Means and k-Medoids Clustering	kmeans
+Cluster Analysis and Anomaly Detection > k-Means and k-Medoids Clustering	kmedoids
+Cluster Analysis and Anomaly Detection > k-Means and k-Medoids Clustering	mahal
+Descriptive Statistics and Visualization > Descriptive Statistics	geomean
+Descriptive Statistics and Visualization > Descriptive Statistics	harmmean
+Descriptive Statistics and Visualization > Descriptive Statistics	trimmean
+Descriptive Statistics and Visualization > Descriptive Statistics	kurtosis
+Descriptive Statistics and Visualization > Descriptive Statistics	moment
+Descriptive Statistics and Visualization > Descriptive Statistics	skewness
+Descriptive Statistics and Visualization > Descriptive Statistics	range
+Descriptive Statistics and Visualization > Descriptive Statistics	mad
+Descriptive Statistics and Visualization > Descriptive Statistics	zscore
+Descriptive Statistics and Visualization > Descriptive Statistics	corr
+Descriptive Statistics and Visualization > Descriptive Statistics	robustcov
+Descriptive Statistics and Visualization > Descriptive Statistics	cholcov
+Descriptive Statistics and Visualization > Descriptive Statistics	corrcov
+Descriptive Statistics and Visualization > Descriptive Statistics	partialcorr
+Descriptive Statistics and Visualization > Descriptive Statistics	partialcorri
+Descriptive Statistics and Visualization > Descriptive Statistics	nearcorr
+Descriptive Statistics and Visualization > Descriptive Statistics	grpstats
+Descriptive Statistics and Visualization > Descriptive Statistics	tabulate
+Descriptive Statistics and Visualization > Descriptive Statistics	crosstab
+Descriptive Statistics and Visualization > Descriptive Statistics	tiedrank
+Descriptive Statistics and Visualization > Descriptive Statistics	nancov
+Descriptive Statistics and Visualization > Descriptive Statistics	nanmax
+Descriptive Statistics and Visualization > Descriptive Statistics	nanmean
+Descriptive Statistics and Visualization > Descriptive Statistics	nanmedian
+Descriptive Statistics and Visualization > Descriptive Statistics	nanmin
+Descriptive Statistics and Visualization > Descriptive Statistics	nanstd
+Descriptive Statistics and Visualization > Descriptive Statistics	nansum
+Descriptive Statistics and Visualization > Descriptive Statistics	nanvar
+Descriptive Statistics and Visualization > Managing Data	caseread
+Descriptive Statistics and Visualization > Managing Data	casewrite
+Descriptive Statistics and Visualization > Managing Data	tblread
+Descriptive Statistics and Visualization > Managing Data	tblwrite
+Descriptive Statistics and Visualization > Managing Data	tdfread
+Descriptive Statistics and Visualization > Managing Data	xptread
+Descriptive Statistics and Visualization > Managing Data	dataset
+Descriptive Statistics and Visualization > Managing Data	dataset2table
+Descriptive Statistics and Visualization > Managing Data	dummyvar
+Descriptive Statistics and Visualization > Managing Data	onehotencode
+Descriptive Statistics and Visualization > Managing Data	onehotdecode
+Descriptive Statistics and Visualization > Managing Data	gplotmatrix
+Descriptive Statistics and Visualization > Managing Data	grp2idx
+Descriptive Statistics and Visualization > Managing Data	gscatter
+Descriptive Statistics and Visualization > Managing Data	nominal
+Descriptive Statistics and Visualization > Managing Data	ordinal
+Descriptive Statistics and Visualization > Managing Data	mat2dataset
+Descriptive Statistics and Visualization > Managing Data	cell2dataset
+Descriptive Statistics and Visualization > Managing Data	struct2dataset
+Descriptive Statistics and Visualization > Managing Data	table2dataset
+Descriptive Statistics and Visualization > Managing Data	hist3
+Descriptive Statistics and Visualization > Statistical Visualization	andrewsplot
+Descriptive Statistics and Visualization > Statistical Visualization	biplot
+Descriptive Statistics and Visualization > Statistical Visualization	boxplot
+Descriptive Statistics and Visualization > Statistical Visualization	glyphplot
+Descriptive Statistics and Visualization > Statistical Visualization	parallelcoords
+Descriptive Statistics and Visualization > Statistical Visualization	scatterhist
+Descriptive Statistics and Visualization > Statistical Visualization	gline
+Descriptive Statistics and Visualization > Statistical Visualization	gname
+Descriptive Statistics and Visualization > Statistical Visualization	lsline
+Descriptive Statistics and Visualization > Statistical Visualization	refcurve
+Descriptive Statistics and Visualization > Statistical Visualization	refline
+Dimensionality Reduction and Feature Extraction	fsulaplacian
+Dimensionality Reduction and Feature Extraction	rica
+Dimensionality Reduction and Feature Extraction	sparsefilt
+Dimensionality Reduction and Feature Extraction	tsne
+Dimensionality Reduction and Feature Extraction	pca
+Dimensionality Reduction and Feature Extraction	pcacov
+Dimensionality Reduction and Feature Extraction	pcares
+Dimensionality Reduction and Feature Extraction	ppca
+Dimensionality Reduction and Feature Extraction	factoran
+Dimensionality Reduction and Feature Extraction	rotatefactors
+Dimensionality Reduction and Feature Extraction	nnmf
+Dimensionality Reduction and Feature Extraction	cmdscale
+Dimensionality Reduction and Feature Extraction	mdscale
+Dimensionality Reduction and Feature Extraction	procrustes
+Industrial Statistics > Analysis of Lifetime Data	coxphfit
+Industrial Statistics > Analysis of Lifetime Data	fitcox
+Industrial Statistics > Design of Experiments (DOE)	ff2n
+Industrial Statistics > Design of Experiments (DOE)	fullfact
+Industrial Statistics > Design of Experiments (DOE)	fracfact
+Industrial Statistics > Design of Experiments (DOE)	fracfactgen
+Industrial Statistics > Design of Experiments (DOE)	bbdesign
+Industrial Statistics > Design of Experiments (DOE)	ccdesign
+Industrial Statistics > Design of Experiments (DOE)	candexch
+Industrial Statistics > Design of Experiments (DOE)	candgen
+Industrial Statistics > Design of Experiments (DOE)	cordexch
+Industrial Statistics > Design of Experiments (DOE)	daugment
+Industrial Statistics > Design of Experiments (DOE)	dcovary
+Industrial Statistics > Design of Experiments (DOE)	rowexch
+Industrial Statistics > Design of Experiments (DOE)	lhsdesign
+Industrial Statistics > Design of Experiments (DOE)	lhsnorm
+Industrial Statistics > Design of Experiments (DOE)	haltonset
+Industrial Statistics > Design of Experiments (DOE)	qrandstream
+Industrial Statistics > Design of Experiments (DOE)	sobolset
+Industrial Statistics > Design of Experiments (DOE)	interactionplot
+Industrial Statistics > Design of Experiments (DOE)	maineffectsplot
+Industrial Statistics > Design of Experiments (DOE)	multivarichart
+Industrial Statistics > Statistical Process Control	capability
+Industrial Statistics > Statistical Process Control	capaplot
+Industrial Statistics > Statistical Process Control	controlchart
+Industrial Statistics > Statistical Process Control	controlrules
+Industrial Statistics > Statistical Process Control	gagerr
+Probability Distributions and Hypothesis Tests > Exploration and Visualization	fsurfht
+Probability Distributions and Hypothesis Tests > Exploration and Visualization	probplot
+Probability Distributions and Hypothesis Tests > Exploration and Visualization	surfht
+Probability Distributions and Hypothesis Tests > Exploration and Visualization	cdfplot
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	adtest
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	dwtest
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	fishertest
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	jbtest
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	kstest
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	kstest2
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	lillietest
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	runstest
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	friedman
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	kruskalwallis
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	multcompare
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	ranksum
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	sampsizepwr
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	signrank
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	signtest
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	ztest
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	ansaribradley
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	barttest
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	vartest
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	vartest2
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	vartestn
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	meanEffectSize
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	gardnerAltmanPlot
+Probability Distributions and Hypothesis Tests > Hypothesis Tests	detectdrift
+Probability Distributions and Hypothesis Tests > Multivariate Distributions	copulacdf
+Probability Distributions and Hypothesis Tests > Multivariate Distributions	copulapdf
+Probability Distributions and Hypothesis Tests > Multivariate Distributions	copulaparam
+Probability Distributions and Hypothesis Tests > Multivariate Distributions	copulastat
+Probability Distributions and Hypothesis Tests > Multivariate Distributions	copulafit
+Probability Distributions and Hypothesis Tests > Multivariate Distributions	copularnd
+Probability Distributions and Hypothesis Tests > Multivariate Distributions	wishrnd
+Probability Distributions and Hypothesis Tests > Multivariate Distributions	iwishrnd
+Probability Distributions and Hypothesis Tests > Multivariate Distributions	mvncdf
+Probability Distributions and Hypothesis Tests > Multivariate Distributions	mvnpdf
+Probability Distributions and Hypothesis Tests > Multivariate Distributions	mvnrnd
+Probability Distributions and Hypothesis Tests > Multivariate Distributions	mvtcdf
+Probability Distributions and Hypothesis Tests > Multivariate Distributions	mvtpdf
+Probability Distributions and Hypothesis Tests > Multivariate Distributions	mvtrnd
+Probability Distributions and Hypothesis Tests > Multivariate Distributions	mnpdf
+Probability Distributions and Hypothesis Tests > Multivariate Distributions	mnrnd
+Probability Distributions and Hypothesis Tests > Pseudorandom and Quasirandom Number Generation	slicesample
+Probability Distributions and Hypothesis Tests > Pseudorandom and Quasirandom Number Generation	mhsample
+Probability Distributions and Hypothesis Tests > Pseudorandom and Quasirandom Number Generation	hmcSampler
+Probability Distributions and Hypothesis Tests > Pseudorandom and Quasirandom Number Generation	johnsrnd
+Probability Distributions and Hypothesis Tests > Resampling Techniques	bootci
+Probability Distributions and Hypothesis Tests > Resampling Techniques	bootstrp
+Probability Distributions and Hypothesis Tests > Resampling Techniques	crossval
+Probability Distributions and Hypothesis Tests > Resampling Techniques	datasample
+Probability Distributions and Hypothesis Tests > Resampling Techniques	jackknife
+Probability Distributions and Hypothesis Tests > Resampling Techniques	randsample
+Probability Distributions and Hypothesis Tests > Resampling Techniques	combnk
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	histfit
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	mlecov
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	betacdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	betapdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	betainv
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	betalike
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	betastat
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	betafit
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	betarnd
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	chi2cdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	chi2pdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	chi2inv
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	chi2stat
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	chi2gof
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	chi2rnd
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	ncx2cdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	ncx2pdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	ncx2inv
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	ncx2stat
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	ncx2rnd
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	expcdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	exppdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	expinv
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	explike
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	expstat
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	expfit
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	exprnd
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	evcdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	evpdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	evinv
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	evlike
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	evstat
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	evfit
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	evrnd
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	gevcdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	gevpdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	gevinv
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	gevlike
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	gevstat
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	gevfit
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	gevrnd
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	fcdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	fpdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	finv
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	fstat
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	frnd
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	ncfcdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	ncfpdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	ncfinv
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	ncfstat
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	ncfrnd
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	gamcdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	gampdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	gaminv
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	gamlike
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	gamstat
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	gamfit
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	gamrnd
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	randg
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	ksdensity
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	mvksdensity
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	normcdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	normpdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	norminv
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	normlike
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	normstat
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	normfit
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	normplot
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	normrnd
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	normspec
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	logncdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	lognpdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	logninv
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	lognlike
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	lognstat
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	lognfit
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	lognrnd
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	gpcdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	gppdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	gpinv
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	gplike
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	gpstat
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	gpfit
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	gprnd
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	pearspdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	pearscdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	pearsrnd
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	raylcdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	raylpdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	raylinv
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	raylstat
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	raylfit
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	raylrnd
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	nctcdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	nctpdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	nctinv
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	nctstat
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	nctrnd
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	tcdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	tpdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	tinv
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	tstat
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	trnd
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	ttest
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	ttest2
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	unifcdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	unifpdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	unifinv
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	unifit
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	unifstat
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	unifrnd
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	wblcdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	wblpdf
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	wblinv
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	wbllike
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	wblstat
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	wblfit
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	wblrnd
+Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions	wblplot
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	mle
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	makedist
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	fitdist
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	qqplot
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	binocdf
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	binopdf
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	binoinv
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	binostat
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	binofit
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	binornd
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	ecdf
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	ecdfhist
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	geocdf
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	geopdf
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	geoinv
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	geostat
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	geornd
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	hygecdf
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	hygepdf
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	hygeinv
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	hygestat
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	hygernd
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	nbincdf
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	nbinpdf
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	nbininv
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	nbinstat
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	nbinfit
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	nbinrnd
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	poisscdf
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	poisspdf
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	poissinv
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	poisstat
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	poissfit
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	poissrnd
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	unidcdf
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	unidpdf
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	unidinv
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	unidstat
+Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions	unidrnd
+Regression > Direct Forecasting	tspartition
+Regression > Gaussian Process Regression	fitrgp
+Regression > Gaussian Process Regression	templateGP
+Regression > Generalized Additive Model	fitrgam
+Regression > Generalized Additive Model	templateGAM
+Regression > Generalized Linear Models > Generalized Linear Regression	fitglm
+Regression > Generalized Linear Models > Generalized Linear Regression	stepwiseglm
+Regression > Generalized Linear Models > Generalized Linear Regression	fitmnr
+Regression > Generalized Linear Models > Generalized Linear Regression	fitclinear
+Regression > Generalized Linear Models > Generalized Linear Regression	fitcecoc
+Regression > Generalized Linear Models > Generalized Linear Regression	fitckernel
+Regression > Generalized Linear Models > Generalized Linear Regression	templateLinear
+Regression > Generalized Linear Models > Generalized Linear Regression	glmfit
+Regression > Generalized Linear Models > Generalized Linear Regression	glmval
+Regression > Generalized Linear Models > Generalized Linear Regression	mnrfit
+Regression > Generalized Linear Models > Generalized Linear Regression	mnrval
+Regression > Generalized Linear Models > Mixed Effects	fitglme
+Regression > Generalized Linear Models > Regularization	lassoglm
+Regression > Incremental Learning	incrementalDriftAwareLearner
+Regression > Incremental Learning	incrementalRegressionKernel
+Regression > Incremental Learning	incrementalRegressionLinear
+Regression > Incremental Learning	incrementalConceptDriftDetector
+Regression > Linear Regression > Mixed Effects	fitlme
+Regression > Linear Regression > Mixed Effects	fitlmematrix
+Regression > Linear Regression > Multiple Linear Regression	fitlm
+Regression > Linear Regression > Multiple Linear Regression	stepwiselm
+Regression > Linear Regression > Multiple Linear Regression	fitrlinear
+Regression > Linear Regression > Multiple Linear Regression	lime
+Regression > Linear Regression > Multiple Linear Regression	shapley
+Regression > Linear Regression > Multiple Linear Regression	invpred
+Regression > Linear Regression > Multiple Linear Regression	linhyptest
+Regression > Linear Regression > Multiple Linear Regression	plsregress
+Regression > Linear Regression > Multiple Linear Regression	regress
+Regression > Linear Regression > Multiple Linear Regression	regstats
+Regression > Linear Regression > Multiple Linear Regression	relieff
+Regression > Linear Regression > Multiple Linear Regression	robustfit
+Regression > Linear Regression > Multiple Linear Regression	stepwisefit
+Regression > Linear Regression > Multiple Linear Regression	polyconf
+Regression > Linear Regression > Multiple Linear Regression	Polynomial Fitting Tool
+Regression > Linear Regression > Multiple Linear Regression	x2fx
+Regression > Linear Regression > Multivariate Linear Regression	mvregress
+Regression > Linear Regression > Multivariate Linear Regression	mvregresslike
+Regression > Linear Regression > Regularization	lasso
+Regression > Linear Regression > Regularization	ridge
+Regression > Linear Regression > Regularization	lassoPlot
+Regression > Linear Regression > Stepwise Regression	stepwise
+Regression > Model Building and Assessment	fsrftest
+Regression > Model Building and Assessment	fsrmrmr
+Regression > Model Building and Assessment	fsrnca
+Regression > Model Building and Assessment	sequentialfs
+Regression > Model Building and Assessment	genrfeatures
+Regression > Model Building and Assessment	fitrauto
+Regression > Model Building and Assessment	bayesopt
+Regression > Model Building and Assessment	hyperparameters
+Regression > Model Building and Assessment	optimizableVariable
+Regression > Model Building and Assessment	cvpartition
+Regression > Model Building and Assessment	leverage
+Regression > Model Building and Assessment	addedvarplot
+Regression > Model Building and Assessment	rcoplot
+Regression > Neural Networks	fitrnet
+Regression > Nonlinear Regression	fitnlm
+Regression > Nonlinear Regression	nlinfit
+Regression > Nonlinear Regression	nlparci
+Regression > Nonlinear Regression	nlpredci
+Regression > Nonlinear Regression	nlmefit
+Regression > Nonlinear Regression	nlmefitsa
+Regression > Nonlinear Regression	hougen
+Regression > Nonlinear Regression	statset
+Regression > Nonlinear Regression	statget
+Regression > Regression Tree Ensembles	fitrensemble
+Regression > Regression Tree Ensembles	fitensemble
+Regression > Regression Tree Ensembles	TreeBagger
+Regression > Regression Trees	fitrtree
+Regression > Support Vector Machine Regression	fitrsvm
+Regression > Support Vector Machine Regression	fitrkernel
+Simulink and Code Generation > Code Generation for Statistics and Machine Learning Functions	saveLearnerForCoder
+Simulink and Code Generation > Code Generation for Statistics and Machine Learning Functions	loadLearnerForCoder
+Simulink and Code Generation > Code Generation for Statistics and Machine Learning Functions	generateLearnerDataTypeFcn
+Simulink and Code Generation > Code Generation for Statistics and Machine Learning Functions	learnerCoderConfigurer
+Simulink and Code Generation > Code Generation for Statistics and Machine Learning Functions	saveCompactModel
+Simulink and Code Generation > Code Generation for Statistics and Machine Learning Functions	loadCompactModel
+Probability Distributions and Hypothesis Tests > Generic distribution functions	pdf
+Probability Distributions and Hypothesis Tests > Generic distribution functions	cdf
+Probability Distributions and Hypothesis Tests > Generic distribution functions	icdf
+Probability Distributions and Hypothesis Tests > Generic distribution functions	random
