@@ -736,9 +736,6 @@ pub struct Figure {
     pub next_tile: usize,
     /// `colororder` of the figure: used by axes without their own.
     pub color_order: Option<Vec<[f64; 3]>>,
-    /// False for a new figure: MATLAB makes the first axes only when something needs them
-    /// (`plot`, `gca`, `axes`, `subplot`), so `Children` is empty until then.
-    pub axes_made: bool,
 }
 
 /// The `Position` of axes (the plot box) as a fraction of their outer box, MATLAB's default.
@@ -802,11 +799,20 @@ pub fn outer_of_position(p: [f64; 4]) -> Option<[f64; 4]> {
 
 impl Figure {
     pub fn new(id: u32) -> Self {
-        Self { id, name: String::new(), grid: (1, 1), axes: vec![Axes::default()], current_axes: 0, colormap: None, flow: false, objects: Vec::new(), next_tile: 0, color_order: None, axes_made: false }
+        Self { id, name: String::new(), grid: (1, 1), axes: Vec::new(), current_axes: 0, colormap: None, flow: false, objects: Vec::new(), next_tile: 0, color_order: None }
+    }
+
+    /// Makes the first axes when the figure has none yet: MATLAB makes them only when something
+    /// needs them (`plot`, `gca`, `axes`, `subplot`), so `Children` of a new figure is empty.
+    pub fn ensure_axes(&mut self) {
+        if self.axes.is_empty() {
+            self.axes.push(Axes::default());
+            self.current_axes = 0;
+        }
     }
 
     pub fn axes_mut(&mut self) -> &mut Axes {
-        self.axes_made = true;
+        self.ensure_axes();
         &mut self.axes[self.current_axes]
     }
 
@@ -847,9 +853,9 @@ impl Figure {
         order
     }
 
-    /// Whether the figure has axes yet (a grid of several always does).
+    /// Whether the figure has axes yet.
     pub fn has_axes(&self) -> bool {
-        self.axes_made || self.axes.len() != 1
+        !self.axes.is_empty()
     }
 }
 

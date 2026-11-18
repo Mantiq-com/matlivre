@@ -94,7 +94,7 @@ impl Interpreter {
     /// The handle of the current axes.
     pub(crate) fn current_axes_handle(&mut self) -> Value {
         let f = self.current_figure_index();
-        self.figures[f].axes_made = true;
+        self.figures[f].ensure_axes();
         let a = self.figures[f].current_axes;
         let id = crate::gfx::axes_id(self, f, a);
         crate::gfx::handle(self, id)
@@ -375,7 +375,9 @@ pub fn call(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) ->
             none()
         }
         "ishold" => {
-            let h = it.current_figure().axes_mut().hold;
+            // (Asking creates no axes.)
+            let fig = it.current_figure();
+            let h = fig.axes.get(fig.current_axes).is_some_and(|ax| ax.hold);
             one(Value::bool(h))
         }
         "title" | "xlabel" | "ylabel" | "zlabel" | "subtitle" | "sgtitle" => {
@@ -810,28 +812,14 @@ fn subplot(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
     let target = match reuse {
         Some(i) => i,
         None => {
-            let place = |ax: &mut Axes| {
-                ax.position = Some(position);
-                ax.layout = cell;
-            };
-            if fig.has_axes() {
-                for &i in doomed.iter().rev() {
-                    crate::gfx::remove_axes(it, f, i);
-                }
-                let fig = &mut it.figures[f];
-                let mut ax = Axes::default();
-                place(&mut ax);
-                fig.axes.push(ax);
-                fig.axes_made = true;
-                let last = fig.axes.len() - 1;
-                fig.raise(last);
-                last
-            } else {
-                // The axes a new figure starts with.
-                fig.axes_made = true;
-                place(&mut fig.axes[0]);
-                0
+            for &i in doomed.iter().rev() {
+                crate::gfx::remove_axes(it, f, i);
             }
+            let fig = &mut it.figures[f];
+            fig.axes.push(Axes { position: Some(position), layout: cell, ..Axes::default() });
+            let last = fig.axes.len() - 1;
+            fig.raise(last);
+            last
         }
     };
     let fig = &mut it.figures[f];

@@ -1860,11 +1860,7 @@ fn delete_handles(it: &mut Interpreter, ids: &[u64]) -> R<()> {
                 it.figures[f].axes[a].series.remove(s);
                 mark(it, f);
             }
-            Some(Target::Axes(f, a)) => {
-                let ax = &mut it.figures[f].axes[a];
-                *ax = Axes { id: 0, ..Axes::default() };
-                mark(it, f);
-            }
+            Some(Target::Axes(f, a)) => remove_axes(it, f, a),
             Some(Target::Figure(f)) => {
                 it.figures.remove(f);
                 it.current_figure = if it.figures.is_empty() { None } else { Some(it.figures.len() - 1) };
@@ -2165,18 +2161,14 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
                 }
             }
             let f = it.current_figure_index();
-            // The first axes of a new figure are the ones it starts with; later ones are made
-            // over the others, covering the whole figure until they get a Position.
-            let ax = if it.figures[f].has_axes() {
+            // New axes go over the others, covering the whole figure until they get a Position.
+            let ax = {
                 let fig = &mut it.figures[f];
-                fig.axes.push(Axes { layout: Some([0.0, 0.0, 1.0, 1.0]), ..Axes::default() });
+                fig.axes.push(Axes { position: Some(graphics::DEFAULT_POSITION), layout: Some([0.0, 0.0, 1.0, 1.0]), ..Axes::default() });
                 fig.current_axes = fig.axes.len() - 1;
                 let last = fig.current_axes;
                 fig.raise(last);
                 last
-            } else {
-                it.figures[f].axes_made = true;
-                it.figures[f].current_axes
             };
             let id = axes_id(it, f, ax);
             let start = if a.first().is_some_and(is_gfx) { 1 } else { 0 };
@@ -2195,6 +2187,7 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
                 },
                 None => {
                     let f = it.current_figure_index();
+                    it.figures[f].ensure_axes();
                     (f, it.figures[f].current_axes)
                 }
             };
