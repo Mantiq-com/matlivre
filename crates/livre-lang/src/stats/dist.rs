@@ -167,6 +167,9 @@ fn gam_cdf(x: f64, p: P, upper: bool) -> f64 {
     if x <= 0.0 {
         return if upper { 1.0 } else { 0.0 };
     }
+    if x == f64::INFINITY {
+        return if upper { 0.0 } else { 1.0 };
+    }
     let (l, u) = gammainc_pq(x / p[1], p[0]);
     if upper { u } else { l }
 }
@@ -1004,4 +1007,39 @@ fn override_invalid(fam: &str, kind: &str, x: f64, p: P, ok: bool) -> Option<f64
         ("rayl", "inv") if x == 1.0 => Some(f64::INFINITY),
         _ => None,
     }
+}
+
+// ---- scalar entry points for the other stats modules ------------------------------------------
+
+pub fn tinv(q: f64, v: f64) -> f64 {
+    if v.is_nan() || v <= 0.0 { f64::NAN } else { t_inv(q, &[v]) }
+}
+pub fn tcdf(x: f64, v: f64) -> f64 {
+    super::corr::t_cdf(x, v)
+}
+pub fn norminv_std(q: f64) -> f64 {
+    norm_inv(q)
+}
+pub fn normcdf_std(z: f64) -> f64 {
+    norm_cdf(z)
+}
+/// Chi-square distribution function (`upper` for the upper tail).
+pub fn chi2cdf(x: f64, v: f64, upper: bool) -> f64 {
+    if v == 0.0 && !x.is_nan() {
+        let lower = if x < 0.0 { 0.0 } else { 1.0 };
+        return if upper { 1.0 - lower } else { lower };
+    }
+    if v.is_nan() || v <= 0.0 || x.is_nan() { f64::NAN } else { chi2_cdf(x, &[v], upper) }
+}
+pub fn chi2inv(q: f64, v: f64) -> f64 {
+    if v == 0.0 && (0.0..=1.0).contains(&q) {
+        return 0.0;
+    }
+    if v.is_nan() || v <= 0.0 { f64::NAN } else { chi2_inv(q, &[v]) }
+}
+pub fn fcdf(x: f64, d1: f64, d2: f64, upper: bool) -> f64 {
+    if d1.is_nan() || d2.is_nan() || d1 <= 0.0 || d2 <= 0.0 || x.is_nan() { f64::NAN } else { f_cdf(x, &[d1, d2], upper) }
+}
+pub fn finv(q: f64, d1: f64, d2: f64) -> f64 {
+    if d1.is_nan() || d2.is_nan() || d1 <= 0.0 || d2 <= 0.0 { f64::NAN } else { f_inv(q, &[d1, d2]) }
 }
