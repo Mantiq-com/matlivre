@@ -10,6 +10,7 @@ pub mod errtab;
 pub mod fitters;
 pub mod hier;
 pub mod kmeans;
+pub mod ks;
 pub mod htest;
 pub mod nonpar;
 pub mod pca;
@@ -61,6 +62,9 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
     if fitters::NAMES.contains(&name) {
         return fitters::call(it, name, a, nargout);
     }
+    if ks::NAMES.contains(&name) {
+        return ks::call(it, name, a, nargout);
+    }
     if rnd::NAMES.contains(&name) {
         return rnd::call(it, name, a, nargout);
     }
@@ -72,5 +76,5 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
 
 /// Every name the stats modules provide.
 pub fn names() -> Vec<&'static str> {
-    [descr::NAMES, corr::NAMES, dist::NAMES, rnd::NAMES, htest::NAMES, dist_matrix::NAMES, hier::NAMES, pca::NAMES, regress::NAMES, kmeans::NAMES, sampling::NAMES, nonpar::NAMES, anova::NAMES, fitters::NAMES].concat()
+    [descr::NAMES, corr::NAMES, dist::NAMES, rnd::NAMES, htest::NAMES, dist_matrix::NAMES, hier::NAMES, pca::NAMES, regress::NAMES, kmeans::NAMES, sampling::NAMES, nonpar::NAMES, anova::NAMES, fitters::NAMES, ks::NAMES].concat()
 }
