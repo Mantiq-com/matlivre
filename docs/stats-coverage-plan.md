@@ -37,7 +37,7 @@ The coverage checklist (`tools/coverage/update.sh`, `coverage.pl`) reads `stats.
 | Functions and classes in scope list (`stats.tsv`, R2023b-era) | 485 |
 | Out of scope (see below) | 15 |
 | In scope | 470 |
-| Implemented in MatLivre (`crates/livre-lang/src/stats/`) | 153 |
+| Implemented in MatLivre (`crates/livre-lang/src/stats/`) | 154 |
 | Class methods (`stats_methods.tsv`), implemented with their classes | 510 |
 
 Names per table-of-contents category (first listing): Probability distributions and hypothesis
@@ -173,3 +173,5 @@ MATLAB R2023b with the toolbox is installed. Done and recorded (`tools/stats/cas
 Update: `kmeans` (sqeuclidean, cosine, correlation), `randsample`, `datasample`, `signtest`, `signrank`, `ranksum`, `anova1`, `kruskalwallis`, `normfit`/`expfit`/`poissfit`/`binofit`/`lognfit`/`unifit`/`raylfit`, `normlike`/`lognlike`/`explike` are done (2199 recorded cases). Next: `fitlm`/`fitglm`, `kstest`/`kstest2`, `fitdist`/`makedist`, learners.
 
 Update 2: `kstest`, `kstest2` and `fitlm` (matrix input, LinearModel properties, display, predict, feval, coefCI) are done (2322 recorded cases). Not done in fitlm: table/formula input, weights, categorical predictors, rank-deficient designs, anova. Next: fitglm, fitdist/makedist, learners.
+
+Update 3: `fitglm` (matrix input; GeneralizedLinearModel properties, display, predict, feval, coefCI) done (2383 recorded cases). Next: fitdist/makedist, classification learners.
