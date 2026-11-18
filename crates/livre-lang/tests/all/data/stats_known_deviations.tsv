@@ -1,3 +1,8 @@
 # case text <TAB> why MatLivre still differs from MATLAB. The test checks each one still differs,
 # so remove an entry when it is fixed.
 r = linkage([2 2 2 2 2 2],'complete');	among exactly tied distances MATLAB merges in nearest-neighbour-chain order for complete, average, weighted and Ward linkage; MatLivre scans the pairs in order
+[c_,s_,l_,t_,e_,m_] = pca(single(A)); r = {c_,s_,l_,t_,e_,m_};	single precision: computed in double and rounded; MATLAB's own single arithmetic differs at 1e-6
+[rs_,rc_] = pcares(single(A),2); r = {rs_,rc_};	single precision: computed in double and rounded; MATLAB's own single arithmetic differs at 1e-5
+[Y_,e_] = cmdscale(single(squareform(pdist(A)))); r = {Y_,e_};	single precision: computed in double and rounded; MATLAB's own single arithmetic differs at 1e-6
+[c_,s_,l_,t_,e_,m_] = pca(A(1:4,:),'Economy',false); r = {c_,s_,l_,t_,e_,m_};	the columns of coeff beyond the rank span a null space; MATLAB's basis is LAPACK's, MatLivre's differs
+[c_,s_,l_,t_,e_,m_] = pca(A(1:4,:),'Algorithm','eig','Economy',false); r = {c_,s_,l_,t_,e_,m_};	the columns of coeff beyond the rank span a null space; MATLAB's basis is LAPACK's, MatLivre's differs

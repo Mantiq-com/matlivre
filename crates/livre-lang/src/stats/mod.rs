@@ -8,6 +8,7 @@ pub mod dist_matrix;
 pub mod errtab;
 pub mod hier;
 pub mod htest;
+pub mod pca;
 pub mod rnd;
 pub mod util;
 
@@ -33,6 +34,9 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
     if hier::NAMES.contains(&name) {
         return hier::call(it, name, a, nargout);
     }
+    if pca::NAMES.contains(&name) {
+        return pca::call(it, name, a, nargout);
+    }
     if rnd::NAMES.contains(&name) {
         return rnd::call(it, name, a, nargout);
     }
@@ -44,5 +48,5 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
 
 /// Every name the stats modules provide.
 pub fn names() -> Vec<&'static str> {
-    [descr::NAMES, corr::NAMES, dist::NAMES, rnd::NAMES, htest::NAMES, dist_matrix::NAMES, hier::NAMES].concat()
+    [descr::NAMES, corr::NAMES, dist::NAMES, rnd::NAMES, htest::NAMES, dist_matrix::NAMES, hier::NAMES, pca::NAMES].concat()
 }

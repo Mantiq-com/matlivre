@@ -147,3 +147,15 @@ pub fn median_of(v: &mut Vec<f64>) -> f64 {
     let n = v.len();
     if n % 2 == 1 { v[n / 2] } else { (v[n / 2 - 1] + v[n / 2]) / 2.0 }
 }
+
+/// `eps(x)`: the spacing of doubles at `x`.
+pub fn eps_of(x: f64) -> f64 {
+    let a = x.abs();
+    if !a.is_finite() {
+        return f64::NAN;
+    }
+    if a < f64::MIN_POSITIVE {
+        return 5e-324;
+    }
+    f64::EPSILON * 2f64.powi(a.log2().floor() as i32)
+}
