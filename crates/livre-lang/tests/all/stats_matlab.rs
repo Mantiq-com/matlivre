@@ -158,6 +158,7 @@ fn stats_heavy_cases_match_matlab() {
 
 fn check(heavy: bool) {
     let mut it = Interpreter::new();
+    it.command_window = true;
     let _ = it.run_source(&script_for(heavy));
     let printed: String = it
         .take_outputs()

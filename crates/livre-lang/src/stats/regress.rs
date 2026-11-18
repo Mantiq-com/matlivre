@@ -15,7 +15,7 @@ type Mat = Vec<Vec<f64>>;
 
 /// Householder QR with column pivoting (economy size): returns Q (n x k), R (k x k) with
 /// k = min(n, p), and the column permutation.
-fn qr_pivot(x: &Mat, n: usize, p: usize) -> (Mat, Mat, Vec<usize>) {
+pub fn qr_pivot(x: &Mat, n: usize, p: usize) -> (Mat, Mat, Vec<usize>) {
     let k = n.min(p);
     let mut a: Mat = x.clone();
     let mut perm: Vec<usize> = (0..p).collect();
@@ -77,7 +77,7 @@ fn qr_pivot(x: &Mat, n: usize, p: usize) -> (Mat, Mat, Vec<usize>) {
     (q, r, perm)
 }
 
-fn solve_upper(r: &Mat, b: &[f64], k: usize) -> Vec<f64> {
+pub fn solve_upper(r: &Mat, b: &[f64], k: usize) -> Vec<f64> {
     let mut x = vec![0.0; k];
     for i in (0..k).rev() {
         let mut s = b[i];

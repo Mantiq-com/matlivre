@@ -513,6 +513,11 @@ impl Object {
 /// Default display: `obj = \n  Foo with properties:\n\n    Name: 'x'`. `values` may carry
 /// computed Dependent values (otherwise the stored ones are shown).
 pub fn format_object(name: &str, o: &Object, values: &[Value], f: NumFormat) -> String {
+    if o.class.name == "LinearModel" {
+        if let Some(t) = crate::stats::linmodel::object_text(o) {
+            return format!("\n{name} = \n\n\n{t}");
+        }
+    }
     let visible: Vec<usize> = (0..o.class.props.len()).filter(|&i| !o.class.props[i].hidden && !o.class.props[i].constant).collect();
     let w = visible.iter().map(|&i| o.class.props[i].name.len()).max().unwrap_or(0);
     // Classes in packages show their short name, as in MATLAB.

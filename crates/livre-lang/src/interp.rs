@@ -1543,6 +1543,9 @@ impl Interpreter {
                     if !o.has_prop(f) {
                         return rt(format!("Unrecognized property '{f}' for class '{}'.", o.class.name));
                     }
+                    if o.class.name == "LinearModel" {
+                        return rt(format!("The {f} property for class LinearModel is read-only."));
+                    }
                     if o.class.name == "digitalFilter" {
                         return rt("You cannot change the specifications of a digital filter.
 If you want to design a new filter with different specifications, use the designfilt function with your new inputs, or call designfilt(D), where D is the digital filter of interest, to edit the filter using the Filter Design Assistant.");

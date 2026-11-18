@@ -592,6 +592,12 @@ pub fn display_value_cw(name: &str, v: &Value, f: NumFormat) -> Option<String> {
             Some(format!("\n{name} =\n\n{}\n", wrap_columns(body.trim_end_matches('\n'), m.cols())))
         }
         Value::Num(m) if !m.sparse && m.kind == Kind::Logical && m.is_2d() && m.is_scalar() => Some(format!("\n{name} =\n\n  logical\n\n   {}\n", if m.data[0] != 0.0 { 1 } else { 0 })),
+        Value::Object(o) if o.class.name == "LinearModel" => crate::stats::linmodel::object_text(o).map(|t| format!("
+{name} = 
+
+
+{t}
+")),
         Value::Object(o) if o.class.name == "digitalFilter" => crate::signal::digfilt::object_text(o).map(|t| format!("
 {name} = 
 
