@@ -17,7 +17,10 @@ root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 src = os.path.join(root, "tools", "stats", "cases.txt")
 dst = os.path.join(root, "crates", "livre-lang", "tests", "all", "data", "stats_cases.m")
 
-cases = [line.rstrip("\n") for line in open(src, encoding="utf-8")]
+import glob
+cases = []
+for f in [src] + sorted(glob.glob(os.path.join(os.path.dirname(src), "cases_*.txt"))):
+    cases += [line.rstrip("\n") for line in open(f, encoding="utf-8")]
 cases = [c for c in cases if c.strip() and not c.startswith("#")]
 
 LOOP = r"""for ci_ = 1:numel(cases)
