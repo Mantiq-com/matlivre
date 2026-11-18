@@ -37,7 +37,7 @@ The coverage checklist (`tools/coverage/update.sh`, `coverage.pl`) reads `stats.
 | Functions and classes in scope list (`stats.tsv`, R2023b-era) | 485 |
 | Out of scope (see below) | 15 |
 | In scope | 470 |
-| Implemented in MatLivre (`crates/livre-lang/src/stats/`) | 150 |
+| Implemented in MatLivre (`crates/livre-lang/src/stats/`) | 153 |
 | Class methods (`stats_methods.tsv`), implemented with their classes | 510 |
 
 Names per table-of-contents category (first listing): Probability distributions and hypothesis
@@ -171,3 +171,5 @@ Like `signal_matlab.rs`:
 MATLAB R2023b with the toolbox is installed. Done and recorded (`tools/stats/cases*.txt`, 1900 cases): descriptive statistics, `corr`, pdf/cdf/inv/stat of 20 families, rnd of the `rand`-based families, `ttest`/`ttest2`/`ztest`/`vartest`/`vartest2`, `pdist`/`pdist2`/`squareform`/`mahal`, `linkage`/`cluster`/`clusterdata`/`cophenet`/`inconsistent`, `pca`/`pcacov`/`pcares`/`cmdscale`/`corrcov`, `regress`/`dummyvar`/`x2fx`. Not recovered: `randn`'s Ziggurat (so `normrnd`, `gamrnd` and the other randn/randg-based generators). Next: `kmeans`, `fitlm`/`fitglm`, `anova1`, nonparametric tests, `fit`/`like`/`mle`, `makedist`/`fitdist`, learners.
 
 Update: `kmeans` (sqeuclidean, cosine, correlation), `randsample`, `datasample`, `signtest`, `signrank`, `ranksum`, `anova1`, `kruskalwallis`, `normfit`/`expfit`/`poissfit`/`binofit`/`lognfit`/`unifit`/`raylfit`, `normlike`/`lognlike`/`explike` are done (2199 recorded cases). Next: `fitlm`/`fitglm`, `kstest`/`kstest2`, `fitdist`/`makedist`, learners.
+
+Update 2: `kstest`, `kstest2` and `fitlm` (matrix input, LinearModel properties, display, predict, feval, coefCI) are done (2322 recorded cases). Not done in fitlm: table/formula input, weights, categorical predictors, rank-deficient designs, anova. Next: fitglm, fitdist/makedist, learners.
