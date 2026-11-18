@@ -23,7 +23,7 @@ of MATLAB, written in Rust: no MATLAB installation, license or Java runtime is n
   algebra, sorting, strings, structs and cells, MatLivre is 5.5x faster than MATLAB R2023b,
   83x faster than GNU Octave and 83x faster than Scilab (geometric mean), with identical results
   in all four.
-- **Speaks MATLAB.** 2,021 MATLAB, Symbolic Math and Statistics Toolbox functions, MATLAB's display format,
+- **Speaks MATLAB.** 2,039 MATLAB, Symbolic Math and Statistics Toolbox functions, MATLAB's display format,
   error messages and semantics, checked against MATLAB R2023b output.
 - **One small program.** A single 36 MB executable that depends only on DLLs shipped with
   Windows.
@@ -118,7 +118,7 @@ retaining allocator) are in [`docs/performance.md`](docs/performance.md); the sc
 
 MATLAB compatibility is the rule: semantics, display and error messages follow MATLAB R2023b.
 [`docs/matlab-coverage.md`](docs/matlab-coverage.md) lists every function of the MATLAB and
-Symbolic Math Toolbox references and its status (2,021 implemented).
+Symbolic Math Toolbox references and its status (2,039 implemented).
 
 - **Core:** N-D arrays of every numeric type, strings, complex numbers, every `format` mode,
   regular expressions and text patterns; cells, structs, function handles, `containers.Map`,
@@ -137,10 +137,10 @@ Symbolic Math Toolbox references and its status (2,021 implemented).
   designed through state space with MATLAB's pole and zero order, `freqz`/`freqs`, `levinson`
   and reflection-coefficient conversions, spectral estimates. Plan and known deviations:
   [`docs/signal-coverage-plan.md`](docs/signal-coverage-plan.md).
-- **Statistics and Machine Learning (in progress):** 132 functions so far, compared call by call with
-  MATLAB R2023b (about 1,900 recorded calls): descriptive statistics, `corr`, 20 univariate
-  distributions (`pdf`/`cdf`/`inv`/`stat`), `ttest` family, `pdist`/`linkage`/`cluster`, `pca`,
-  `regress`. Plan and known deviations: [`docs/stats-coverage-plan.md`](docs/stats-coverage-plan.md).
+- **Statistics and Machine Learning (in progress):** 150 functions so far, compared call by call with
+  MATLAB R2023b (about 2,200 recorded calls): descriptive statistics, `corr`, 20 univariate
+  distributions (`pdf`/`cdf`/`inv`/`stat`), `ttest` family, `pdist`/`linkage`/`cluster`, `kmeans`, `pca`,
+  `regress`, rank tests, `anova1`, closed-form fits. Plan and known deviations: [`docs/stats-coverage-plan.md`](docs/stats-coverage-plan.md).
 - **Symbolic Math:** exact arithmetic, `diff`, `int`, `limit`, `taylor`, `solve`, `dsolve` for
   linear equations, Laplace, Z, Fourier and Hilbert transforms, `simplify`, symbolic matrices
   and canonical forms, abstract functions and DAE structure tools, `subexpr`, `symmatrix`,
