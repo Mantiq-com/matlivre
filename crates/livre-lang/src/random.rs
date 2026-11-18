@@ -484,3 +484,17 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
         _ => Ok(None),
     }
 }
+
+/// `n` draws from the global stream's uniform generator (what `rand(n,1)` returns).
+pub(crate) fn global_uniform(it: &mut Interpreter, n: usize) -> Vec<f64> {
+    let id = it.rng.global;
+    let s = it.rng.get(id);
+    (0..n).map(|_| s.uniform()).collect()
+}
+
+/// `n` draws from the global stream's normal generator (what `randn(n,1)` returns).
+pub(crate) fn global_normal(it: &mut Interpreter, n: usize) -> Vec<f64> {
+    let id = it.rng.global;
+    let s = it.rng.get(id);
+    (0..n).map(|_| s.normal()).collect()
+}

@@ -5,6 +5,7 @@ pub mod corr;
 pub mod descr;
 pub mod dist;
 pub mod errtab;
+pub mod rnd;
 pub mod util;
 
 use crate::builtins::Ret;
@@ -20,6 +21,9 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
     if dist::NAMES.contains(&name) {
         return dist::call(it, name, a, nargout);
     }
+    if rnd::NAMES.contains(&name) {
+        return rnd::call(it, name, a, nargout);
+    }
     if corr::NAMES.contains(&name) {
         return corr::call(it, name, a, nargout);
     }
@@ -28,5 +32,5 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
 
 /// Every name the stats modules provide.
 pub fn names() -> Vec<&'static str> {
-    [descr::NAMES, corr::NAMES, dist::NAMES].concat()
+    [descr::NAMES, corr::NAMES, dist::NAMES, rnd::NAMES].concat()
 }
