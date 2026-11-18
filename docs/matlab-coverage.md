@@ -1,17 +1,17 @@
 # MATLAB coverage
 
-Every function in the MATLAB R2023b and Symbolic Math Toolbox function references (the
+Every function in the MATLAB R2023b, Symbolic Math Toolbox and Statistics and Machine Learning Toolbox function references (the
 installation's `help/*/helpfuncbycat.xml`), plus key classes and undocumented public functions
 found in the toolbox folders, checked against MatLivre. Regenerate with
-`tools/coverage/update.sh` after merging work (2026-11-17).
+`tools/coverage/update.sh` after merging work (2026-11-18).
 
 | Status | Count |
 |---|---:|
-| Implemented | 1889 |
+| Implemented | 2021 |
 | In a branch not merged yet | 0 |
 | Language keyword (check it works) | 25 |
-| **To implement** | **125** |
-| Out of scope | 1340 |
+| **To implement** | **463** |
+| Out of scope | 1355 |
 
 Out of scope, by category of the function reference: app building, external language
 interfaces (Python, Java, .NET, C/C++, COM, web services), desktop/help/add-on/startup
@@ -316,7 +316,7 @@ Implemented: `&amp;`, `&gt;`, `&gt;=`, `&lt;`, `&lt;=`, `'`, `*`, `+`, `-`, `.'`
 
 Implemented: 84. To implement: 0. In a branch: 0. Out of scope: 0.
 
-Implemented: `addboundary`, `alphaShape`, `alphaSpectrum`, `alphaTriangulation`, `area`, `barycentricToCartesian`, `baryToCart`, `boundary`, `boundaryFacets`, `boundaryshape`, `boundingbox`, `cartesianToBarycentric`, `cartToBary`, `centroid`, `circumcenter`, `circumcenters`, `convexHull`, `convhull`, `convhulln`, `criticalAlpha`, `delaunay`, `delaunayn`, `DelaunayTri`, `delaunayTriangulation`, `dsearchn`, `edgeAttachments`, `edges`, `faceNormal`, `faceNormals`, `featureEdges`, `freeBoundary`, `holes`, `incenter`, `incenters`, `inOutStatus`, `inpolygon`, `inShape`, `isConnected`, `isEdge`, `ishole`, `isInterior`, `isinterior`, `issimplified`, `nearestNeighbor`, `nearestvertex`, `nsidedpoly`, `numboundaries`, `numRegions`, `numsides`, `overlaps`, `patch`, `perimeter`, `pointLocation`, `polyarea`, `polybuffer`, `polyshape`, `rectint`, `regions`, `rmboundary`, `rmholes`, `rmslivers`, `rotate`, `scale`, `sortboundaries`, `sortregions`, `stlread`, `stlwrite`, `subtract`, `surfaceArea`, `tetramesh`, `translate`, `triangulation`, `trimesh`, `triplot`, `TriRep`, `trisurf`, `tsearchn`, `turningdist`, `vertexAttachments`, `vertexNormal`, `volume`, `voronoi`, `voronoiDiagram`, `voronoin`
+Implemented: `addboundary`, `alphaShape`, `alphaSpectrum`, `alphaTriangulation`, `area`, `barycentricToCartesian`, `baryToCart`, `boundary`, `boundaryFacets`, `boundaryshape`, `boundingbox`, `cartesianToBarycentric`, `cartToBary`, `centroid`, `circumcenter`, `circumcenters`, `convexHull`, `convhull`, `convhulln`, `criticalAlpha`, `delaunay`, `delaunayn`, `DelaunayTri`, `delaunayTriangulation`, `dsearchn`, `edgeAttachments`, `edges`, `faceNormal`, `faceNormals`, `featureEdges`, `freeBoundary`, `holes`, `incenter`, `incenters`, `inOutStatus`, `inpolygon`, `inShape`, `isConnected`, `isEdge`, `ishole`, `isinterior`, `isInterior`, `issimplified`, `nearestNeighbor`, `nearestvertex`, `nsidedpoly`, `numboundaries`, `numRegions`, `numsides`, `overlaps`, `patch`, `perimeter`, `pointLocation`, `polyarea`, `polybuffer`, `polyshape`, `rectint`, `regions`, `rmboundary`, `rmholes`, `rmslivers`, `rotate`, `scale`, `sortboundaries`, `sortregions`, `stlread`, `stlwrite`, `subtract`, `surfaceArea`, `tetramesh`, `translate`, `triangulation`, `trimesh`, `triplot`, `TriRep`, `trisurf`, `tsearchn`, `turningdist`, `vertexAttachments`, `vertexNormal`, `volume`, `voronoi`, `voronoiDiagram`, `voronoin`
 
 ## MATLAB > Mathematics > Elementary Math
 
@@ -708,6 +708,710 @@ To implement:
 Implemented: `frac`
 
 Out of scope: `allMuPADNotebooks` (desktop, IDE, GUI, printing or interactive tool), `checkIgnoreAnalyticConstraintsValue` (internal helper, not a user function), `mupadengine` (desktop, IDE, GUI, printing or interactive tool), `mupadwelcome` (desktop, IDE, GUI, printing or interactive tool), `openmn` (desktop, IDE, GUI, printing or interactive tool), `openxvc` (desktop, IDE, GUI, printing or interactive tool), `openxvz` (desktop, IDE, GUI, printing or interactive tool)
+
+## Statistics and Machine Learning Toolbox > ANOVA > Analysis of Variance and Covariance
+
+Implemented: 0. To implement: 6. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `anova`
+- [ ] `anova1`
+- [ ] `anova2`
+- [ ] `anovan`
+- [ ] `aoctool`
+- [ ] `canoncorr`
+
+## Statistics and Machine Learning Toolbox > ANOVA > Repeated Measures and MANOVA
+
+Implemented: 0. To implement: 4. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `fitrm`
+- [ ] `manova`
+- [ ] `manova1`
+- [ ] `manovacluster`
+
+## Statistics and Machine Learning Toolbox > Classification > Classification Ensembles
+
+Implemented: 0. To implement: 6. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `fitcensemble`
+- [ ] `templateDiscriminant`
+- [ ] `templateEnsemble`
+- [ ] `templateKNN`
+- [ ] `templateNaiveBayes`
+- [ ] `templateTree`
+
+## Statistics and Machine Learning Toolbox > Classification > Classification Trees
+
+Implemented: 0. To implement: 2. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `fitctree`
+- [ ] `testckfold`
+
+## Statistics and Machine Learning Toolbox > Classification > Discriminant Analysis
+
+Implemented: 0. To implement: 3. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `classify`
+- [ ] `fitcdiscr`
+- [ ] `makecdiscr`
+
+## Statistics and Machine Learning Toolbox > Classification > Fairness in Binary Classification
+
+Implemented: 0. To implement: 4. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `disparateImpactRemover`
+- [ ] `fairnessMetrics`
+- [ ] `fairnessThresholder`
+- [ ] `fairnessWeights`
+
+## Statistics and Machine Learning Toolbox > Classification > Generalized Additive Model
+
+Implemented: 0. To implement: 1. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `fitcgam`
+
+## Statistics and Machine Learning Toolbox > Classification > Incremental Learning
+
+Implemented: 0. To implement: 0. In a branch: 0. Out of scope: 4.
+
+Out of scope: `incrementalClassificationECOC` (Incremental Learning), `incrementalClassificationKernel` (Incremental Learning), `incrementalClassificationLinear` (Incremental Learning), `incrementalClassificationNaiveBayes` (Incremental Learning)
+
+## Statistics and Machine Learning Toolbox > Classification > Model Building and Assessment
+
+Implemented: 0. To implement: 10. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `confusionchart`
+- [ ] `confusionmat`
+- [ ] `fitcauto`
+- [ ] `fscchi2`
+- [ ] `fscmrmr`
+- [ ] `fscnca`
+- [ ] `gencfeatures`
+- [ ] `perfcurve`
+- [ ] `rocmetrics`
+- [ ] `testcholdout`
+
+## Statistics and Machine Learning Toolbox > Classification > Naive Bayes
+
+Implemented: 0. To implement: 1. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `fitcnb`
+
+## Statistics and Machine Learning Toolbox > Classification > Nearest Neighbors
+
+Implemented: 2. To implement: 6. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `createns`
+- [ ] `ExhaustiveSearcher`
+- [ ] `fitcknn`
+- [ ] `KDTreeSearcher`
+- [ ] `knnsearch`
+- [ ] `rangesearch`
+
+Implemented: `pdist`, `pdist2`
+
+## Statistics and Machine Learning Toolbox > Classification > Neural Networks
+
+Implemented: 0. To implement: 1. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `fitcnet`
+
+## Statistics and Machine Learning Toolbox > Classification > Semi-Supervised Learning for Classification
+
+Implemented: 0. To implement: 2. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `fitsemigraph`
+- [ ] `fitsemiself`
+
+## Statistics and Machine Learning Toolbox > Classification > Support Vector Machine Classification
+
+Implemented: 0. To implement: 6. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `designecoc`
+- [ ] `fitcsvm`
+- [ ] `fitSVMPosterior`
+- [ ] `templateECOC`
+- [ ] `templateKernel`
+- [ ] `templateSVM`
+
+## Statistics and Machine Learning Toolbox > Cluster Analysis and Anomaly Detection > Anomaly Detection
+
+Implemented: 0. To implement: 6. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `iforest`
+- [ ] `incrementalOneClassSVM`
+- [ ] `incrementalRobustRandomCutForest`
+- [ ] `lof`
+- [ ] `ocsvm`
+- [ ] `rrcforest`
+
+## Statistics and Machine Learning Toolbox > Cluster Analysis and Anomaly Detection > Cluster Visualization and Evaluation
+
+Implemented: 0. To implement: 4. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `dendrogram`
+- [ ] `evalclusters`
+- [ ] `optimalleaforder`
+- [ ] `silhouette`
+
+## Statistics and Machine Learning Toolbox > Cluster Analysis and Anomaly Detection > Density-Based Spatial Clustering of Applications with Noise
+
+Implemented: 0. To implement: 1. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `dbscan`
+
+## Statistics and Machine Learning Toolbox > Cluster Analysis and Anomaly Detection > Gaussian Mixture Models
+
+Implemented: 0. To implement: 2. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `fitgmdist`
+- [ ] `gmdistribution`
+
+## Statistics and Machine Learning Toolbox > Cluster Analysis and Anomaly Detection > Hidden Markov Models
+
+Implemented: 0. To implement: 5. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `hmmdecode`
+- [ ] `hmmestimate`
+- [ ] `hmmgenerate`
+- [ ] `hmmtrain`
+- [ ] `hmmviterbi`
+
+## Statistics and Machine Learning Toolbox > Cluster Analysis and Anomaly Detection > Hierarchical Clustering
+
+Implemented: 6. To implement: 0. In a branch: 0. Out of scope: 0.
+
+Implemented: `cluster`, `clusterdata`, `cophenet`, `inconsistent`, `linkage`, `squareform`
+
+## Statistics and Machine Learning Toolbox > Cluster Analysis and Anomaly Detection > Spectral Clustering
+
+Implemented: 0. To implement: 1. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `spectralcluster`
+
+## Statistics and Machine Learning Toolbox > Cluster Analysis and Anomaly Detection > k-Means and k-Medoids Clustering
+
+Implemented: 1. To implement: 2. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `kmeans`
+- [ ] `kmedoids`
+
+Implemented: `mahal`
+
+## Statistics and Machine Learning Toolbox > Descriptive Statistics and Visualization > Descriptive Statistics
+
+Implemented: 19. To implement: 9. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `cholcov`
+- [ ] `crosstab`
+- [ ] `grpstats`
+- [ ] `nancov`
+- [ ] `nearcorr`
+- [ ] `partialcorr`
+- [ ] `partialcorri`
+- [ ] `robustcov`
+- [ ] `tabulate`
+
+Implemented: `corr`, `corrcov`, `geomean`, `harmmean`, `kurtosis`, `mad`, `moment`, `nanmax`, `nanmean`, `nanmedian`, `nanmin`, `nanstd`, `nansum`, `nanvar`, `range`, `skewness`, `tiedrank`, `trimmean`, `zscore`
+
+## Statistics and Machine Learning Toolbox > Descriptive Statistics and Visualization > Managing Data
+
+Implemented: 1. To implement: 20. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `caseread`
+- [ ] `casewrite`
+- [ ] `cell2dataset`
+- [ ] `dataset`
+- [ ] `dataset2table`
+- [ ] `gplotmatrix`
+- [ ] `grp2idx`
+- [ ] `gscatter`
+- [ ] `hist3`
+- [ ] `mat2dataset`
+- [ ] `nominal`
+- [ ] `onehotdecode`
+- [ ] `onehotencode`
+- [ ] `ordinal`
+- [ ] `struct2dataset`
+- [ ] `table2dataset`
+- [ ] `tblread`
+- [ ] `tblwrite`
+- [ ] `tdfread`
+- [ ] `xptread`
+
+Implemented: `dummyvar`
+
+## Statistics and Machine Learning Toolbox > Descriptive Statistics and Visualization > Statistical Visualization
+
+Implemented: 0. To implement: 11. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `andrewsplot`
+- [ ] `biplot`
+- [ ] `boxplot`
+- [ ] `gline`
+- [ ] `glyphplot`
+- [ ] `gname`
+- [ ] `lsline`
+- [ ] `parallelcoords`
+- [ ] `refcurve`
+- [ ] `refline`
+- [ ] `scatterhist`
+
+## Statistics and Machine Learning Toolbox > Dimensionality Reduction and Feature Extraction
+
+Implemented: 4. To implement: 10. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `factoran`
+- [ ] `fsulaplacian`
+- [ ] `mdscale`
+- [ ] `nnmf`
+- [ ] `ppca`
+- [ ] `procrustes`
+- [ ] `rica`
+- [ ] `rotatefactors`
+- [ ] `sparsefilt`
+- [ ] `tsne`
+
+Implemented: `cmdscale`, `pca`, `pcacov`, `pcares`
+
+## Statistics and Machine Learning Toolbox > Industrial Statistics > Analysis of Lifetime Data
+
+Implemented: 0. To implement: 2. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `coxphfit`
+- [ ] `fitcox`
+
+## Statistics and Machine Learning Toolbox > Industrial Statistics > Design of Experiments (DOE)
+
+Implemented: 0. To implement: 20. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `bbdesign`
+- [ ] `candexch`
+- [ ] `candgen`
+- [ ] `ccdesign`
+- [ ] `cordexch`
+- [ ] `daugment`
+- [ ] `dcovary`
+- [ ] `ff2n`
+- [ ] `fracfact`
+- [ ] `fracfactgen`
+- [ ] `fullfact`
+- [ ] `haltonset`
+- [ ] `interactionplot`
+- [ ] `lhsdesign`
+- [ ] `lhsnorm`
+- [ ] `maineffectsplot`
+- [ ] `multivarichart`
+- [ ] `qrandstream`
+- [ ] `rowexch`
+- [ ] `sobolset`
+
+## Statistics and Machine Learning Toolbox > Industrial Statistics > Statistical Process Control
+
+Implemented: 0. To implement: 5. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `capability`
+- [ ] `capaplot`
+- [ ] `controlchart`
+- [ ] `controlrules`
+- [ ] `gagerr`
+
+## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Exploration and Visualization
+
+Implemented: 0. To implement: 4. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `cdfplot`
+- [ ] `fsurfht`
+- [ ] `probplot`
+- [ ] `surfht`
+
+## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Generic distribution functions
+
+Implemented: 0. To implement: 4. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `cdf`
+- [ ] `icdf`
+- [ ] `pdf`
+- [ ] `random`
+
+## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Hypothesis Tests
+
+Implemented: 3. To implement: 21. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `adtest`
+- [ ] `ansaribradley`
+- [ ] `barttest`
+- [ ] `detectdrift`
+- [ ] `dwtest`
+- [ ] `fishertest`
+- [ ] `friedman`
+- [ ] `gardnerAltmanPlot`
+- [ ] `jbtest`
+- [ ] `kruskalwallis`
+- [ ] `kstest`
+- [ ] `kstest2`
+- [ ] `lillietest`
+- [ ] `meanEffectSize`
+- [ ] `multcompare`
+- [ ] `ranksum`
+- [ ] `runstest`
+- [ ] `sampsizepwr`
+- [ ] `signrank`
+- [ ] `signtest`
+- [ ] `vartestn`
+
+Implemented: `vartest`, `vartest2`, `ztest`
+
+## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Multivariate Distributions
+
+Implemented: 0. To implement: 16. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `copulacdf`
+- [ ] `copulafit`
+- [ ] `copulaparam`
+- [ ] `copulapdf`
+- [ ] `copularnd`
+- [ ] `copulastat`
+- [ ] `iwishrnd`
+- [ ] `mnpdf`
+- [ ] `mnrnd`
+- [ ] `mvncdf`
+- [ ] `mvnpdf`
+- [ ] `mvnrnd`
+- [ ] `mvtcdf`
+- [ ] `mvtpdf`
+- [ ] `mvtrnd`
+- [ ] `wishrnd`
+
+## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Pseudorandom and Quasirandom Number Generation
+
+Implemented: 0. To implement: 4. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `hmcSampler`
+- [ ] `johnsrnd`
+- [ ] `mhsample`
+- [ ] `slicesample`
+
+## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Resampling Techniques
+
+Implemented: 0. To implement: 7. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `bootci`
+- [ ] `bootstrp`
+- [ ] `combnk`
+- [ ] `crossval`
+- [ ] `datasample`
+- [ ] `jackknife`
+- [ ] `randsample`
+
+## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions
+
+Implemented: 67. To implement: 52. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `betafit`
+- [ ] `betalike`
+- [ ] `betarnd`
+- [ ] `chi2gof`
+- [ ] `chi2rnd`
+- [ ] `evfit`
+- [ ] `evlike`
+- [ ] `expfit`
+- [ ] `explike`
+- [ ] `frnd`
+- [ ] `gamfit`
+- [ ] `gamlike`
+- [ ] `gamrnd`
+- [ ] `gevfit`
+- [ ] `gevlike`
+- [ ] `gpfit`
+- [ ] `gplike`
+- [ ] `histfit`
+- [ ] `ksdensity`
+- [ ] `lognfit`
+- [ ] `lognlike`
+- [ ] `mlecov`
+- [ ] `mvksdensity`
+- [ ] `ncfcdf`
+- [ ] `ncfinv`
+- [ ] `ncfpdf`
+- [ ] `ncfrnd`
+- [ ] `ncfstat`
+- [ ] `nctcdf`
+- [ ] `nctinv`
+- [ ] `nctpdf`
+- [ ] `nctrnd`
+- [ ] `nctstat`
+- [ ] `ncx2cdf`
+- [ ] `ncx2inv`
+- [ ] `ncx2pdf`
+- [ ] `ncx2rnd`
+- [ ] `ncx2stat`
+- [ ] `normfit`
+- [ ] `normlike`
+- [ ] `normplot`
+- [ ] `normspec`
+- [ ] `pearscdf`
+- [ ] `pearspdf`
+- [ ] `pearsrnd`
+- [ ] `randg`
+- [ ] `raylfit`
+- [ ] `trnd`
+- [ ] `unifit`
+- [ ] `wblfit`
+- [ ] `wbllike`
+- [ ] `wblplot`
+
+Implemented: `betacdf`, `betainv`, `betapdf`, `betastat`, `chi2cdf`, `chi2inv`, `chi2pdf`, `chi2stat`, `evcdf`, `evinv`, `evpdf`, `evrnd`, `evstat`, `expcdf`, `expinv`, `exppdf`, `exprnd`, `expstat`, `fcdf`, `finv`, `fpdf`, `fstat`, `gamcdf`, `gaminv`, `gampdf`, `gamstat`, `gevcdf`, `gevinv`, `gevpdf`, `gevrnd`, `gevstat`, `gpcdf`, `gpinv`, `gppdf`, `gprnd`, `gpstat`, `logncdf`, `logninv`, `lognpdf`, `lognrnd`, `lognstat`, `normcdf`, `norminv`, `normpdf`, `normrnd`, `normstat`, `raylcdf`, `raylinv`, `raylpdf`, `raylrnd`, `raylstat`, `tcdf`, `tinv`, `tpdf`, `tstat`, `ttest`, `ttest2`, `unifcdf`, `unifinv`, `unifpdf`, `unifrnd`, `unifstat`, `wblcdf`, `wblinv`, `wblpdf`, `wblrnd`, `wblstat`
+
+## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions
+
+Implemented: 27. To implement: 12. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `binofit`
+- [ ] `ecdf`
+- [ ] `ecdfhist`
+- [ ] `fitdist`
+- [ ] `makedist`
+- [ ] `mle`
+- [ ] `nbinfit`
+- [ ] `nbinrnd`
+- [ ] `poissfit`
+- [ ] `poissrnd`
+- [ ] `poisstat`
+- [ ] `qqplot`
+
+Implemented: `binocdf`, `binoinv`, `binopdf`, `binornd`, `binostat`, `geocdf`, `geoinv`, `geopdf`, `geornd`, `geostat`, `hygecdf`, `hygeinv`, `hygepdf`, `hygernd`, `hygestat`, `nbincdf`, `nbininv`, `nbinpdf`, `nbinstat`, `poisscdf`, `poissinv`, `poisspdf`, `unidcdf`, `unidinv`, `unidpdf`, `unidrnd`, `unidstat`
+
+## Statistics and Machine Learning Toolbox > Regression > Direct Forecasting
+
+Implemented: 0. To implement: 1. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `tspartition`
+
+## Statistics and Machine Learning Toolbox > Regression > Gaussian Process Regression
+
+Implemented: 0. To implement: 2. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `fitrgp`
+- [ ] `templateGP`
+
+## Statistics and Machine Learning Toolbox > Regression > Generalized Additive Model
+
+Implemented: 0. To implement: 2. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `fitrgam`
+- [ ] `templateGAM`
+
+## Statistics and Machine Learning Toolbox > Regression > Generalized Linear Models
+
+Implemented: 0. To implement: 13. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `fitcecoc`
+- [ ] `fitckernel`
+- [ ] `fitclinear`
+- [ ] `fitglm`
+- [ ] `fitglme`
+- [ ] `fitmnr`
+- [ ] `glmfit`
+- [ ] `glmval`
+- [ ] `lassoglm`
+- [ ] `mnrfit`
+- [ ] `mnrval`
+- [ ] `stepwiseglm`
+- [ ] `templateLinear`
+
+## Statistics and Machine Learning Toolbox > Regression > Incremental Learning
+
+Implemented: 0. To implement: 0. In a branch: 0. Out of scope: 4.
+
+Out of scope: `incrementalConceptDriftDetector` (Incremental Learning), `incrementalDriftAwareLearner` (Incremental Learning), `incrementalRegressionKernel` (Incremental Learning), `incrementalRegressionLinear` (Incremental Learning)
+
+## Statistics and Machine Learning Toolbox > Regression > Linear Regression
+
+Implemented: 2. To implement: 21. In a branch: 0. Out of scope: 1.
+
+To implement:
+
+- [ ] `fitlm`
+- [ ] `fitlme`
+- [ ] `fitlmematrix`
+- [ ] `fitrlinear`
+- [ ] `invpred`
+- [ ] `lasso`
+- [ ] `lassoPlot`
+- [ ] `lime`
+- [ ] `linhyptest`
+- [ ] `mvregress`
+- [ ] `mvregresslike`
+- [ ] `plsregress`
+- [ ] `polyconf`
+- [ ] `regstats`
+- [ ] `relieff`
+- [ ] `ridge`
+- [ ] `robustfit`
+- [ ] `shapley`
+- [ ] `stepwise`
+- [ ] `stepwisefit`
+- [ ] `stepwiselm`
+
+Implemented: `regress`, `x2fx`
+
+Out of scope: `Polynomial Fitting Tool` (App)
+
+## Statistics and Machine Learning Toolbox > Regression > Model Building and Assessment
+
+Implemented: 0. To implement: 13. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `addedvarplot`
+- [ ] `bayesopt`
+- [ ] `cvpartition`
+- [ ] `fitrauto`
+- [ ] `fsrftest`
+- [ ] `fsrmrmr`
+- [ ] `fsrnca`
+- [ ] `genrfeatures`
+- [ ] `hyperparameters`
+- [ ] `leverage`
+- [ ] `optimizableVariable`
+- [ ] `rcoplot`
+- [ ] `sequentialfs`
+
+## Statistics and Machine Learning Toolbox > Regression > Neural Networks
+
+Implemented: 0. To implement: 1. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `fitrnet`
+
+## Statistics and Machine Learning Toolbox > Regression > Nonlinear Regression
+
+Implemented: 0. To implement: 9. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `fitnlm`
+- [ ] `hougen`
+- [ ] `nlinfit`
+- [ ] `nlmefit`
+- [ ] `nlmefitsa`
+- [ ] `nlparci`
+- [ ] `nlpredci`
+- [ ] `statget`
+- [ ] `statset`
+
+## Statistics and Machine Learning Toolbox > Regression > Regression Tree Ensembles
+
+Implemented: 0. To implement: 3. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `fitensemble`
+- [ ] `fitrensemble`
+- [ ] `TreeBagger`
+
+## Statistics and Machine Learning Toolbox > Regression > Regression Trees
+
+Implemented: 0. To implement: 1. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `fitrtree`
+
+## Statistics and Machine Learning Toolbox > Regression > Support Vector Machine Regression
+
+Implemented: 0. To implement: 2. In a branch: 0. Out of scope: 0.
+
+To implement:
+
+- [ ] `fitrkernel`
+- [ ] `fitrsvm`
+
+## Statistics and Machine Learning Toolbox > Simulink and Code Generation > Code Generation for Statistics and Machine Learning Functions
+
+Implemented: 0. To implement: 0. In a branch: 0. Out of scope: 6.
+
+Out of scope: `generateLearnerDataTypeFcn` (Simulink and Code Generation), `learnerCoderConfigurer` (Simulink and Code Generation), `loadCompactModel` (Simulink and Code Generation), `loadLearnerForCoder` (Simulink and Code Generation), `saveCompactModel` (Simulink and Code Generation), `saveLearnerForCoder` (Simulink and Code Generation)
 
 ## Symbolic Math Toolbox > Code Generation
 
