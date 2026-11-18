@@ -1043,3 +1043,7 @@ pub fn fcdf(x: f64, d1: f64, d2: f64, upper: bool) -> f64 {
 pub fn finv(q: f64, d1: f64, d2: f64) -> f64 {
     if d1.is_nan() || d2.is_nan() || d1 <= 0.0 || d2 <= 0.0 { f64::NAN } else { f_inv(q, &[d1, d2]) }
 }
+
+pub fn binocdf(k: f64, n: f64, p: f64) -> f64 {
+    bino_cdf(k, &[n, p], false)
+}

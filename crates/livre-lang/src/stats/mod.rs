@@ -9,6 +9,7 @@ pub mod errtab;
 pub mod hier;
 pub mod kmeans;
 pub mod htest;
+pub mod nonpar;
 pub mod pca;
 pub mod regress;
 pub mod sampling;
@@ -49,6 +50,9 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
     if sampling::NAMES.contains(&name) {
         return sampling::call(it, name, a, nargout);
     }
+    if nonpar::NAMES.contains(&name) {
+        return nonpar::call(it, name, a, nargout);
+    }
     if rnd::NAMES.contains(&name) {
         return rnd::call(it, name, a, nargout);
     }
@@ -60,5 +64,5 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
 
 /// Every name the stats modules provide.
 pub fn names() -> Vec<&'static str> {
-    [descr::NAMES, corr::NAMES, dist::NAMES, rnd::NAMES, htest::NAMES, dist_matrix::NAMES, hier::NAMES, pca::NAMES, regress::NAMES, kmeans::NAMES, sampling::NAMES].concat()
+    [descr::NAMES, corr::NAMES, dist::NAMES, rnd::NAMES, htest::NAMES, dist_matrix::NAMES, hier::NAMES, pca::NAMES, regress::NAMES, kmeans::NAMES, sampling::NAMES, nonpar::NAMES].concat()
 }
