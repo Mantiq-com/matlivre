@@ -7,10 +7,10 @@ found in the toolbox folders, checked against MatLivre. Regenerate with
 
 | Status | Count |
 |---|---:|
-| Implemented | 2042 |
+| Implemented | 2043 |
 | In a branch not merged yet | 0 |
 | Language keyword (check it works) | 25 |
-| **To implement** | **442** |
+| **To implement** | **441** |
 | Out of scope | 1355 |
 
 Out of scope, by category of the function reference: app building, external language
@@ -1264,14 +1264,13 @@ To implement:
 
 ## Statistics and Machine Learning Toolbox > Regression > Generalized Linear Models
 
-Implemented: 0. To implement: 13. In a branch: 0. Out of scope: 0.
+Implemented: 1. To implement: 12. In a branch: 0. Out of scope: 0.
 
 To implement:
 
 - [ ] `fitcecoc`
 - [ ] `fitckernel`
 - [ ] `fitclinear`
-- [ ] `fitglm`
 - [ ] `fitglme`
 - [ ] `fitmnr`
 - [ ] `glmfit`
@@ -1281,6 +1280,8 @@ To implement:
 - [ ] `mnrval`
 - [ ] `stepwiseglm`
 - [ ] `templateLinear`
+
+Implemented: `fitglm`
 
 ## Statistics and Machine Learning Toolbox > Regression > Incremental Learning
 
