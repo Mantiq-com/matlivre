@@ -6,3 +6,4 @@ r = linkage([2 2 2 2 2 2],'complete');	among exactly tied distances MATLAB merge
 [Y_,e_] = cmdscale(single(squareform(pdist(A)))); r = {Y_,e_};	single precision: computed in double and rounded; MATLAB's own single arithmetic differs at 1e-6
 [c_,s_,l_,t_,e_,m_] = pca(A(1:4,:),'Economy',false); r = {c_,s_,l_,t_,e_,m_};	the columns of coeff beyond the rank span a null space; MATLAB's basis is LAPACK's, MatLivre's differs
 [c_,s_,l_,t_,e_,m_] = pca(A(1:4,:),'Algorithm','eig','Economy',false); r = {c_,s_,l_,t_,e_,m_};	the columns of coeff beyond the rank span a null space; MATLAB's basis is LAPACK's, MatLivre's differs
+yv=A(:,1); Xr=[ones(6,1) A(:,2:3)]; X3=A(:,1:3); [b_,bi_,r_,ri_,st_] = regress(single(yv),single(Xr)); r = {b_,bi_,r_,ri_,st_};	single precision: computed in double and rounded; MATLAB's own single arithmetic differs at 1e-5
