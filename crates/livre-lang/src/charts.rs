@@ -269,7 +269,7 @@ fn new_chart(it: &mut Interpreter, class: &'static str, own_figure: bool) -> u64
     let a = fig.current_axes;
     let ax = &mut fig.axes[a];
     old.extend(ax.series.iter().map(|s| s.id));
-    *ax = Axes { id: ax.id, overlay_of: ax.overlay_of, ..Axes::default() };
+    *ax = Axes { id: ax.id, overlay_of: ax.overlay_of, layout: ax.layout, position: ax.position, raised: ax.raised, ..Axes::default() };
     for id in old {
         it.gfx_store.remove(&id);
     }

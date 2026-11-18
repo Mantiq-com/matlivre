@@ -61,7 +61,7 @@ impl Interpreter {
         } else if !ax.hold {
             let (grid, id) = (ax.grid, ax.id);
             removed = ax.series.iter().map(|s| s.id).collect();
-            *ax = Axes { grid, id, overlay_of: ax.overlay_of, ..Axes::default() };
+            *ax = Axes { grid, id, overlay_of: ax.overlay_of, layout: ax.layout, position: ax.position, raised: ax.raised, ..Axes::default() };
             reset = id;
         }
         if ax.series.is_empty() {
@@ -362,27 +362,7 @@ pub fn call(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) ->
             *f = Figure::new(f.id);
             none()
         }
-        "subplot" => {
-            let (m, n, p) = if a.len() == 1 {
-                let v = a[0].scalar()? as usize;
-                (v / 100, (v / 10) % 10, v % 10)
-            } else {
-                (arg(a, 0, name)?.as_usize()?, arg(a, 1, name)?.as_usize()?, arg(a, 2, name)?.as_usize()?)
-            };
-            if m == 0 || n == 0 || p == 0 || p > m * n {
-                return rt("Index exceeds number of subplots.");
-            }
-            let f = it.current_figure();
-            if f.grid != (m, n) {
-                f.grid = (m, n);
-                f.axes = vec![Axes::default(); m * n];
-            }
-            f.current_axes = p - 1;
-            if nargout > 0 {
-                return one(it.current_axes_handle());
-            }
-            none()
-        }
+        "subplot" => subplot(it, a, nargout),
         "hold" | "grid" => {
             let mode = a.first().map(|v| v.text()).transpose()?;
             let ax = it.current_figure().axes_mut();
@@ -772,4 +752,100 @@ pub fn call(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) ->
         }
         _ => Ok(None),
     }
+}
+
+/// `subplot(m,n,p)`, `subplot(mnp)`, `subplot('Position', box)` and `subplot(ax)`: makes the axes
+/// at a place in the figure current. Axes already at that place are used again; others that
+/// overlap it are deleted, and so are those at the place with `'replace'`.
+fn subplot(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
+    // subplot(ax): the dispatcher has taken the leading axes handle and made those axes current.
+    if a.is_empty() {
+        return if nargout > 0 { one(it.current_axes_handle()) } else { none() };
+    }
+    let by_position = a.first().is_some_and(|v| v.is_text() && v.text().is_ok_and(|t| t.eq_ignore_ascii_case("position")));
+    let (position, cell, rest): ([f64; 4], Option<[f64; 4]>, &[Value]) = if by_position {
+        let m = arg(a, 1, "subplot")?.to_matrix()?;
+        if m.numel() != 4 {
+            return rt("Value must be a 1-by-4 numeric vector for the Position property.");
+        }
+        let p = [m.data[0], m.data[1], m.data[2], m.data[3]];
+        (p, graphics::outer_of_position(p), &a[2..])
+    } else {
+        let (m, n, cells, rest) = if a.len() == 1 {
+            let v = a[0].scalar()? as usize;
+            (v / 100, (v / 10) % 10, vec![v % 10], &a[1..])
+        } else {
+            let cells: Vec<usize> = arg(a, 2, "subplot")?.to_matrix()?.data.iter().map(|&x| x as usize).collect();
+            (arg(a, 0, "subplot")?.as_usize()?, arg(a, 1, "subplot")?.as_usize()?, cells, a.get(3..).unwrap_or(&[]))
+        };
+        if cells.iter().any(|&p| p == 0) {
+            return rt("Illegal plot number.");
+        }
+        if m == 0 || n == 0 || cells.iter().any(|&p| p > m * n) {
+            return rt("Index exceeds number of subplots.");
+        }
+        (graphics::subplot_position(m, n, &cells), Some(graphics::subplot_cell(m, n, &cells)), rest)
+    };
+    let replace = rest.iter().any(|v| v.text().is_ok_and(|t| t.eq_ignore_ascii_case("replace")));
+    let props: Vec<Value> = rest.iter().filter(|v| !v.text().is_ok_and(|t| ["replace", "align"].contains(&t.to_lowercase().as_str()))).cloned().collect();
+
+    let f = it.current_figure_index();
+    let fig = &mut it.figures[f];
+    let mut reuse = None;
+    let mut doomed = Vec::new();
+    if fig.has_axes() {
+        fig.fix_grid_axes();
+        for i in 0..fig.axes.len() {
+            if fig.axes[i].overlay_of != 0 {
+                continue;
+            }
+            let there = fig.effective_position(i);
+            if !replace && reuse.is_none() && graphics::boxes_equal(there, position) {
+                reuse = Some(i);
+            } else if graphics::boxes_overlap(there, position) {
+                doomed.push(i);
+            }
+        }
+    }
+    let target = match reuse {
+        Some(i) => i,
+        None => {
+            let place = |ax: &mut Axes| {
+                ax.position = Some(position);
+                ax.layout = cell;
+            };
+            if fig.has_axes() {
+                for &i in doomed.iter().rev() {
+                    crate::gfx::remove_axes(it, f, i);
+                }
+                let fig = &mut it.figures[f];
+                let mut ax = Axes::default();
+                place(&mut ax);
+                fig.axes.push(ax);
+                fig.axes_made = true;
+                let last = fig.axes.len() - 1;
+                fig.raise(last);
+                last
+            } else {
+                // The axes a new figure starts with.
+                fig.axes_made = true;
+                place(&mut fig.axes[0]);
+                0
+            }
+        }
+    };
+    let fig = &mut it.figures[f];
+    fig.current_axes = target;
+    let id = fig.id;
+    it.mark_figure_dirty(id);
+    let handle = it.current_axes_handle();
+    if !props.is_empty() {
+        let mut args = vec![handle.clone()];
+        args.extend(props);
+        crate::gfx::set_builtin(it, &args)?;
+    }
+    if nargout > 0 {
+        return one(handle);
+    }
+    none()
 }

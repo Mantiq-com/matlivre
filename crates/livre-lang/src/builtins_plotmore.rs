@@ -1427,7 +1427,7 @@ fn tick_format_fn(it: &mut Interpreter, name: &str, a: &[Value]) -> Ret {
 fn polar_axes(it: &mut Interpreter, nargout: usize) -> Ret {
     let ax = current_axes(it);
     let id = ax.id;
-    *ax = Axes { id, polar: true, ..Axes::default() };
+    *ax = Axes { id, polar: true, layout: ax.layout, position: ax.position, raised: ax.raised, ..Axes::default() };
     if nargout == 0 {
         return none();
     }
@@ -1693,7 +1693,7 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
             let ax = current_axes(it);
             if !ax.hold {
                 let (grid, id) = (ax.grid, ax.id);
-                *ax = Axes { grid, id, overlay_of: ax.overlay_of, ..Axes::default() };
+                *ax = Axes { grid, id, overlay_of: ax.overlay_of, layout: ax.layout, position: ax.position, raised: ax.raised, ..Axes::default() };
             }
             if nargout == 0 {
                 return none();

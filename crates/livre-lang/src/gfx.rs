@@ -875,7 +875,7 @@ fn computed(it: &mut Interpreter, id: u64, t: Target, name: &str) -> R<Option<Va
                     let (az, el) = ax.view.unwrap_or((0.0, 90.0));
                     row(&[az, el])
                 }
-                "Position" | "InnerPosition" if stored(it, id, name).is_none() => row(&[0.13, 0.11, 0.775, 0.815]),
+                "Position" | "InnerPosition" => row(&it.figures[f].effective_position(a)),
                 "OuterPosition" if stored(it, id, name).is_none() => row(&[0.0, 0.0, 1.0, 1.0]),
                 "YAxisLocation" if ax.yy.is_some() => Value::chars(if ax.yy.as_ref().unwrap().right_active { "right" } else { "left" }),
                 "YAxis" if ax.yy.is_some() => {
@@ -1197,8 +1197,14 @@ pub(crate) fn set_prop(it: &mut Interpreter, id: u64, name: &str, v: Value) -> R
                     let m = v.to_matrix().ok().filter(|m| m.numel() == 4 && !m.is_complex());
                     let Some(m) = m else { return rt(format!("Value must be a 1-by-4 numeric vector for the {name} property.")) };
                     let p = [m.data[0], m.data[1], m.data[2], m.data[3]];
-                    ax.layout = if name == "OuterPosition" { Some(p).filter(|p| p[2] > 0.0 && p[3] > 0.0) } else { graphics::outer_of_position(p) };
-                    keep = true;
+                    if name == "OuterPosition" {
+                        ax.layout = Some(p).filter(|p| p[2] > 0.0 && p[3] > 0.0);
+                        ax.position = ax.layout.map(graphics::position_of_outer);
+                    } else {
+                        ax.layout = graphics::outer_of_position(p);
+                        ax.position = Some(p);
+                    }
+                    keep = false;
                 }
                 "XLimMode" if auto => ax.xlim = None,
                 "YLimMode" if auto => ax.ylim = None,
@@ -1698,7 +1704,7 @@ fn get_all(it: &mut Interpreter, id: u64) -> R<Value> {
     Ok(Value::Struct(s))
 }
 
-fn set_builtin(it: &mut Interpreter, a: &[Value]) -> Ret {
+pub(crate) fn set_builtin(it: &mut Interpreter, a: &[Value]) -> Ret {
     let ids = target_ids(it, arg(a, 0, "set")?)?;
     let mut pairs: Vec<(String, Value)> = Vec::new();
     let mut i = 1;
@@ -1921,6 +1927,25 @@ fn axes_copy(it: &mut Interpreter, f: usize, a: usize) -> Axes {
     c.overlay_of = 0;
     c.series = series;
     c
+}
+
+/// Takes axes `a` out of figure `f` for good, with the objects on them.
+pub(crate) fn remove_axes(it: &mut Interpreter, f: usize, a: usize) {
+    let ax = it.figures[f].axes.remove(a);
+    for s in &ax.series {
+        it.gfx_store.remove(&s.id);
+    }
+    if ax.id != 0 {
+        for k in 0..SLOTS {
+            it.gfx_store.remove(&(ax.id + k));
+        }
+    }
+    let fig = &mut it.figures[f];
+    fig.current_axes = match fig.current_axes {
+        c if c > a => c - 1,
+        c => c.min(fig.axes.len().saturating_sub(1)),
+    };
+    mark(it, f);
 }
 
 /// `copyobj(h, parent)`: copies of objects into new parents, one per child-parent pair.
@@ -2178,7 +2203,7 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
             let axes = &mut it.figures[f].axes[ax];
             let removed: Vec<u64> = axes.series.iter().map(|s| s.id).collect();
             if reset {
-                *axes = Axes { id: axes.id, overlay_of: axes.overlay_of, ..Axes::default() };
+                *axes = Axes { id: axes.id, overlay_of: axes.overlay_of, layout: axes.layout, position: axes.position, raised: axes.raised, ..Axes::default() };
             } else {
                 axes.series.clear();
                 axes.legend = None;

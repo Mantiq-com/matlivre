@@ -432,11 +432,8 @@ fn figure_node(it: &mut Interpreter, fid: u64) -> R<StructArray> {
         let id = gfx::axes_id(it, f, a);
         let slot = a % (rows * cols);
         let (r, c) = (slot / cols, slot % cols);
-        let sw = 0.1056 / 0.3347;
-        let sh = 0.1326 / 0.3412;
-        let w = 0.775 / (cols as f64 + (cols as f64 - 1.0) * sw);
-        let h = 0.815 / (rows as f64 + (rows as f64 - 1.0) * sh);
-        let pos = [0.13 + c as f64 * w * (1.0 + sw), 0.11 + (rows - 1 - r) as f64 * h * (1.0 + sh), w, h];
+        let _ = (r, c);
+        let pos = it.figures[f].effective_position(a);
         kids.push(axes_node(it, id, pos)?);
         if let Ok(leg) = gfx::get_prop_raw(it, id, "Legend") {
             if let Some(&lid) = gfx::ids_of(&leg).and_then(|v| v.first().copied()).as_ref() {
