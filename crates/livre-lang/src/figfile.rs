@@ -164,13 +164,21 @@ fn build_figure(it: &mut Interpreter, root: &StructArray) -> R<Value> {
         let r = bottoms.iter().position(|&b| (b - pos[k][1]).abs() < 1e-3).unwrap_or(0);
         let c = lefts.iter().position(|&l| (l - pos[k][0]).abs() < 1e-3).unwrap_or(0);
         let slot = r * cols + c + 1;
-        let ax = if rows * cols > 1 && !used.contains(&slot) {
+        // Axes where a subplot grid puts them are made by subplot; the others (and a single
+        // axes) by axes, at the Position the file gives them.
+        let on_grid = rows * cols > 1 && !used.contains(&slot) && {
+            let want = graphics::subplot_position(rows, cols, &[slot]);
+            want.iter().zip(pos[k]).all(|(a, b)| (a - b).abs() < 2e-3)
+        };
+        let ax = if on_grid {
             used.push(slot);
             call1(it, "subplot", vec![Value::num(rows as f64), Value::num(cols as f64), Value::num(slot as f64)])?
-        } else if k == 0 {
-            call1(it, "axes", vec![fig.clone()])?
         } else {
-            continue;
+            let ax = call1(it, "axes", vec![fig.clone()])?;
+            if !graphics::boxes_equal(pos[k], graphics::DEFAULT_POSITION) {
+                let _ = it.call_function("set", vec![ax.clone(), Value::chars("Position"), Value::Num(Matrix::row(pos[k].to_vec()))], 0);
+            }
+            ax
         };
         build_axes(it, &ax, &kids, i)?;
         if let Some(h) = num_of(kids.get_at(i, "handle")) {

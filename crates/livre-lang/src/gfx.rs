@@ -779,8 +779,10 @@ fn computed(it: &mut Interpreter, id: u64, t: Target, name: &str) -> R<Option<Va
             "Number" => Value::num(it.figures[f].id as f64),
             "Colormap" => colormap_value(it.figures[f].colormap.clone().unwrap_or_else(|| graphics::colormap("parula", 256).unwrap_or_default())),
             "Children" => {
-                let order = if it.figures[f].has_axes() { it.figures[f].stacking() } else { Vec::new() };
-                let ids: Vec<u64> = order.into_iter().rev().map(|a| axes_id(it, f, a)).collect();
+                // The axes that are not in a tiled layout, in front, then the layout.
+                let order: Vec<usize> = it.figures[f].stacking().into_iter().filter(|&a| it.figures[f].axes[a].tile.is_none()).collect();
+                let mut ids: Vec<u64> = order.into_iter().rev().map(|a| axes_id(it, f, a)).collect();
+                ids.extend(it.figures[f].objects.iter().filter(|o| o.kind == graphics::FigObjKind::Layout).map(|o| o.id));
                 handles(it, &ids)
             }
             "CurrentAxes" if !it.figures[f].has_axes() => handles(it, &[]),
@@ -1103,8 +1105,8 @@ fn computed(it: &mut Interpreter, id: u64, t: Target, name: &str) -> R<Option<Va
                 }
                 "TileArrangement" if o.kind == graphics::FigObjKind::Layout => Value::chars(if it.figures[f].flow { "flow" } else { "fixed" }),
                 "Children" if o.kind == graphics::FigObjKind::Layout => {
-                    let n = it.figures[f].axes.len();
-                    let ids: Vec<u64> = (0..n).rev().map(|a| axes_id(it, f, a)).collect();
+                    let order: Vec<usize> = it.figures[f].stacking().into_iter().filter(|&a| it.figures[f].axes[a].tile.is_some()).collect();
+                    let ids: Vec<u64> = order.into_iter().rev().map(|a| axes_id(it, f, a)).collect();
                     handles(it, &ids)
                 }
                 "Parent" => handle(it, it.figures[f].id as u64),
@@ -1472,7 +1474,7 @@ pub(crate) fn set_prop(it: &mut Interpreter, id: u64, name: &str, v: Value) -> R
                     fig.flow = false;
                     if fig.grid != (r, c) {
                         fig.grid = (r, c);
-                        fig.axes.resize(r * c, Axes::default());
+                        fig.relayout_tiles();
                     }
                 }
                 "Children" | "Parent" | "Type" => {}
@@ -2196,7 +2198,7 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
             let axes = &mut it.figures[f].axes[ax];
             let removed: Vec<u64> = axes.series.iter().map(|s| s.id).collect();
             if reset {
-                *axes = Axes { id: axes.id, overlay_of: axes.overlay_of, layout: axes.layout, position: axes.position, raised: axes.raised, ..Axes::default() };
+                *axes = Axes { id: axes.id, overlay_of: axes.overlay_of, layout: axes.layout, position: axes.position, raised: axes.raised, tile: axes.tile, ..Axes::default() };
             } else {
                 axes.series.clear();
                 axes.legend = None;

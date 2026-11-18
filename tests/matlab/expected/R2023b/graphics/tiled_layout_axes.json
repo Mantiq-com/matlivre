@@ -1,0 +1,354 @@
+{
+  "header": {
+    "release": "2023b",
+    "version": "23.2.0.2409890 (R2023b) Update 3",
+    "computer": "PCWIN64",
+    "recorded": "2026-11-17"
+  },
+  "log": "",
+  "error": {
+    "identifier": "",
+    "message": ""
+  },
+  "lastwarn": {
+    "message": "",
+    "identifier": ""
+  },
+  "variables": {
+    "c1": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nc1 =\n\n     1\n\n"
+    },
+    "cq": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\ncq =\n\n     1\n\n"
+    },
+    "k": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4028000000000000"
+        ]
+      },
+      "display": "\nk =\n\n    12\n\n"
+    },
+    "k0": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nk0 =\n\n     1\n\n"
+    },
+    "l0": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "0000000000000000"
+        ]
+      },
+      "display": "\nl0 =\n\n     0\n\n"
+    },
+    "lines": {
+      "class": "double",
+      "size": [
+        1,
+        2
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          2
+        ],
+        "real": [
+          "3ff0000000000000",
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nlines =\n\n     1     1\n\n"
+    },
+    "m0": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "0000000000000000"
+        ]
+      },
+      "display": "\nm0 =\n\n     0\n\n"
+    },
+    "m1": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nm1 =\n\n     1\n\n"
+    },
+    "m2": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4000000000000000"
+        ]
+      },
+      "display": "\nm2 =\n\n     2\n\n"
+    },
+    "m3": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4008000000000000"
+        ]
+      },
+      "display": "\nm3 =\n\n     3\n\n"
+    },
+    "m4": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4008000000000000"
+        ]
+      },
+      "display": "\nm4 =\n\n     3\n\n"
+    },
+    "n0": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nn0 =\n\n     1\n\n"
+    },
+    "n1": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nn1 =\n\n     1\n\n"
+    },
+    "ord": {
+      "class": "double",
+      "size": [
+        1,
+        2
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          2
+        ],
+        "real": [
+          "3ff0000000000000",
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nord =\n\n     1     1\n\n"
+    },
+    "same4": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nsame4 =\n\n     1\n\n"
+    },
+    "sz": {
+      "class": "double",
+      "size": [
+        1,
+        12
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          12
+        ],
+        "real": [
+          "4026000000000000",
+          "4035000000000000",
+          "4036000000000000",
+          "4036000000000000",
+          "4040000000000000",
+          "4040000000000000",
+          "4040800000000000",
+          "4040800000000000",
+          "4040800000000000",
+          "4045800000000000",
+          "4045800000000000",
+          "4045800000000000"
+        ]
+      },
+      "display": "\nsz =\n\n    11    21    22    22    32    32    33    33    33    43    43    43\n\n"
+    }
+  },
+  "figures": [],
+  "nfigures": 0
+}

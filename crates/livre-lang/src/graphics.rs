@@ -252,6 +252,8 @@ pub struct Axes {
     /// MATLAB's `Position` of the axes (their plot box, a fraction of the figure). `None`
     /// for axes that sit by their index in the figure's grid: see `Figure::effective_position`.
     pub position: Option<[f64; 4]>,
+    /// The tile of a tiled layout these axes are in (1-based), if any.
+    pub tile: Option<usize>,
     /// Stacking: axes made or selected later with `axes` are in front of earlier ones (0 for
     /// axes that were never raised; those stack by their position in the figure).
     pub raised: u64,
@@ -836,6 +838,17 @@ impl Figure {
                 if r * c > 1 {
                     self.axes[i].layout = Some(subplot_cell(r, c, &cell));
                 }
+            }
+        }
+    }
+
+    /// Puts the tile axes where their tiles are in the grid of the layout (it grows with `flow`).
+    pub fn relayout_tiles(&mut self) {
+        let (r, c) = (self.grid.0.max(1), self.grid.1.max(1));
+        for ax in self.axes.iter_mut() {
+            if let Some(k) = ax.tile.filter(|&k| k >= 1 && k <= r * c) {
+                ax.position = Some(subplot_position(r, c, &[k]));
+                ax.layout = Some(subplot_cell(r, c, &[k]));
             }
         }
     }

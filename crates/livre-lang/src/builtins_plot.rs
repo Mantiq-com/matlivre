@@ -61,7 +61,7 @@ impl Interpreter {
         } else if !ax.hold {
             let (grid, id) = (ax.grid, ax.id);
             removed = ax.series.iter().map(|s| s.id).collect();
-            *ax = Axes { grid, id, overlay_of: ax.overlay_of, layout: ax.layout, position: ax.position, raised: ax.raised, ..Axes::default() };
+            *ax = Axes { grid, id, overlay_of: ax.overlay_of, layout: ax.layout, position: ax.position, raised: ax.raised, tile: ax.tile, ..Axes::default() };
             reset = id;
         }
         if ax.series.is_empty() {
