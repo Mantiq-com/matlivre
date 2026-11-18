@@ -1,0 +1,27 @@
+//! Statistics and Machine Learning Toolbox. Each area has its own module with a `NAMES` list and a
+//! `call` dispatcher; `call` here routes a name to its module (see docs/stats-coverage-plan.md).
+
+pub mod corr;
+pub mod descr;
+pub mod util;
+
+use crate::builtins::Ret;
+use crate::interp::Interpreter;
+use crate::value::*;
+
+/// The function in `name`, if one of the stats modules provides it. Results of functions that do not
+/// manage their class follow single precision input (the modules cast their own).
+pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Ret {
+    if descr::NAMES.contains(&name) {
+        return descr::call(it, name, a, nargout);
+    }
+    if corr::NAMES.contains(&name) {
+        return corr::call(it, name, a, nargout);
+    }
+    Ok(None)
+}
+
+/// Every name the stats modules provide.
+pub fn names() -> Vec<&'static str> {
+    [descr::NAMES, corr::NAMES].concat()
+}
