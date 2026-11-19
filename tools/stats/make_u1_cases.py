@@ -51,6 +51,26 @@ for c in ["chi2gof(ones(2,2))", "chi2gof(xc,'nbins',5,'ctrs',[1 2 3])", "chi2gof
     L2.append(PRE2 + cg.replace("{c}", c))
 L += L2
 
+PRE3 = "xv=x(1:30)'.*[1;2;3;1;2;3;1;2;3;1;2;3;1;2;3;1;2;3;1;2;3;1;2;3;1;2;3;1;2;3]; gv=[1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3]'; gs=[repmat({'a'},8,1); repmat({'bb'},10,1); repmat({'c'},12,1)]; "
+vt = "[p_,s_] = {c}; sc_ = struct2cell(s_); r = [{p_}, sc_(:)'];"
+L3 = []
+for c in ["vartestn(A,[],'off')", "vartestn(P,[],'off')", "vartestn(N,[],'off')", "vartestn(xv,gv,'off')", "vartestn(xv,gs,'off')", "vartestn(xv,gv','off')",
+          "vartestn(A,[],'off','robust')", "vartestn(A,[],'off','classical')", "vartestn(A,[],'off','LeveneAbsolute')", "vartestn(A,[],'off','OBrien')",
+          "vartestn(A,[],'off','BrownForsythe')", "vartestn(A,[],'off','LeveneQuadratic')", "vartestn(A,[],'off','Bartlett')", "vartestn(xv,gv,'off','robust')",
+          "vartestn(xv,gv,'off','OBrien')", "vartestn(xv,gs,'off','BrownForsythe')", "vartestn(xv,gs,'off','LeveneAbsolute')", "vartestn(xv,gs,'off','Bartlett')",
+          "vartestn(A,'displayopt','off')", "vartestn(A,[],'displayopt','off','testtype','OBrien')", "vartestn(A,[],'testtype','Bart','displayopt','off')",
+          "vartestn(A,[],'off','Brown')", "vartestn(A,[],'off','Levene')", "vartestn(N,[],'off','robust')", "vartestn(N,[],'off','OBrien')", "vartestn(N,[],'off','BrownForsythe')",
+          "vartestn(A(:,1:2),[],'off')", "vartestn(A(1:2,:),[],'off','robust')", "vartestn(A(1:2,:),[],'off')", "vartestn(xv(1:5),[1 1 2 2 3]','off')", "vartestn(xv(1:5),[1 1 2 2 3]','off','robust')",
+          "vartestn(xv(1:5),[1 1 2 2 3]','off','OBrien')", "vartestn(xv(1:6),[1 1 2 2 3 3]','off','OBrien')", "vartestn(xv(1:6),[1 1 2 2 2 2]','off','robust')", "vartestn(xv(1:6),[1 1 1 1 1 1]','off')",
+          "vartestn(xv(1:6),[1 1 1 1 1 1]','off','robust')", "vartestn(xv(1:7),[1 1 2 2 3 3 3]','off','BrownForsythe')", "vartestn(A,[],'off',[])", "vartestn(single(A),[],'off')",
+          "vartestn(A,[],'off','R')", "vartestn(A,[],'off','c')", "vartestn(A,[],'off','O')", "vartestn(xv,[gv(1:29);NaN],'off')", "vartestn([xv;NaN],[gv;1],'off')",
+          "vartestn(A+repmat(1:5,6,1).*A,[],'off')", "vartestn(ones(6,3),[],'off')", "vartestn(ones(6,3),[],'off','robust')"]:
+    L3.append(PRE3 + vt.replace("{c}", c))
+for c in ["vartestn(A,[],'off','foo')", "vartestn(A,[],'foo')", "vartestn([],[],'off')", "vartestn(A,[1 2 3],'off')", "vartestn(xv,[1 2 3],'off')", "vartestn(A,(1:6)','off')",
+          "vartestn(A,[],'displayopt','foo')", "vartestn(A,[],'testtype','x')", "vartestn(A,[],'off','B')", "vartestn(A,[],'off','L')", "vartestn(A,[],'off',3)", "vartestn(A,[],'bogus',1)", "vartestn()", "vartestn(A,[],'maybe')"]:
+    L3.append(PRE3 + vt.replace("{c}", c))
+L += L3
+
 with open(os.path.join(here, "cases_u1.txt"), "w", encoding="utf-8", newline="\n") as f:
     f.write("\n".join(L) + "\n")
 print(len(L) - 1)

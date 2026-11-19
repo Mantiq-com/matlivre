@@ -6,7 +6,7 @@ use crate::error::rt;
 use crate::interp::Interpreter;
 use crate::value::*;
 
-pub const NAMES: &[&str] = &["jbtest", "dwtest", "chi2gof"];
+pub const NAMES: &[&str] = &["jbtest", "dwtest", "chi2gof", "vartestn"];
 
 const JB_ALPHAS: [f64; 17] = [0.001, 0.0016681, 0.0027826, 0.0046416, 0.0077426, 0.01, 0.012915, 0.021544, 0.025, 0.035938, 0.05, 0.059948, 0.1, 0.15, 0.2, 0.25, 0.50];
 const JB_SIZES: [f64; 32] = [
@@ -471,6 +471,7 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
     match name {
         "jbtest" => jbtest(it, a, nargout),
         "chi2gof" => chi2gof(it, a, nargout),
+        "vartestn" => vartestn(it, a, nargout),
         _ => dwtest(it, a, nargout),
     }
 }
@@ -746,6 +747,233 @@ fn chi2gof(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
         st.set("edges", row(edges));
         st.set("O", srow(obs));
         st.set("E", srow(exp));
+        out.push(Value::Struct(st));
+    }
+    Ok(Some(out))
+}
+
+// ---------------------------------------------------------------------------------------------
+// vartestn
+
+/// MATLAB's matching of a value against a list of names: exact (any case) first, then a unique prefix.
+fn param_val(v: &Value, choices: &[&str], what: &str) -> Res<usize> {
+    if !v.is_text() {
+        return rt(format!("Invalid '{what}' data type. Argument must be a character vector or string scalar."));
+    }
+    let t = v.text().unwrap_or_default().to_lowercase();
+    if let Some(i) = choices.iter().position(|c| c.to_lowercase() == t) {
+        return Ok(i);
+    }
+    let hits: Vec<usize> = choices.iter().enumerate().filter(|(_, c)| !t.is_empty() && c.to_lowercase().starts_with(&t)).map(|(i, _)| i).collect();
+    match hits.len() {
+        1 => Ok(hits[0]),
+        0 => rt(format!("'{}' is not a valid value for the '{what}' argument.", v.text().unwrap_or_default())),
+        _ => rt(format!("The value '{}' is a partial match for more than one valid value for the '{what}' argument.", v.text().unwrap_or_default())),
+    }
+}
+
+/// One-way ANOVA of the values by group label, through `anova1`: (F as anova1 reports it, df1, df2, p).
+fn oneway(it: &mut Interpreter, x: &[f64], g: &[usize]) -> Res<(Value, f64, f64, f64)> {
+    let n = x.len();
+    let xv = Value::Num(Matrix::from_dims(vec![n, 1], x.to_vec()));
+    let gv = Value::Num(Matrix::from_dims(vec![n, 1], g.iter().map(|&k| (k + 1) as f64).collect()));
+    let r = it.call_function("anova1", vec![xv, gv, Value::chars("off")], 2)?;
+    let pv = r[0].scalar()?;
+    let Value::Cell(c) = &r[1] else { return rt("anova1") };
+    let rows = c.dims[0];
+    let cell = |i: usize, j: usize| c.data[(j - 1) * rows + (i - 1)].clone();
+    Ok((cell(2, 5), cell(2, 3).scalar()?, cell(3, 3).scalar()?, pv))
+}
+
+fn vartestn(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
+    if a.is_empty() {
+        return rt("Not enough input arguments.");
+    }
+    let mut group: Value = a.get(1).cloned().unwrap_or_else(|| Value::Num(Matrix::from_dims(vec![0, 0], vec![])));
+    let mut rest: Vec<Value> = a.get(2..).map(|r| r.to_vec()).unwrap_or_default();
+    let mut displayopt: Option<Value> = None;
+    let mut testtype: Option<Value> = None;
+    if a.len() >= 3 {
+        if group.is_text() && group.text().map(|t| !t.is_empty()).unwrap_or(false) {
+            rest.insert(0, group.clone());
+            group = Value::Num(Matrix::from_dims(vec![0, 0], vec![]));
+        }
+        let first = &rest[0];
+        let ft = if first.is_text() { first.text().unwrap_or_default() } else { String::new() };
+        if ft == "on" || ft == "off" || is_empty_val(first) {
+            displayopt = Some(first.clone());
+            if a.len() >= 4 && rest.len() >= 2 {
+                testtype = Some(rest[1].clone());
+            }
+        } else {
+            if rest.len() % 2 != 0 {
+                return rt("Wrong number of arguments.");
+            }
+            for pair in rest.chunks(2) {
+                let key = text_of(&pair[0]).to_lowercase();
+                if !key.is_empty() && "displayopt".starts_with(&key) {
+                    displayopt = Some(pair[1].clone());
+                } else if !key.is_empty() && "testtype".starts_with(&key) {
+                    testtype = Some(pair[1].clone());
+                } else {
+                    return rt(format!("Invalid parameter name: {}.", text_of(&pair[0])));
+                }
+            }
+        }
+    }
+    if let Some(d) = &displayopt {
+        if !is_empty_val(d) && !(d.is_text() && matches!(d.text().as_deref(), Ok("on") | Ok("off"))) {
+            return rt("DISPLAYOPT must be 'on' or 'off'.");
+        }
+    }
+    let dorobust: usize = match &testtype {
+        Some(t) if !is_empty_val(t) => {
+            let ttypes = ["robust", "classical", "LeveneAbsolute", "OBrien", "BrownForsythe", "LeveneQuadratic", "Bartlett"];
+            param_val(t, &ttypes, "testtype")? + 1
+        }
+        _ => 0,
+    };
+    let Value::Num(xm) = &a[0] else { return rt("X must not be empty") };
+    if xm.is_empty() {
+        return rt("X must not be empty");
+    }
+    let (n, m) = (xm.dims[0], xm.data.len() / xm.dims[0].max(1));
+    let is_col = xm.dims.len() == 2 && xm.dims[1] == 1;
+    let (xs, gv): (Vec<f64>, Value) = if is_empty_val(&group) {
+        let g: Vec<f64> = (0..m).flat_map(|j| std::iter::repeat((j + 1) as f64).take(n)).collect();
+        (xm.data.clone(), Value::Num(Matrix::from_dims(vec![n * m, 1], g)))
+    } else if is_col {
+        let glen = match &group {
+            Value::Num(g) => g.data.len(),
+            Value::Cell(c) => c.data.len(),
+            other if other.is_text() => other.text().map(|t| t.chars().count()).unwrap_or(0),
+            _ => 0,
+        };
+        let gdims = match &group {
+            Value::Cell(c) => c.dims.clone(),
+            Value::Num(g) => g.dims.clone(),
+            _ => vec![glen, 1],
+        };
+        // A character row is a single label; a char matrix has one label per row.
+        let _ = gdims;
+        if glen != n && !(group.is_text() && group.text().map(|_| false).unwrap_or(false)) {
+            return rt("X and GROUP must have the same length.");
+        }
+        (xm.data.clone(), group.clone())
+    } else {
+        return rt("Cannot specify a GROUP argument unless X is a column vector.");
+    };
+    // Drop NaN values and missing group labels.
+    let keep: Vec<bool> = (0..xs.len())
+        .map(|i| {
+            let gmiss = match &gv {
+                Value::Num(g) => g.data.get(i).map(|v| v.is_nan()).unwrap_or(false),
+                Value::Cell(c) => c.data.get(i).map(|v| v.text().map(|t| t.is_empty()).unwrap_or(false)).unwrap_or(false),
+                _ => false,
+            };
+            !(xs[i].is_nan() || gmiss)
+        })
+        .collect();
+    let x: Vec<f64> = xs.iter().zip(&keep).filter(|(_, k)| **k).map(|(v, _)| *v).collect();
+    let gsel = match &gv {
+        Value::Num(g) => Value::Num(Matrix::from_dims(vec![x.len(), 1], g.data.iter().zip(&keep).filter(|(_, k)| **k).map(|(v, _)| *v).collect())),
+        Value::Cell(c) => {
+            let d: Vec<Value> = c.data.iter().zip(&keep).filter(|(_, k)| **k).map(|(v, _)| v.clone()).collect();
+            let l = d.len();
+            Value::Cell(CellArray::from_dims(vec![l, 1], d))
+        }
+        other => other.clone(),
+    };
+    let gi = it.call_function("grp2idx", vec![gsel], 1)?;
+    let Value::Num(gim) = &gi[0] else { return rt("grp2idx") };
+    let ig: Vec<usize> = gim.data.iter().map(|v| *v as usize - 1).collect();
+    let k = ig.iter().copied().max().map(|v| v + 1).unwrap_or(0);
+    let mut cnt = vec![0.0; k];
+    let mut sum = vec![0.0; k];
+    for (v, &g) in x.iter().zip(&ig) {
+        cnt[g] += 1.0;
+        sum[g] += v;
+    }
+    let gmean: Vec<f64> = (0..k).map(|g| sum[g] / cnt[g]).collect();
+    let mut ss = vec![0.0; k];
+    for (v, &g) in x.iter().zip(&ig) {
+        ss[g] += (v - gmean[g]).powi(2);
+    }
+    // grpstats reports the standard error of the mean; the variance is rebuilt from it.
+    let gvar: Vec<f64> = (0..k)
+        .map(|g| {
+            let sd = if cnt[g] > 1.0 { (ss[g] / (cnt[g] - 1.0)).sqrt() } else { 0.0 };
+            let sem = sd / cnt[g].sqrt();
+            cnt[g] * sem * sem
+        })
+        .collect();
+    let df: Vec<f64> = cnt.iter().map(|c| c - 1.0).collect();
+    let sumdf: f64 = df.iter().sum();
+    let vp = if sumdf > 0.0 { df.iter().zip(&gvar).map(|(d, v)| d * v).sum::<f64>() / sumdf } else { f64::NAN };
+    let (p, bstat, bdf, statname): (f64, Value, Value, &str);
+    if matches!(dorobust, 1 | 3 | 4 | 5 | 6) {
+        let inc: Vec<usize> = (0..x.len()).filter(|&i| cnt[ig[i]] >= 2.0).collect();
+        let nsp = cnt.iter().filter(|&&c| c < 2.0).count();
+        let ngroups = k - nsp;
+        let xt: Vec<f64> = match dorobust {
+            1 | 6 => inc.iter().map(|&i| (x[i] - gmean[ig[i]]).powi(2)).collect(),
+            3 => inc.iter().map(|&i| (x[i] - gmean[ig[i]]).abs()).collect(),
+            4 => inc
+                .iter()
+                .map(|&i| {
+                    let (c, gvr) = (cnt[ig[i]], gvar[ig[i]]);
+                    let w = 0.5;
+                    ((w + c - 2.0) * c * (x[i] - gmean[ig[i]]).powi(2) - w * (c - 1.0) * gvr) / ((c - 1.0) * (c - 2.0))
+                })
+                .collect(),
+            _ => {
+                let med: Vec<f64> = (0..k)
+                    .map(|g| {
+                        let mut v: Vec<f64> = x.iter().zip(&ig).filter(|(_, &gg)| gg == g).map(|(v, _)| *v).collect();
+                        median_of(&mut v)
+                    })
+                    .collect();
+                inc.iter().map(|&i| (x[i] - med[ig[i]]).abs()).collect()
+            }
+        };
+        if ngroups > 1 {
+            let gg: Vec<usize> = inc.iter().map(|&i| ig[i]).collect();
+            let (f, d1, d2, pp) = oneway(it, &xt, &gg)?;
+            p = pp;
+            bstat = f;
+            bdf = row(vec![d1, d2]);
+        } else {
+            p = f64::NAN;
+            bstat = Value::num(f64::NAN);
+            bdf = row(vec![0.0, xt.len() as f64 - ngroups as f64]);
+        }
+        statname = "fstat";
+    } else {
+        let pos: Vec<usize> = (0..k).filter(|&g| df[g] > 0.0).collect();
+        let bd = (pos.len() as f64 - 1.0).max(0.0);
+        let b = if bd > 0.0 && sumdf > 0.0 {
+            let b0 = vp.ln() * sumdf - pos.iter().map(|&g| df[g] * gvar[g].ln()).sum::<f64>();
+            let c = 1.0 + (pos.iter().map(|&g| 1.0 / df[g]).sum::<f64>() - 1.0 / sumdf) / (3.0 * bd);
+            b0 / c
+        } else {
+            f64::NAN
+        };
+        let r = it.call_function("chi2cdf", vec![Value::num(b), Value::num(bd), Value::chars("upper")], 1)?;
+        p = r[0].scalar()?;
+        bstat = Value::num(b);
+        bdf = Value::num(bd);
+        statname = "chisqstat";
+    }
+    let single = is_single(xm);
+    let to_single = |v: Value| match v {
+        Value::Num(m) => Value::Num(finish(m, single)),
+        other => other,
+    };
+    let mut out = vec![to_single(Value::num(p))];
+    if nargout > 1 {
+        let mut st = StructArray::scalar();
+        st.set(statname, to_single(bstat));
+        st.set("df", bdf);
         out.push(Value::Struct(st));
     }
     Ok(Some(out))

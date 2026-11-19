@@ -11414,3 +11414,156 @@
 4086|ERR|The 'expected' value must be a vector with 2 elements.
 4087|ERR|Ambiguous parameter name: e.
 4088|ERR|Ambiguous parameter name: n.
+4089.1|double|1 1 |0.20759596541548186 |0 
+4089.2|double|1 1 |5.8889565048897197 |0 
+4089.3|double|1 1 |4 |0 
+4090.1|double|1 1 |0.38009648923269285 |0 
+4090.2|double|1 1 |4.1962565834997054 |0 
+4090.3|double|1 1 |4 |0 
+4091.1|double|1 1 |0.33804503586985618 |0 
+4091.2|double|1 1 |4.5381736864672932 |0 
+4091.3|double|1 1 |4 |0 
+4092.1|double|1 1 |0.7881618065796453 |0 
+4092.2|double|1 1 |0.47610374380847748 |0 
+4092.3|double|1 1 |2 |0 
+4093.1|double|1 1 |0.99936790299688005 |0 
+4093.2|double|1 1 |0.0012645937213091975 |0 
+4093.3|double|1 1 |2 |0 
+4094.1|double|1 1 |0.7881618065796453 |0 
+4094.2|double|1 1 |0.47610374380847748 |0 
+4094.3|double|1 1 |2 |0 
+4095.1|double|1 1 |0.16242175566271888 |0 
+4095.2|double|1 1 |1.7899761005538071 |0 
+4095.3|double|1 2 |4 25 |0 0 
+4096.1|double|1 1 |0.20759596541548186 |0 
+4096.2|double|1 1 |5.8889565048897197 |0 
+4096.3|double|1 1 |4 |0 
+4097.1|double|1 1 |0.024917216618518083 |0 
+4097.2|double|1 1 |3.3559094750918974 |0 
+4097.3|double|1 2 |4 25 |0 0 
+4098.1|double|1 1 |0.25821370029269214 |0 
+4098.2|double|1 1 |1.4143021041412798 |0 
+4098.3|double|1 2 |4 25 |0 0 
+4099.1|double|1 1 |0.23142899632963448 |0 
+4099.2|double|1 1 |1.5032792029068285 |0 
+4099.3|double|1 2 |4 25 |0 0 
+4100.1|double|1 1 |0.16242175566271888 |0 
+4100.2|double|1 1 |1.7899761005538071 |0 
+4100.3|double|1 2 |4 25 |0 0 
+4101.1|double|1 1 |0.20759596541548186 |0 
+4101.2|double|1 1 |5.8889565048897197 |0 
+4101.3|double|1 1 |4 |0 
+4102.1|double|1 1 |0.84083498445197846 |0 
+4102.2|double|1 1 |0.17447772940549824 |0 
+4102.3|double|1 2 |2 27 |0 0 
+4103.1|double|1 1 |0.85754926239024587 |0 
+4103.2|double|1 1 |0.15455466687822669 |0 
+4103.3|double|1 2 |2 27 |0 0 
+4104.1|double|1 1 |0.83211102073495202 |0 
+4104.2|double|1 1 |0.1850461626525465 |0 
+4104.3|double|1 2 |2 27 |0 0 
+4105.1|double|1 1 |0.97510346699630202 |0 
+4105.2|double|1 1 |0.02523525011345713 |0 
+4105.3|double|1 2 |2 27 |0 0 
+4106.1|double|1 1 |0.99936790299688005 |0 
+4106.2|double|1 1 |0.0012645937213091975 |0 
+4106.3|double|1 1 |2 |0 
+4107.1|double|1 1 |0.20759596541548186 |0 
+4107.2|double|1 1 |5.8889565048897197 |0 
+4107.3|double|1 1 |4 |0 
+4108.1|double|1 1 |0.25821370029269214 |0 
+4108.2|double|1 1 |1.4143021041412798 |0 
+4108.3|double|1 2 |4 25 |0 0 
+4109.1|double|1 1 |0.20759596541548186 |0 
+4109.2|double|1 1 |5.8889565048897197 |0 
+4109.3|double|1 1 |4 |0 
+4110.1|double|1 1 |0.23142899632963448 |0 
+4110.2|double|1 1 |1.5032792029068285 |0 
+4110.3|double|1 2 |4 25 |0 0 
+4111|ERR|The value 'Levene' is a partial match for more than one valid value for the 'testtype' argument.
+4112.1|double|1 1 |0.14013462017785386 |0 
+4112.2|double|1 1 |1.9354945412400351 |0 
+4112.3|double|1 2 |4 22 |0 0 
+4113.1|double|1 1 |0.21378992356100252 |0 
+4113.2|double|1 1 |1.5839380416211137 |0 
+4113.3|double|1 2 |4 22 |0 0 
+4114.1|double|1 1 |0.65169307799795606 |0 
+4114.2|double|1 1 |0.62192342143395407 |0 
+4114.3|double|1 2 |4 22 |0 0 
+4115.1|double|1 1 |0.58936179411577738 |0 
+4115.2|double|1 1 |0.29134204974161998 |0 
+4115.3|double|1 1 |1 |0 
+4116.1|double|1 1 |0 |0 
+4116.2|double|0 0 | | 
+4116.3|double|1 2 |4 5 |0 0 
+4117.1|double|1 1 |0.44473194967540708 |0 
+4117.2|double|1 1 |3.7233981321395024 |0 
+4117.3|double|1 1 |4 |0 
+4118.1|double|1 1 |0.26394781545352147 |0 
+4118.2|double|1 1 |1.247932033827335 |0 
+4118.3|double|1 1 |1 |0 
+4119.1|double|1 1 |1 |0 
+4119.2|double|1 1 |-9045493885227034 |0 
+4119.3|double|1 2 |1 2 |0 0 
+4120.1|double|1 1 |NaN |0 
+4120.2|double|1 1 |NaN |0 
+4120.3|double|1 2 |1 2 |0 0 
+4121.1|double|1 1 |NaN |0 
+4121.2|double|1 1 |NaN |0 
+4121.3|double|1 2 |2 3 |0 0 
+4122.1|double|1 1 |0.19519111385921778 |0 
+4122.2|double|1 1 |2.4143764104646719 |0 
+4122.3|double|1 2 |1 4 |0 0 
+4123.1|double|1 1 |NaN |0 
+4123.2|double|1 1 |NaN |0 
+4123.3|double|1 1 |0 |0 
+4124.1|double|1 1 |NaN |0 
+4124.2|double|1 1 |NaN |0 
+4124.3|double|1 2 |0 5 |0 0 
+4125.1|double|1 1 |0.22995789188007057 |0 
+4125.2|double|1 1 |2.1706700792168201 |0 
+4125.3|double|1 2 |2 4 |0 0 
+4126.1|double|1 1 |0.20759596541548186 |0 
+4126.2|double|1 1 |5.8889565048897197 |0 
+4126.3|double|1 1 |4 |0 
+4127.1|single|1 1 |0.20759595930576324 |0 
+4127.2|single|1 1 |5.8889565467834473 |0 
+4127.3|double|1 1 |4 |0 
+4128.1|double|1 1 |0.16242175566271888 |0 
+4128.2|double|1 1 |1.7899761005538071 |0 
+4128.3|double|1 2 |4 25 |0 0 
+4129.1|double|1 1 |0.20759596541548186 |0 
+4129.2|double|1 1 |5.8889565048897197 |0 
+4129.3|double|1 1 |4 |0 
+4130.1|double|1 1 |0.25821370029269214 |0 
+4130.2|double|1 1 |1.4143021041412798 |0 
+4130.3|double|1 2 |4 25 |0 0 
+4131.1|double|1 1 |0.8871149774946 |0 
+4131.2|double|1 1 |0.23956135987666566 |0 
+4131.3|double|1 1 |2 |0 
+4132.1|double|1 1 |0.7881618065796453 |0 
+4132.2|double|1 1 |0.47610374380847748 |0 
+4132.3|double|1 1 |2 |0 
+4133.1|double|1 1 |0.02008001760817071 |0 
+4133.2|double|1 1 |11.658488202850913 |0 
+4133.3|double|1 1 |4 |0 
+4134.1|double|1 1 |NaN |0 
+4134.2|double|1 1 |NaN |0 
+4134.3|double|1 1 |2 |0 
+4135.1|double|1 1 |NaN |0 
+4135.2|double|1 1 |NaN |0 
+4135.3|double|1 2 |2 15 |0 0 
+4136|ERR|'foo' is not a valid value for the 'testtype' argument.
+4137|ERR|Wrong number of arguments.
+4138|ERR|X must not be empty
+4139|ERR|Cannot specify a GROUP argument unless X is a column vector.
+4140|ERR|X and GROUP must have the same length.
+4141|ERR|Cannot specify a GROUP argument unless X is a column vector.
+4142|ERR|DISPLAYOPT must be 'on' or 'off'.
+4143|ERR|'x' is not a valid value for the 'testtype' argument.
+4144|ERR|The value 'B' is a partial match for more than one valid value for the 'testtype' argument.
+4145|ERR|The value 'L' is a partial match for more than one valid value for the 'testtype' argument.
+4146|ERR|Invalid 'testtype' data type. Argument must be a character vector or string scalar.
+4147|ERR|Invalid parameter name: bogus.
+4148|ERR|Not enough input arguments.
+4149|ERR|Wrong number of arguments.
