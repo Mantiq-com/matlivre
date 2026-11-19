@@ -513,6 +513,31 @@ for c in ["candgen()", "candgen(0)", "candgen(2.5)", "candgen(2,'linear','bounds
     L20.append(cg.replace("{c}", c))
 L += L20
 
+P11 = ("bd=x(1:25)'; bd2=[x(1:25)' y(1:25)']; bz=y(1:25)'; ")
+L21 = []
+bc = "rng(11); [cb_,bs_] = {c}; r = {cb_,bs_};"
+bc1 = "rng(11); cb_ = {c}; r = {cb_};"
+for c in ["bootci(100,@mean,bd)", "bootci(100,{@mean,bd})", "bootci(100,{@mean,bd},'type','bca')", "bootci(100,{@mean,bd},'type','norm')", "bootci(100,{@mean,bd},'type','normal')", "bootci(100,{@mean,bd},'type','per')", "bootci(100,{@mean,bd},'type','percentile')",
+          "bootci(100,{@mean,bd},'type','cper')", "bootci(100,{@mean,bd},'type','corrected percentile')", "bootci(30,{@mean,bd},'type','stud','nbootstd',10)", "bootci(100,{@mean,bd},'type','stud','stderr',@(v) std(v)/sqrt(numel(v)))", "bootci(100,{@mean,bd},'type','student','nbootstd',5)",
+          "bootci(100,{@mean,bd},'alpha',0.1)", "bootci(100,{@mean,bd},'alpha',0.01,'type','per')", "bootci(100,{@median,bd})", "bootci(100,{@std,bd},'type','per')", "bootci(100,{@(a,b) corr(a,b),bd,bz})", "bootci(100,{@corr,bd,bz},'type','norm')",
+          "bootci(100,{@(v) [mean(v) median(v)],bd})", "bootci(100,{@(v) [mean(v) std(v)],bd},'type','cper')", "bootci(100,{@mean,bd2})", "bootci(100,{@mean,bd2},'type','per')", "bootci(100,{@(v) cov(v),bd2},'type','per')", "bootci(50,{@(v) cov(v),bd2})",
+          "bootci(100,@(a,b) mean(a)-mean(b),bd,bz)", "bootci(100,{@(v) mean(v)+1,bd'})", "bootci(1,{@mean,bd},'type','per')", "bootci(100,{@(v) var(v),bd},'type','bca','alpha',0.2)", "bootci(100,{@mean,bd},'Type','PER')", "bootci(100,{@mean,bd},'ty','per','al',0.3)",
+          "bootci(100,{@mean,bd},'Weights',[])", "bootci(100,{@(v) max(v),bd},'type','bca')", "bootci(100,{@(v) 5,bd})", "bootci(100,{@(v) 5,bd},'type','cper')", "bootci(100,{@(v) 5,bd},'type','per')"]:
+    L21.append(P11 + bc.replace("{c}", c))
+    L21.append(P11 + bc1.replace("{c}", c))
+for c in ["bootci()", "bootci(10)", "bootci(0,@mean,bd)", "bootci(2.5,@mean,bd)", "bootci(10,{@mean,bd},'type','foo')", "bootci(10,{@(v) NaN,bd})", "bootci(10,{@(v) Inf,bd},'type','per')", "bootci(10,{@(v) error('x'),bd})", "bootci(10,{@mean,bd},'bogus',1)",
+          "bootci(10,{@mean,bd},'type')", "bootci(10,{@mean,bd},'type','stud','nbootstd',0)", "bootci(10,{@mean,bd},'type','stud','stderr',@(v) NaN)", "bootci(10,{@mean,bd},'type','stud','stderr',@(v) [1 2])", "bootci(10,{@mean,bd},'type','stud','stderr',@(v) error('y'))"]:
+    L21.append(P11 + bc.replace("{c}", c))
+lh = "rng(%d); X_ = {c}; r = {X_};"
+for sd, c in [(1, "lhsdesign(5,2)"), (2, "lhsdesign(10,3)"), (3, "lhsdesign(8,2,'smooth','off')"), (4, "lhsdesign(8,2,'criterion','none')"), (5, "lhsdesign(8,3,'criterion','correlation')"), (6, "lhsdesign(8,3,'iterations',20)"),
+              (7, "lhsdesign(8,3,'criterion','correlation','iterations',10)"), (8, "lhsdesign(20,4,'criterion','maximin','iterations',3)"), (9, "lhsdesign(1,3)"), (10, "lhsdesign(2,2)"), (11, "lhsdesign(6,1)"), (12, "lhsdesign(6,1,'criterion','correlation')"),
+              (13, "lhsdesign(5,2,'iterations',0)"), (14, "lhsdesign(5,2,'iterations',1)"), (15, "lhsdesign(5,2,'Criterion','Corr')"), (16, "lhsdesign(5,2,'crit','max','smooth','off')"), (17, "lhsdesign(0,2)"), (18, "lhsdesign(4,0)"), (19, "lhsdesign(15,5,'smooth','on')"),
+              (20, "lhsdesign(30,2,'criterion','correlation','iterations',50)")]:
+    L21.append((lh % sd).replace("{c}", c))
+for c in ["lhsdesign()", "lhsdesign(5)", "lhsdesign(5.5,2)", "lhsdesign(-1,2)", "lhsdesign(5,2,'criterion','foo')", "lhsdesign(5,2,'smooth','maybe')", "lhsdesign(5,2,'iterations',-1)", "lhsdesign(5,2,'iterations',[1 2])", "lhsdesign(5,2,'bogus',1)", "lhsdesign(5,2,'smooth')", "lhsdesign([5 6],2)"]:
+    L21.append((lh % 1).replace("{c}", c))
+L += L21
+
 with open(os.path.join(here, "cases_u1.txt"), "w", encoding="utf-8", newline="\n") as f:
     f.write("\n".join(L) + "\n")
 print(len(L) - 1)

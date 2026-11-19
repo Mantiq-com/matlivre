@@ -91,3 +91,4 @@ bd=x(1:25)'; bd2=[x(1:25)' y(1:25)']; bw=y(1:25); bz=y(1:25)'; rng(7); [b_,s_] =
 bd=x(1:25)'; bd2=[x(1:25)' y(1:25)']; bw=y(1:25); bz=y(1:25)'; rng(7); [b_,s_] = bootstrp(5,@(v) error('boom'),bd); r = {b_,s_};	bootstrp: the message MATLAB gives when BOOTFUN itself raises an error ('Too many output arguments.') is not reproduced
 bd=x(1:25)'; bd2=[x(1:25)' y(1:25)']; bw=y(1:25); bz=y(1:25)'; rng(7); [b_,s_] = bootstrp(5,'nosuchfunction',bd); r = {b_,s_};	bootstrp with a function name that does not exist: MATLAB's feval message differs from MatLivre's
 [x_,f_] = candgen(2,'full'); r = {x_,f_};	candgen with the 'full' model name: x2fx does not accept it in MatLivre
+rng(5); X_ = lhsdesign(8,3,'criterion','correlation'); r = {X_};	lhsdesign with the 'correlation' criterion: two values that tie in exact arithmetic are ordered by rounding noise (MATLAB's backslash and MatLivre's differ), so one pair of ranks is swapped
