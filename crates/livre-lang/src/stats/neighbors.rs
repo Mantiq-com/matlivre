@@ -10,7 +10,7 @@ use crate::value::*;
 pub const NAMES: &[&str] = &["knnsearch", "rangesearch", "crosstab", "polyconf"];
 
 #[derive(Clone)]
-enum Metric {
+pub(crate) enum Metric {
     Euclidean,
     SEuclidean(Vec<f64>),
     CityBlock,
@@ -32,7 +32,7 @@ struct Opts {
     sort: bool,
 }
 
-fn cols_stats(rows: &[Vec<f64>], p: usize) -> (Vec<f64>, Vec<f64>) {
+pub(crate) fn cols_stats(rows: &[Vec<f64>], p: usize) -> (Vec<f64>, Vec<f64>) {
     let ok: Vec<&Vec<f64>> = rows.iter().filter(|r| r.iter().all(|v| !v.is_nan())).collect();
     let n = ok.len() as f64;
     let mean: Vec<f64> = (0..p).map(|j| ok.iter().map(|r| r[j]).sum::<f64>() / n).collect();
@@ -40,7 +40,7 @@ fn cols_stats(rows: &[Vec<f64>], p: usize) -> (Vec<f64>, Vec<f64>) {
     (mean, sd)
 }
 
-fn rows_of(m: &Matrix) -> Vec<Vec<f64>> {
+pub(crate) fn rows_of(m: &Matrix) -> Vec<Vec<f64>> {
     let (r, c) = (m.dims[0], m.dims[1]);
     (0..r).map(|i| (0..c).map(|j| m.data[j * r + i]).collect()).collect()
 }
@@ -73,7 +73,7 @@ fn corr_dist(a: &[f64], b: &[f64]) -> f64 {
     1.0 - dot / (za.iter().map(|x| x * x).sum::<f64>().sqrt() * zb.iter().map(|x| x * x).sum::<f64>().sqrt())
 }
 
-fn dist_to_all(it: &mut Interpreter, m: &Metric, y: &[f64], xs: &[Vec<f64>], xm: &Matrix) -> Res<Vec<f64>> {
+pub(crate) fn dist_to_all(it: &mut Interpreter, m: &Metric, y: &[f64], xs: &[Vec<f64>], xm: &Matrix) -> Res<Vec<f64>> {
     let p = y.len();
     Ok(match m {
         Metric::Custom(f) => {
@@ -124,35 +124,8 @@ fn dist_to_all(it: &mut Interpreter, m: &Metric, y: &[f64], xs: &[Vec<f64>], xm:
     })
 }
 
-fn parse(it: &mut Interpreter, a: &[Value], who: &str, xs: &[Vec<f64>], p: usize) -> Res<Opts> {
-    let mut o = Opts { k: 1, metric: Metric::Euclidean, include_ties: false, sort: true };
-    let rest = if who == "knnsearch" { &a[2..] } else { &a[3..] };
-    if rest.len() % 2 != 0 {
-        return rt("Invalid parameter name/value pair.");
-    }
-    let mut dist: Option<Value> = None;
-    let (mut pexp, mut cov, mut scale): (f64, Option<Matrix>, Option<Matrix>) = (2.0, None, None);
-    for pair in rest.chunks(2) {
-        let key = pair[0].text().unwrap_or_default();
-        match key.to_lowercase().as_str() {
-            "k" if who == "knnsearch" => {
-                let v = pair[1].scalar().unwrap_or(f64::NAN);
-                if !(v >= 1.0 && v.fract() == 0.0 && v.is_finite()) {
-                    return rt("K must be a positive integer specifying the number of neighbors.");
-                }
-                o.k = v as usize;
-            }
-            "distance" => dist = Some(pair[1].clone()),
-            "p" => pexp = pair[1].scalar()?,
-            "cov" => cov = Some(pair[1].as_matrix()?.clone()),
-            "scale" => scale = Some(pair[1].as_matrix()?.clone()),
-            "includeties" if who == "knnsearch" => o.include_ties = pair[1].scalar()? != 0.0,
-            "sortindices" => o.sort = pair[1].scalar()? != 0.0,
-            "nsmethod" | "bucketsize" => {}
-            _ => return rt(format!("Invalid parameter name: {key}.")),
-        }
-    }
-    o.metric = match dist {
+pub(crate) fn make_metric(it: &mut Interpreter, dist: Option<Value>, pexp: f64, cov: Option<Matrix>, scale: Option<Matrix>, xs: &[Vec<f64>], p: usize) -> Res<Metric> {
+    Ok(match dist {
         None => Metric::Euclidean,
         Some(Value::Func(f)) => Metric::Custom(f),
         Some(v) => {
@@ -188,7 +161,38 @@ fn parse(it: &mut Interpreter, a: &[Value], who: &str, xs: &[Vec<f64>], p: usize
                 _ => return rt(format!("'{name}' is not a valid value for the Distance argument.")),
             }
         }
-    };
+    })
+}
+
+fn parse(it: &mut Interpreter, a: &[Value], who: &str, xs: &[Vec<f64>], p: usize) -> Res<Opts> {
+    let mut o = Opts { k: 1, metric: Metric::Euclidean, include_ties: false, sort: true };
+    let rest = if who == "knnsearch" { &a[2..] } else { &a[3..] };
+    if rest.len() % 2 != 0 {
+        return rt("Invalid parameter name/value pair.");
+    }
+    let mut dist: Option<Value> = None;
+    let (mut pexp, mut cov, mut scale): (f64, Option<Matrix>, Option<Matrix>) = (2.0, None, None);
+    for pair in rest.chunks(2) {
+        let key = pair[0].text().unwrap_or_default();
+        match key.to_lowercase().as_str() {
+            "k" if who == "knnsearch" => {
+                let v = pair[1].scalar().unwrap_or(f64::NAN);
+                if !(v >= 1.0 && v.fract() == 0.0 && v.is_finite()) {
+                    return rt("K must be a positive integer specifying the number of neighbors.");
+                }
+                o.k = v as usize;
+            }
+            "distance" => dist = Some(pair[1].clone()),
+            "p" => pexp = pair[1].scalar()?,
+            "cov" => cov = Some(pair[1].as_matrix()?.clone()),
+            "scale" => scale = Some(pair[1].as_matrix()?.clone()),
+            "includeties" if who == "knnsearch" => o.include_ties = pair[1].scalar()? != 0.0,
+            "sortindices" => o.sort = pair[1].scalar()? != 0.0,
+            "nsmethod" | "bucketsize" => {}
+            _ => return rt(format!("Invalid parameter name: {key}.")),
+        }
+    }
+    o.metric = make_metric(it, dist, pexp, cov, scale, xs, p)?;
     Ok(o)
 }
 
