@@ -393,12 +393,12 @@ fn partialcorr(it: &mut Interpreter, a: &[Value]) -> Ret {
 }
 
 /// Text labels of a grouping value (`None` = missing), or numeric values.
-enum Labels {
+pub(crate) enum Labels {
     Num(Vec<f64>, Kind),
     Text(Vec<Option<String>>, bool),
 }
 
-fn labels_of(v: &Value) -> Res<Labels> {
+pub(crate) fn labels_of(v: &Value) -> Res<Labels> {
     let bad = || rt::<Labels>("Grouping variable must be a vector, character array, string array, or cell array of character vectors.");
     match v {
         Value::Num(m) if m.kind == Kind::Char => {
@@ -432,7 +432,7 @@ fn labels_of(v: &Value) -> Res<Labels> {
     }
 }
 
-fn fmt_num(v: f64) -> String {
+pub(crate) fn fmt_num(v: f64) -> String {
     if v == v.trunc() && v.abs() < 1e15 {
         format!("{}", v as i64)
     } else {
