@@ -7,10 +7,10 @@ found in the toolbox folders, checked against MatLivre. Regenerate with
 
 | Status | Count |
 |---|---:|
-| Implemented | 2054 |
+| Implemented | 2092 |
 | In a branch not merged yet | 0 |
 | Language keyword (check it works) | 25 |
-| **To implement** | **430** |
+| **To implement** | **392** |
 | Out of scope | 1355 |
 
 Out of scope, by category of the function reference: app building, external language
@@ -793,12 +793,11 @@ Out of scope: `incrementalClassificationECOC` (Incremental Learning), `increment
 
 ## Statistics and Machine Learning Toolbox > Classification > Model Building and Assessment
 
-Implemented: 0. To implement: 10. In a branch: 0. Out of scope: 0.
+Implemented: 1. To implement: 9. In a branch: 0. Out of scope: 0.
 
 To implement:
 
 - [ ] `confusionchart`
-- [ ] `confusionmat`
 - [ ] `fitcauto`
 - [ ] `fscchi2`
 - [ ] `fscmrmr`
@@ -807,6 +806,8 @@ To implement:
 - [ ] `perfcurve`
 - [ ] `rocmetrics`
 - [ ] `testcholdout`
+
+Implemented: `confusionmat`
 
 ## Statistics and Machine Learning Toolbox > Classification > Naive Bayes
 
@@ -876,14 +877,15 @@ To implement:
 
 ## Statistics and Machine Learning Toolbox > Cluster Analysis and Anomaly Detection > Cluster Visualization and Evaluation
 
-Implemented: 0. To implement: 4. In a branch: 0. Out of scope: 0.
+Implemented: 1. To implement: 3. In a branch: 0. Out of scope: 0.
 
 To implement:
 
 - [ ] `dendrogram`
 - [ ] `evalclusters`
 - [ ] `optimalleaforder`
-- [ ] `silhouette`
+
+Implemented: `silhouette`
 
 ## Statistics and Machine Learning Toolbox > Cluster Analysis and Anomaly Detection > Density-Based Spatial Clustering of Applications with Noise
 
@@ -940,23 +942,21 @@ Implemented: `kmeans`, `mahal`
 
 ## Statistics and Machine Learning Toolbox > Descriptive Statistics and Visualization > Descriptive Statistics
 
-Implemented: 21. To implement: 7. In a branch: 0. Out of scope: 0.
+Implemented: 23. To implement: 5. In a branch: 0. Out of scope: 0.
 
 To implement:
 
-- [ ] `cholcov`
 - [ ] `crosstab`
 - [ ] `grpstats`
 - [ ] `nearcorr`
-- [ ] `partialcorr`
 - [ ] `partialcorri`
 - [ ] `robustcov`
 
-Implemented: `corr`, `corrcov`, `geomean`, `harmmean`, `kurtosis`, `mad`, `moment`, `nancov`, `nanmax`, `nanmean`, `nanmedian`, `nanmin`, `nanstd`, `nansum`, `nanvar`, `range`, `skewness`, `tabulate`, `tiedrank`, `trimmean`, `zscore`
+Implemented: `cholcov`, `corr`, `corrcov`, `geomean`, `harmmean`, `kurtosis`, `mad`, `moment`, `nancov`, `nanmax`, `nanmean`, `nanmedian`, `nanmin`, `nanstd`, `nansum`, `nanvar`, `partialcorr`, `range`, `skewness`, `tabulate`, `tiedrank`, `trimmean`, `zscore`
 
 ## Statistics and Machine Learning Toolbox > Descriptive Statistics and Visualization > Managing Data
 
-Implemented: 1. To implement: 20. In a branch: 0. Out of scope: 0.
+Implemented: 2. To implement: 19. In a branch: 0. Out of scope: 0.
 
 To implement:
 
@@ -966,7 +966,6 @@ To implement:
 - [ ] `dataset`
 - [ ] `dataset2table`
 - [ ] `gplotmatrix`
-- [ ] `grp2idx`
 - [ ] `gscatter`
 - [ ] `hist3`
 - [ ] `mat2dataset`
@@ -981,7 +980,7 @@ To implement:
 - [ ] `tdfread`
 - [ ] `xptread`
 
-Implemented: `dummyvar`
+Implemented: `dummyvar`, `grp2idx`
 
 ## Statistics and Machine Learning Toolbox > Descriptive Statistics and Visualization > Statistical Visualization
 
@@ -1081,18 +1080,13 @@ To implement:
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Generic distribution functions
 
-Implemented: 0. To implement: 4. In a branch: 0. Out of scope: 0.
+Implemented: 4. To implement: 0. In a branch: 0. Out of scope: 0.
 
-To implement:
-
-- [ ] `cdf`
-- [ ] `icdf`
-- [ ] `pdf`
-- [ ] `random`
+Implemented: `cdf`, `icdf`, `pdf`, `random`
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Hypothesis Tests
 
-Implemented: 9. To implement: 15. In a branch: 0. Out of scope: 0.
+Implemented: 11. To implement: 13. In a branch: 0. Out of scope: 0.
 
 To implement:
 
@@ -1101,18 +1095,16 @@ To implement:
 - [ ] `barttest`
 - [ ] `detectdrift`
 - [ ] `dwtest`
-- [ ] `fishertest`
 - [ ] `friedman`
 - [ ] `gardnerAltmanPlot`
 - [ ] `jbtest`
 - [ ] `lillietest`
 - [ ] `meanEffectSize`
 - [ ] `multcompare`
-- [ ] `runstest`
 - [ ] `sampsizepwr`
 - [ ] `vartestn`
 
-Implemented: `kruskalwallis`, `kstest`, `kstest2`, `ranksum`, `signrank`, `signtest`, `vartest`, `vartest2`, `ztest`
+Implemented: `fishertest`, `kruskalwallis`, `kstest`, `kstest2`, `ranksum`, `runstest`, `signrank`, `signtest`, `vartest`, `vartest2`, `ztest`
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Multivariate Distributions
 
@@ -1149,57 +1141,36 @@ To implement:
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Resampling Techniques
 
-Implemented: 3. To implement: 4. In a branch: 0. Out of scope: 0.
+Implemented: 4. To implement: 3. In a branch: 0. Out of scope: 0.
 
 To implement:
 
 - [ ] `bootci`
 - [ ] `bootstrp`
 - [ ] `crossval`
-- [ ] `jackknife`
 
-Implemented: `combnk`, `datasample`, `randsample`
+Implemented: `combnk`, `datasample`, `jackknife`, `randsample`
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions
 
-Implemented: 75. To implement: 44. In a branch: 0. Out of scope: 0.
+Implemented: 97. To implement: 22. In a branch: 0. Out of scope: 0.
 
 To implement:
 
-- [ ] `betafit`
-- [ ] `betalike`
 - [ ] `betarnd`
 - [ ] `chi2gof`
 - [ ] `chi2rnd`
-- [ ] `evfit`
-- [ ] `evlike`
 - [ ] `frnd`
-- [ ] `gamfit`
-- [ ] `gamlike`
 - [ ] `gamrnd`
 - [ ] `gevfit`
-- [ ] `gevlike`
 - [ ] `gpfit`
-- [ ] `gplike`
 - [ ] `histfit`
 - [ ] `ksdensity`
 - [ ] `mlecov`
 - [ ] `mvksdensity`
-- [ ] `ncfcdf`
-- [ ] `ncfinv`
-- [ ] `ncfpdf`
 - [ ] `ncfrnd`
-- [ ] `ncfstat`
-- [ ] `nctcdf`
-- [ ] `nctinv`
-- [ ] `nctpdf`
 - [ ] `nctrnd`
-- [ ] `nctstat`
-- [ ] `ncx2cdf`
-- [ ] `ncx2inv`
-- [ ] `ncx2pdf`
 - [ ] `ncx2rnd`
-- [ ] `ncx2stat`
 - [ ] `normplot`
 - [ ] `normspec`
 - [ ] `pearscdf`
@@ -1207,11 +1178,9 @@ To implement:
 - [ ] `pearsrnd`
 - [ ] `randg`
 - [ ] `trnd`
-- [ ] `wblfit`
-- [ ] `wbllike`
 - [ ] `wblplot`
 
-Implemented: `betacdf`, `betainv`, `betapdf`, `betastat`, `chi2cdf`, `chi2inv`, `chi2pdf`, `chi2stat`, `evcdf`, `evinv`, `evpdf`, `evrnd`, `evstat`, `expcdf`, `expfit`, `expinv`, `explike`, `exppdf`, `exprnd`, `expstat`, `fcdf`, `finv`, `fpdf`, `fstat`, `gamcdf`, `gaminv`, `gampdf`, `gamstat`, `gevcdf`, `gevinv`, `gevpdf`, `gevrnd`, `gevstat`, `gpcdf`, `gpinv`, `gppdf`, `gprnd`, `gpstat`, `logncdf`, `lognfit`, `logninv`, `lognlike`, `lognpdf`, `lognrnd`, `lognstat`, `normcdf`, `normfit`, `norminv`, `normlike`, `normpdf`, `normrnd`, `normstat`, `raylcdf`, `raylfit`, `raylinv`, `raylpdf`, `raylrnd`, `raylstat`, `tcdf`, `tinv`, `tpdf`, `tstat`, `ttest`, `ttest2`, `unifcdf`, `unifinv`, `unifit`, `unifpdf`, `unifrnd`, `unifstat`, `wblcdf`, `wblinv`, `wblpdf`, `wblrnd`, `wblstat`
+Implemented: `betacdf`, `betafit`, `betainv`, `betalike`, `betapdf`, `betastat`, `chi2cdf`, `chi2inv`, `chi2pdf`, `chi2stat`, `evcdf`, `evfit`, `evinv`, `evlike`, `evpdf`, `evrnd`, `evstat`, `expcdf`, `expfit`, `expinv`, `explike`, `exppdf`, `exprnd`, `expstat`, `fcdf`, `finv`, `fpdf`, `fstat`, `gamcdf`, `gamfit`, `gaminv`, `gamlike`, `gampdf`, `gamstat`, `gevcdf`, `gevinv`, `gevlike`, `gevpdf`, `gevrnd`, `gevstat`, `gpcdf`, `gpinv`, `gplike`, `gppdf`, `gprnd`, `gpstat`, `logncdf`, `lognfit`, `logninv`, `lognlike`, `lognpdf`, `lognrnd`, `lognstat`, `ncfcdf`, `ncfinv`, `ncfpdf`, `ncfstat`, `nctcdf`, `nctinv`, `nctpdf`, `nctstat`, `ncx2cdf`, `ncx2inv`, `ncx2pdf`, `ncx2stat`, `normcdf`, `normfit`, `norminv`, `normlike`, `normpdf`, `normrnd`, `normstat`, `raylcdf`, `raylfit`, `raylinv`, `raylpdf`, `raylrnd`, `raylstat`, `tcdf`, `tinv`, `tpdf`, `tstat`, `ttest`, `ttest2`, `unifcdf`, `unifinv`, `unifit`, `unifpdf`, `unifrnd`, `unifstat`, `wblcdf`, `wblfit`, `wblinv`, `wbllike`, `wblpdf`, `wblrnd`, `wblstat`
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions
 
@@ -1259,7 +1228,7 @@ To implement:
 
 ## Statistics and Machine Learning Toolbox > Regression > Generalized Linear Models
 
-Implemented: 1. To implement: 12. In a branch: 0. Out of scope: 0.
+Implemented: 2. To implement: 11. In a branch: 0. Out of scope: 0.
 
 To implement:
 
@@ -1269,14 +1238,13 @@ To implement:
 - [ ] `fitglme`
 - [ ] `fitmnr`
 - [ ] `glmfit`
-- [ ] `glmval`
 - [ ] `lassoglm`
 - [ ] `mnrfit`
 - [ ] `mnrval`
 - [ ] `stepwiseglm`
 - [ ] `templateLinear`
 
-Implemented: `fitglm`
+Implemented: `fitglm`, `glmval`
 
 ## Statistics and Machine Learning Toolbox > Regression > Incremental Learning
 
@@ -1286,7 +1254,7 @@ Out of scope: `incrementalConceptDriftDetector` (Incremental Learning), `increme
 
 ## Statistics and Machine Learning Toolbox > Regression > Linear Regression
 
-Implemented: 4. To implement: 19. In a branch: 0. Out of scope: 1.
+Implemented: 5. To implement: 18. In a branch: 0. Out of scope: 1.
 
 To implement:
 
@@ -1297,7 +1265,6 @@ To implement:
 - [ ] `lasso`
 - [ ] `lassoPlot`
 - [ ] `lime`
-- [ ] `linhyptest`
 - [ ] `mvregress`
 - [ ] `mvregresslike`
 - [ ] `plsregress`
@@ -1310,7 +1277,7 @@ To implement:
 - [ ] `stepwisefit`
 - [ ] `stepwiselm`
 
-Implemented: `fitlm`, `regress`, `ridge`, `x2fx`
+Implemented: `fitlm`, `linhyptest`, `regress`, `ridge`, `x2fx`
 
 Out of scope: `Polynomial Fitting Tool` (App)
 
@@ -1345,7 +1312,7 @@ To implement:
 
 ## Statistics and Machine Learning Toolbox > Regression > Nonlinear Regression
 
-Implemented: 0. To implement: 9. In a branch: 0. Out of scope: 0.
+Implemented: 2. To implement: 7. In a branch: 0. Out of scope: 0.
 
 To implement:
 
@@ -1356,8 +1323,8 @@ To implement:
 - [ ] `nlmefitsa`
 - [ ] `nlparci`
 - [ ] `nlpredci`
-- [ ] `statget`
-- [ ] `statset`
+
+Implemented: `statget`, `statset`
 
 ## Statistics and Machine Learning Toolbox > Regression > Regression Tree Ensembles
 
