@@ -127,6 +127,28 @@ for c in ["glmfit(Xg)", "glmfit()", "glmfit(Xg,yn,'foo')", "glmfit(Xg,yn,'normal
     L6.append(PRE6 + gl.replace("{c}", c))
 L += L6
 
+PRE7 = "dd=[1 2 3 4 5.5 6 7 8.5 2.2 3.1 4.4 5.9]'; DM=[dd, dd.^2, sin(dd)]; XH=[x(1:40)' y(1:40)']; XH2=[round(x(1:30)'*3) round(y(1:30)'*2)]; "
+cp = "s_ = {c}; sc_ = struct2cell(s_); r = sc_(:)';"
+L7 = []
+for c in ["capability(dd,[1 8])", "capability(dd,[0 10])", "capability(dd,[8 1])", "capability(dd,[NaN 8])", "capability(dd,[1 NaN])", "capability(dd,[3.5 4])", "capability(dd',[1 8])", "capability(DM,[0 10])", "capability(DM,[0 10;1 50;-2 2]')",
+          "capability(DM,[0 10;1 50;-2 2])'", "capability([dd;NaN],[1 8])", "capability(dd(1:3),[0 9])", "capability(dd(1),[0 9])", "capability(single(dd),[1 8])", "capability(DM(:,1:2),[0 10;1 50]')", "capability(DM,[NaN 10;1 NaN;-2 2]')"]:
+    L7.append(PRE7 + cp.replace("{c}", c))
+for c in ["capability(dd)", "capability({1},[1 2])", "capability(ones(2,2,2),[1 2])", "capability(dd,[1 2 3])", "capability(DM,[1 2 3])", "capability(DM,[1 2;3 4;5 6])", "capability(dd,[NaN NaN])", "capability(dd,[3 3])", "capability(dd,'ab')", "capability(dd,[1 2],3)", "capability(DM,[3 3;4 4]')", "capability()"]:
+    L7.append(PRE7 + cp.replace("{c}", c))
+h3 = "[n_,c_] = {c}; r = [{n_}, c_(:)'];"
+h31 = "n_ = {c}; r = n_;"
+for c in ["hist3(XH)", "hist3(XH,[4 5])", "hist3(XH,'nbins',[3 3])", "hist3(XH,'Nbins',[6 2])", "hist3(XH,{-1:0.5:1,-1.5:0.5:1.5})", "hist3(XH,'ctrs',{-1:0.5:1,-1.5:0.5:1.5})", "hist3(XH,'edges',{-2:0.5:2,-2:0.5:2})",
+          "hist3(XH,'edges',{[-1 0 1],[-1 0 1]})", "hist3(XH,'edges',{[-1 0 0.5 1.5],[-1.5 -0.5 0.5 1.5]})", "hist3(XH2)", "hist3(XH2,[3 4])", "hist3(XH2,{-3:3,-2:2})", "hist3(XH2,'edges',{-3:3,-2:2})", "hist3(XH2,'edges',{[-3 -1 0 1 3],[-2 0 2]})",
+          "hist3(zeros(0,2))", "hist3(zeros(0,2),[3 4])", "hist3(zeros(0,2),{1:3,1:2})", "hist3(ones(5,2))", "hist3(ones(5,2),[3 3])", "hist3([XH(1:10,1) XH(1:10,2)*0+1],[2 3])", "hist3([XH(1:10,:);NaN 1;1 NaN])", "hist3(XH,[1 1])",
+          "hist3(XH,[2.5 3])", "hist3(XH,[],[])", "hist3(XH,'nbins',[],'ctrs',{1:3,1:3})", "hist3(single(XH),[3 3])", "hist3(XH,{[-1 0 1],[-1 0 1]})", "hist3(XH,{[-1.2 -0.1 0.3 1.1],[-1 0 1 3]})", "hist3(XH,'edges',{[-1 0 1],[-1 0 1]},'ctrs',[])",
+          "hist3(XH,'edges',{[1 2 3 4],[1 2 3]})", "hist3(XH,'edges',{[-1 -1 0 1],[-1 0 1]})", "hist3(XH,'edges',{[-1 0 0],[-1 0 1]})"]:
+    L7.append(PRE7 + h3.replace("{c}", c))
+    L7.append(PRE7 + h31.replace("{c}", c))
+for c in ["hist3()", "hist3(XH,[2 2],'nbins',[2 2])", "hist3(XH,'nbins',3)", "hist3(XH,'ctrs',3)", "hist3(XH,'edges',3)", "hist3(XH(:,1))", "hist3([XH XH(:,1)])", "hist3([XH(:,1) [Inf;XH(2:end,2)]])", "hist3(XH,{1 2 3})",
+          "hist3(XH,'nbins')", "hist3(XH,[2 2 2])", "hist3(XH,'edges',{[3 2 1],[1 2 3]})", "hist3(XH,'ctrs',{[3 2 1],[1 2 3]})", "hist3(XH,'ctrs',{1,[1 2 3]})", "hist3({1,2})"]:
+    L7.append(PRE7 + h3.replace("{c}", c))
+L += L7
+
 with open(os.path.join(here, "cases_u1.txt"), "w", encoding="utf-8", newline="\n") as f:
     f.write("\n".join(L) + "\n")
 print(len(L) - 1)
