@@ -7,10 +7,10 @@ found in the toolbox folders, checked against MatLivre. Regenerate with
 
 | Status | Count |
 |---|---:|
-| Implemented | 2133 |
+| Implemented | 2149 |
 | In a branch not merged yet | 0 |
 | Language keyword (check it works) | 25 |
-| **To implement** | **351** |
+| **To implement** | **335** |
 | Out of scope | 1355 |
 
 Out of scope, by category of the function reference: app building, external language
@@ -711,15 +711,14 @@ Out of scope: `allMuPADNotebooks` (desktop, IDE, GUI, printing or interactive to
 
 ## Statistics and Machine Learning Toolbox > ANOVA > Analysis of Variance and Covariance
 
-Implemented: 3. To implement: 3. In a branch: 0. Out of scope: 0.
+Implemented: 4. To implement: 2. In a branch: 0. Out of scope: 0.
 
 To implement:
 
 - [ ] `anova`
-- [ ] `anovan`
 - [ ] `aoctool`
 
-Implemented: `anova1`, `anova2`, `canoncorr`
+Implemented: `anova1`, `anova2`, `anovan`, `canoncorr`
 
 ## Statistics and Machine Learning Toolbox > ANOVA > Repeated Measures and MANOVA
 
@@ -791,7 +790,7 @@ Out of scope: `incrementalClassificationECOC` (Incremental Learning), `increment
 
 ## Statistics and Machine Learning Toolbox > Classification > Model Building and Assessment
 
-Implemented: 2. To implement: 8. In a branch: 0. Out of scope: 0.
+Implemented: 3. To implement: 7. In a branch: 0. Out of scope: 0.
 
 To implement:
 
@@ -802,9 +801,8 @@ To implement:
 - [ ] `fscnca`
 - [ ] `gencfeatures`
 - [ ] `rocmetrics`
-- [ ] `testcholdout`
 
-Implemented: `confusionmat`, `perfcurve`
+Implemented: `confusionmat`, `perfcurve`, `testcholdout`
 
 ## Statistics and Machine Learning Toolbox > Classification > Naive Bayes
 
@@ -890,14 +888,13 @@ To implement:
 
 ## Statistics and Machine Learning Toolbox > Cluster Analysis and Anomaly Detection > Hidden Markov Models
 
-Implemented: 3. To implement: 2. In a branch: 0. Out of scope: 0.
+Implemented: 4. To implement: 1. In a branch: 0. Out of scope: 0.
 
 To implement:
 
 - [ ] `hmmgenerate`
-- [ ] `hmmtrain`
 
-Implemented: `hmmdecode`, `hmmestimate`, `hmmviterbi`
+Implemented: `hmmdecode`, `hmmestimate`, `hmmtrain`, `hmmviterbi`
 
 ## Statistics and Machine Learning Toolbox > Cluster Analysis and Anomaly Detection > Hierarchical Clustering
 
@@ -925,16 +922,15 @@ Implemented: `kmeans`, `mahal`
 
 ## Statistics and Machine Learning Toolbox > Descriptive Statistics and Visualization > Descriptive Statistics
 
-Implemented: 24. To implement: 4. In a branch: 0. Out of scope: 0.
+Implemented: 25. To implement: 3. In a branch: 0. Out of scope: 0.
 
 To implement:
 
 - [ ] `grpstats`
 - [ ] `nearcorr`
-- [ ] `partialcorri`
 - [ ] `robustcov`
 
-Implemented: `cholcov`, `corr`, `corrcov`, `crosstab`, `geomean`, `harmmean`, `kurtosis`, `mad`, `moment`, `nancov`, `nanmax`, `nanmean`, `nanmedian`, `nanmin`, `nanstd`, `nansum`, `nanvar`, `partialcorr`, `range`, `skewness`, `tabulate`, `tiedrank`, `trimmean`, `zscore`
+Implemented: `cholcov`, `corr`, `corrcov`, `crosstab`, `geomean`, `harmmean`, `kurtosis`, `mad`, `moment`, `nancov`, `nanmax`, `nanmean`, `nanmedian`, `nanmin`, `nanstd`, `nansum`, `nanvar`, `partialcorr`, `partialcorri`, `range`, `skewness`, `tabulate`, `tiedrank`, `trimmean`, `zscore`
 
 ## Statistics and Machine Learning Toolbox > Descriptive Statistics and Visualization > Managing Data
 
@@ -1010,19 +1006,17 @@ To implement:
 
 ## Statistics and Machine Learning Toolbox > Industrial Statistics > Design of Experiments (DOE)
 
-Implemented: 5. To implement: 15. In a branch: 0. Out of scope: 0.
+Implemented: 7. To implement: 13. In a branch: 0. Out of scope: 0.
 
 To implement:
 
 - [ ] `candexch`
-- [ ] `candgen`
 - [ ] `cordexch`
 - [ ] `daugment`
 - [ ] `dcovary`
 - [ ] `fracfactgen`
 - [ ] `haltonset`
 - [ ] `interactionplot`
-- [ ] `lhsdesign`
 - [ ] `lhsnorm`
 - [ ] `maineffectsplot`
 - [ ] `multivarichart`
@@ -1030,7 +1024,7 @@ To implement:
 - [ ] `rowexch`
 - [ ] `sobolset`
 
-Implemented: `bbdesign`, `ccdesign`, `ff2n`, `fracfact`, `fullfact`
+Implemented: `bbdesign`, `candgen`, `ccdesign`, `ff2n`, `fracfact`, `fullfact`, `lhsdesign`
 
 ## Statistics and Machine Learning Toolbox > Industrial Statistics > Statistical Process Control
 
@@ -1063,18 +1057,16 @@ Implemented: `cdf`, `icdf`, `pdf`, `random`
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Hypothesis Tests
 
-Implemented: 18. To implement: 6. In a branch: 0. Out of scope: 0.
+Implemented: 20. To implement: 4. In a branch: 0. Out of scope: 0.
 
 To implement:
 
-- [ ] `adtest`
 - [ ] `detectdrift`
 - [ ] `gardnerAltmanPlot`
 - [ ] `meanEffectSize`
-- [ ] `multcompare`
 - [ ] `sampsizepwr`
 
-Implemented: `ansaribradley`, `barttest`, `dwtest`, `fishertest`, `friedman`, `jbtest`, `kruskalwallis`, `kstest`, `kstest2`, `lillietest`, `ranksum`, `runstest`, `signrank`, `signtest`, `vartest`, `vartest2`, `vartestn`, `ztest`
+Implemented: `adtest`, `ansaribradley`, `barttest`, `dwtest`, `fishertest`, `friedman`, `jbtest`, `kruskalwallis`, `kstest`, `kstest2`, `lillietest`, `multcompare`, `ranksum`, `runstest`, `signrank`, `signtest`, `vartest`, `vartest2`, `vartestn`, `ztest`
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Multivariate Distributions
 
@@ -1111,15 +1103,13 @@ To implement:
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Resampling Techniques
 
-Implemented: 4. To implement: 3. In a branch: 0. Out of scope: 0.
+Implemented: 6. To implement: 1. In a branch: 0. Out of scope: 0.
 
 To implement:
 
-- [ ] `bootci`
-- [ ] `bootstrp`
 - [ ] `crossval`
 
-Implemented: `combnk`, `datasample`, `jackknife`, `randsample`
+Implemented: `bootci`, `bootstrp`, `combnk`, `datasample`, `jackknife`, `randsample`
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions
 
@@ -1151,17 +1141,16 @@ Implemented: `betacdf`, `betafit`, `betainv`, `betalike`, `betapdf`, `betastat`,
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions
 
-Implemented: 34. To implement: 5. In a branch: 0. Out of scope: 0.
+Implemented: 35. To implement: 4. In a branch: 0. Out of scope: 0.
 
 To implement:
 
-- [ ] `ecdfhist`
 - [ ] `mle`
 - [ ] `nbinrnd`
 - [ ] `poissrnd`
 - [ ] `qqplot`
 
-Implemented: `binocdf`, `binofit`, `binoinv`, `binopdf`, `binornd`, `binostat`, `ecdf`, `fitdist`, `geocdf`, `geoinv`, `geopdf`, `geornd`, `geostat`, `hygecdf`, `hygeinv`, `hygepdf`, `hygernd`, `hygestat`, `makedist`, `nbincdf`, `nbinfit`, `nbininv`, `nbinpdf`, `nbinstat`, `poisscdf`, `poissfit`, `poissinv`, `poisspdf`, `poisstat`, `unidcdf`, `unidinv`, `unidpdf`, `unidrnd`, `unidstat`
+Implemented: `binocdf`, `binofit`, `binoinv`, `binopdf`, `binornd`, `binostat`, `ecdf`, `ecdfhist`, `fitdist`, `geocdf`, `geoinv`, `geopdf`, `geornd`, `geostat`, `hygecdf`, `hygeinv`, `hygepdf`, `hygernd`, `hygestat`, `makedist`, `nbincdf`, `nbinfit`, `nbininv`, `nbinpdf`, `nbinstat`, `poisscdf`, `poissfit`, `poissinv`, `poisspdf`, `poisstat`, `unidcdf`, `unidinv`, `unidpdf`, `unidrnd`, `unidstat`
 
 ## Statistics and Machine Learning Toolbox > Regression > Direct Forecasting
 
@@ -1216,28 +1205,24 @@ Out of scope: `incrementalConceptDriftDetector` (Incremental Learning), `increme
 
 ## Statistics and Machine Learning Toolbox > Regression > Linear Regression
 
-Implemented: 7. To implement: 16. In a branch: 0. Out of scope: 1.
+Implemented: 11. To implement: 12. In a branch: 0. Out of scope: 1.
 
 To implement:
 
 - [ ] `fitlme`
 - [ ] `fitlmematrix`
 - [ ] `fitrlinear`
-- [ ] `invpred`
 - [ ] `lasso`
 - [ ] `lassoPlot`
 - [ ] `lime`
 - [ ] `mvregress`
 - [ ] `mvregresslike`
-- [ ] `plsregress`
-- [ ] `regstats`
 - [ ] `relieff`
 - [ ] `shapley`
 - [ ] `stepwise`
-- [ ] `stepwisefit`
 - [ ] `stepwiselm`
 
-Implemented: `fitlm`, `linhyptest`, `polyconf`, `regress`, `ridge`, `robustfit`, `x2fx`
+Implemented: `fitlm`, `invpred`, `linhyptest`, `plsregress`, `polyconf`, `regress`, `regstats`, `ridge`, `robustfit`, `stepwisefit`, `x2fx`
 
 Out of scope: `Polynomial Fitting Tool` (App)
 
@@ -1272,19 +1257,18 @@ To implement:
 
 ## Statistics and Machine Learning Toolbox > Regression > Nonlinear Regression
 
-Implemented: 2. To implement: 7. In a branch: 0. Out of scope: 0.
+Implemented: 3. To implement: 6. In a branch: 0. Out of scope: 0.
 
 To implement:
 
 - [ ] `fitnlm`
-- [ ] `hougen`
 - [ ] `nlinfit`
 - [ ] `nlmefit`
 - [ ] `nlmefitsa`
 - [ ] `nlparci`
 - [ ] `nlpredci`
 
-Implemented: `statget`, `statset`
+Implemented: `hougen`, `statget`, `statset`
 
 ## Statistics and Machine Learning Toolbox > Regression > Regression Tree Ensembles
 
