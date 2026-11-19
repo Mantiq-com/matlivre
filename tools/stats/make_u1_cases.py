@@ -107,6 +107,26 @@ for c in ["lillietest(ones(2,2))", "lillietest([1 2 3])", "lillietest(xl,2)", "l
     L5.append(PRE5 + li.replace("{c}", c))
 L += L5
 
+PRE6 = "Xg=(1:12)'/3; yb=[0 0 0 1 0 0 1 0 1 1 1 1]'; yc=[1 0 2 1 3 2 4 3 6 5 8 9]'; Xg2=[Xg cos(Xg)]; yn=[2.1 3.9 6.2 7.8 10.1 12.2 13.8 16.1 18.0 20.2 21.9 24.1]'; tr=[8 8 8 10 10 10 12 12 12 14 14 14]'; ys=[1 2 3 4 5 6 7 8 9 9 10 11]'; "
+gl = "[b_,d_,s_] = {c}; sc_ = struct2cell(s_); r = [{b_,d_}, sc_(:)'];"
+gl1 = "[b_,d_] = {c}; r = {b_,d_};"
+gl0 = "b_ = {c}; r = b_;"
+L6 = []
+for c in ["glmfit(Xg,yn)", "glmfit(Xg,yn,'normal')", "glmfit(Xg2,yn,'normal')", "glmfit(Xg,yc,'poisson')", "glmfit(Xg2,yc,'poisson')", "glmfit(Xg,yb,'binomial')", "glmfit(Xg2,yb,'binomial','link','probit')",
+          "glmfit(Xg,[yc tr],'binomial')", "glmfit(Xg,[yc tr],'binomial','link','comploglog')", "glmfit(Xg,ys,'gamma')", "glmfit(Xg,ys,'gamma','link','log')", "glmfit(Xg,ys,'inverse gaussian')",
+          "glmfit(Xg,yc,'poisson','link','identity')", "glmfit(Xg,yc,'poisson','estdisp','on')", "glmfit(Xg,yb,'binomial','estdisp','on')", "glmfit(Xg,yb,'binomial','logit','on')", "glmfit(Xg,yb,'binomial','probit')",
+          "glmfit(Xg,yc,'poisson','canonical')", "glmfit(Xg,yn,'normal','identity','off')", "glmfit(Xg,yn,'normal','constant','off')", "glmfit(Xg,yc,'poisson','constant','off')", "glmfit(Xg,yn,[])", "glmfit(Xg,yn,'NORMAL')",
+          "glmfit([Xg;NaN],[yn;1],'normal')", "glmfit(Xg,[yn(1:11);NaN],'normal')", "glmfit(Xg,yc,'poisson','Link','log','EstDisp','off')", "glmfit(Xg,yc,'poisson','l','log')", "glmfit(Xg,yc,'poisson','link','canonical')",
+          "glmfit(single(Xg),single(yn))", "glmfit(Xg,yc,'poisson','rankwarn',false)"]:
+    L6.append(PRE6 + gl.replace("{c}", c))
+for c in ["glmfit(Xg,yn)", "glmfit(Xg,yc,'poisson')", "glmfit(Xg,yb,'binomial')"]:
+    L6.append(PRE6 + gl1.replace("{c}", c))
+    L6.append(PRE6 + gl0.replace("{c}", c))
+for c in ["glmfit(Xg)", "glmfit()", "glmfit(Xg,yn,'foo')", "glmfit(Xg,yn,'normal','foo')", "glmfit(Xg,yc(1:5),'poisson')", "glmfit(Xg,yn-30,'poisson')", "glmfit(Xg,yn,'binomial')", "glmfit(Xg,-yn,'gamma')",
+          "glmfit(Xg,yn,'normal','link','foo')", "glmfit(Xg,yn,'normal','estdisp','maybe')", "glmfit(Xg,yn,'normal','bogus',1)", "glmfit(Xg,yb,'binomial','link')", "glmfit(Xg(1:5),yn,'normal')", "glmfit(Xg,yn,'normal','weights',ones(12,1))"]:
+    L6.append(PRE6 + gl.replace("{c}", c))
+L += L6
+
 with open(os.path.join(here, "cases_u1.txt"), "w", encoding="utf-8", newline="\n") as f:
     f.write("\n".join(L) + "\n")
 print(len(L) - 1)

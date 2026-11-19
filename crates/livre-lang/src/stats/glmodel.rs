@@ -16,7 +16,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-pub const NAMES: &[&str] = &["fitglm", "matlivre_glm_method"];
+pub const NAMES: &[&str] = &["fitglm", "matlivre_glm_method", "glmfit"];
 
 const PROPS: &[&str] = &[
     "Offset", "Residuals", "Fitted", "Diagnostics", "Dispersion", "DispersionEstimated", "Deviance", "Distribution", "Link", "SSE", "SST", "SSR", "NumEstimatedCoefficients", "Formula",
@@ -175,6 +175,8 @@ struct Fit {
     dev: f64,
     ssr: f64,
     covb_unscaled: Vec<Vec<f64>>,
+    /// The fitted means the last iteration started from.
+    mu_start: Vec<f64>,
 }
 
 /// Iteratively reweighted least squares, as `glmfit` runs it.
@@ -194,8 +196,10 @@ fn irls(xd: &[Vec<f64>], y: &[f64], nn: &[f64], dist: Dist, link: Link) -> Res<F
     let mut b = vec![0.0; p];
     let seps = eps.sqrt();
     let mut r_last: Vec<Vec<f64>> = vec![];
+    let mut mu_start = mu.clone();
     let mut perm_last: Vec<usize> = vec![];
     for _iter in 0..=100 {
+        mu_start = mu.clone();
         let deta: Vec<f64> = mu.iter().map(|&m| link.dlink(m)).collect();
         let z: Vec<f64> = (0..n).map(|i| eta[i] + (y[i] - mu[i]) * deta[i]).collect();
         let sqrtirls: Vec<f64> = (0..n).map(|i| deta[i].abs() * dist.sqrtvar(mu[i], nn[i])).collect();
@@ -255,7 +259,7 @@ fn irls(xd: &[Vec<f64>], y: &[f64], nn: &[f64], dist: Dist, link: Link) -> Res<F
             cp[perm_last[i]][perm_last[j]] = (0..p).map(|m| rinv[i][m] * rinv[j][m]).sum();
         }
     }
-    Ok(Fit { beta: b, mu, eta, dev, ssr, covb_unscaled: cp })
+    Ok(Fit { beta: b, mu, eta, dev, ssr, covb_unscaled: cp, mu_start })
 }
 
 fn loglik(dist: Dist, mu: &[f64], y: &[f64], nn: &[f64], dev: f64, phi_hat: f64) -> f64 {
@@ -662,9 +666,261 @@ fn method(_it: &mut Interpreter, a: &[Value]) -> Ret {
     }
 }
 
-pub fn call(it: &mut Interpreter, name: &str, a: &[Value], _nargout: usize) -> Ret {
+pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Ret {
+    if name == "glmfit" {
+        return glmfit(it, a, nargout);
+    }
     if name == "matlivre_glm_method" {
         return Ok(Some(method(it, a)?.unwrap_or_default()));
     }
     fit(a)
+}
+
+// ---------------------------------------------------------------------------------------------
+// glmfit
+
+fn glm_dist(name: &str) -> Option<Dist> {
+    match name {
+        "normal" => Some(Dist::Normal),
+        "binomial" => Some(Dist::Binomial),
+        "poisson" => Some(Dist::Poisson),
+        "gamma" => Some(Dist::Gamma),
+        "inverse gaussian" => Some(Dist::InvGaussian),
+        _ => None,
+    }
+}
+
+fn glm_link(name: &str, dist: Dist) -> Option<Link> {
+    Some(match name {
+        "identity" => Link::Identity,
+        "log" => Link::Log,
+        "logit" => Link::Logit,
+        "probit" => Link::Probit,
+        "comploglog" => Link::Comploglog,
+        "reciprocal" => Link::Reciprocal,
+        "loglog" | "logloglink" => Link::Loglog,
+        "canonical" => dist.canonical(),
+        _ => return None,
+    })
+}
+
+/// `[b, dev, stats] = glmfit(x, y, distr, ...)` for the estimates `fitglm` also uses.
+fn glmfit(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
+    if a.len() < 2 {
+        return rt("At least two arguments are required");
+    }
+    let (Value::Num(x), Value::Num(ym)) = (&a[0], &a[1]) else { return rt("X and Y must be numeric matrices.") };
+    let single = x.kind == Kind::Single || ym.kind == Kind::Single;
+    let dname = match a.get(2) {
+        Some(v) if !matches!(v, Value::Num(m) if m.is_empty()) => v.text().unwrap_or_default().to_lowercase(),
+        _ => "normal".to_string(),
+    };
+    let dist = match glm_dist(&dname) {
+        Some(d) => d,
+        None => return rt("Distribution name is invalid."),
+    };
+    // Options: the name-value form, or positional link, estdisp, offset, weights, constant.
+    let mut link_name = "canonical".to_string();
+    let mut estdisp_opt = false;
+    let mut constant = true;
+    let mut rest: &[Value] = a.get(3..).unwrap_or(&[]);
+    let valid_link = |t: &str| -> bool {
+        let names = ["identity", "log", "logit", "probit", "comploglog", "reciprocal", "logloglink"];
+        let hits: Vec<&&str> = names.iter().filter(|n| !t.is_empty() && n.starts_with(t)).collect();
+        match hits.len() {
+            0 => false,
+            1 => true,
+            _ => {
+                let shortest = hits.iter().min_by_key(|n| n.len()).unwrap();
+                hits.iter().all(|n| n.starts_with(**shortest))
+            }
+        }
+    };
+    let named = rest.first().map(|v| v.is_text() && !valid_link(&v.text().unwrap_or_default().to_lowercase())).unwrap_or(false);
+    let onoff = |v: &Value| -> Res<bool> {
+        let t = v.text().unwrap_or_default().to_lowercase();
+        match t.as_str() {
+            "on" => Ok(true),
+            "off" => Ok(false),
+            _ => {
+                if let Value::Num(m) = v {
+                    if m.data.len() == 1 {
+                        return Ok(m.data[0] != 0.0);
+                    }
+                }
+                rt(format!("'{}' is not a valid value for the 'estdisp' argument.  Valid values are: 'on', 'off'.", v.text().unwrap_or_default()))
+            }
+        }
+    };
+    if named {
+        if rest.len() % 2 != 0 {
+            return rt("Wrong number of arguments.");
+        }
+        for pair in rest.chunks(2) {
+            let key = pair[0].text().unwrap_or_default().to_lowercase();
+            let names = ["link", "estdisp", "offset", "weights", "constant", "rankwarn", "options", "b0"];
+            let hits: Vec<&&str> = names.iter().filter(|n| !key.is_empty() && n.starts_with(&key)).collect();
+            if hits.len() != 1 {
+                return rt(format!("Invalid parameter name: {}.", pair[0].text().unwrap_or_default()));
+            }
+            match *hits[0] {
+                "link" => link_name = pair[1].text().unwrap_or_default().to_lowercase(),
+                "estdisp" => estdisp_opt = onoff(&pair[1])?,
+                "constant" => constant = onoff(&pair[1])?,
+                "rankwarn" => {}
+                other => {
+                    if !matches!(&pair[1], Value::Num(m) if m.is_empty()) {
+                        return rt(format!("The '{other}' option of glmfit is not implemented."));
+                    }
+                }
+            }
+        }
+        rest = &[];
+    }
+    if !rest.is_empty() {
+        if !matches!(&rest[0], Value::Num(m) if m.is_empty()) {
+            link_name = rest[0].text().unwrap_or_default().to_lowercase();
+        }
+        if let Some(v) = rest.get(1) {
+            if !matches!(v, Value::Num(m) if m.is_empty()) {
+                estdisp_opt = onoff(v)?;
+            }
+        }
+        for v in rest.iter().skip(2).take(2) {
+            if !matches!(v, Value::Num(m) if m.is_empty()) {
+                return rt("The offset and weights options of glmfit are not implemented.");
+            }
+        }
+        if let Some(v) = rest.get(4) {
+            if !matches!(v, Value::Num(m) if m.is_empty()) {
+                constant = onoff(v)?;
+            }
+        }
+    }
+    let link = match glm_link(&link_name, dist) {
+        Some(l) => l,
+        None => return rt("Unrecognized link function name."),
+    };
+    let n0 = x.dims[0];
+    let p0 = x.data.len() / n0.max(1);
+    // Response: a vector, or [successes trials] for the binomial.
+    let (y_all, nn_all): (Vec<f64>, Vec<f64>) = if dist == Dist::Binomial && ym.dims.len() == 2 && ym.dims[1] == 2 {
+        if ym.dims[0] != n0 {
+            return rt("Number of observations in X and Y must match.");
+        }
+        let (c, t) = (&ym.data[..n0], &ym.data[n0..]);
+        ((0..n0).map(|i| c[i] / t[i]).collect(), t.to_vec())
+    } else {
+        if ym.data.len() != n0 {
+            return rt("Number of observations in X and Y must match.");
+        }
+        (ym.data.clone(), vec![1.0; n0])
+    };
+    // Rows with a missing value are left out and reinserted as NaN in the residuals.
+    let keep: Vec<bool> = (0..n0).map(|i| !(y_all[i].is_nan() || nn_all[i].is_nan() || (0..p0).any(|j| x.data[j * n0 + i].is_nan()))).collect();
+    let idx: Vec<usize> = (0..n0).filter(|&i| keep[i]).collect();
+    let y: Vec<f64> = idx.iter().map(|&i| y_all[i]).collect();
+    let nn: Vec<f64> = idx.iter().map(|&i| nn_all[i]).collect();
+    match dist {
+        Dist::Binomial if y.iter().any(|&v| !(0.0..=1.0).contains(&v)) => return rt("Y must contain values in the interval [0,N] for the binomial distribution."),
+        Dist::Poisson if y.iter().any(|&v| v < 0.0) => return rt("Y must contain non-negative values for the Poisson distribution."),
+        Dist::Gamma | Dist::InvGaussian if y.iter().any(|&v| v <= 0.0) => return rt(if dist == Dist::Gamma { "Y must contain positive values for the gamma distribution." } else { "Y must contain positive values for the inverse Gaussian distribution." }),
+        _ => {}
+    }
+    let n = idx.len();
+    let xd: Vec<Vec<f64>> = idx
+        .iter()
+        .map(|&i| {
+            let mut row: Vec<f64> = Vec::new();
+            if constant {
+                row.push(1.0);
+            }
+            row.extend((0..p0).map(|j| x.data[j * n0 + i]));
+            row
+        })
+        .collect();
+    let p = xd.first().map_or(0, |r| r.len());
+    let f = irls(&xd, &y, &nn, dist, link)?;
+    let sg = |m: Matrix| Value::Num(if single { m.cast_to(Kind::Single) } else { m });
+    let mut out = vec![sg(Matrix::from_dims(vec![p, 1], f.beta.clone()))];
+    if nargout > 1 {
+        out.push(sg(Matrix::scalar(f.dev)));
+    }
+    if nargout > 2 {
+        let est = matches!(dist, Dist::Normal | Dist::Gamma | Dist::InvGaussian) || estdisp_opt;
+        let dfe = (n as f64 - p as f64).max(0.0);
+        let sfit = if dfe > 0.0 { (f.ssr / dfe).sqrt() } else { f64::NAN };
+        let s = if est { sfit } else { 1.0 };
+        let colv = |v: Vec<f64>| {
+            let l = v.len();
+            sg(Matrix::from_dims(vec![l, 1], v))
+        };
+        let mut st = StructArray::scalar();
+        st.set("beta", colv(f.beta.clone()));
+        st.set("dfe", Value::num(dfe));
+        st.set("sfit", sg(Matrix::scalar(sfit)));
+        st.set("s", sg(Matrix::scalar(s)));
+        st.set("estdisp", Value::Num(Matrix::from_dims(vec![1, 1], vec![if est { 1.0 } else { 0.0 }]).cast_to(Kind::Logical)));
+        let (covb, se, corr, t, pv);
+        if !s.is_nan() {
+            let sc = if est { s * s } else { 1.0 };
+            let c: Vec<Vec<f64>> = f.covb_unscaled.iter().map(|r| r.iter().map(|v| v * sc).collect()).collect();
+            let sev: Vec<f64> = (0..p).map(|i| c[i][i].sqrt()).collect();
+            let cm = Matrix::from_dims(vec![p, p], (0..p * p).map(|k| c[k % p][k / p]).collect());
+            let crm = Matrix::from_dims(vec![p, p], (0..p * p).map(|k| c[k % p][k / p] / (sev[k % p] * sev[k / p])).collect());
+            let tv: Vec<f64> = (0..p).map(|i| f.beta[i] / sev[i]).collect();
+            let pvv: Vec<f64> = tv.iter().map(|t| if est { 2.0 * tcdf(-t.abs(), dfe) } else { 2.0 * normcdf_std(-t.abs()) }).collect();
+            covb = sg(cm);
+            corr = sg(crm);
+            se = colv(sev);
+            t = colv(tv);
+            pv = colv(pvv);
+        } else {
+            let nanc = |r: usize, c: usize| sg(Matrix::from_dims(vec![r, c], vec![f64::NAN; r * c]));
+            covb = nanc(p, p);
+            corr = nanc(p, p);
+            se = nanc(p, 1);
+            t = nanc(p, 1);
+            pv = nanc(p, 1);
+        }
+        st.set("covb", covb);
+        st.set("se", se);
+        st.set("coeffcorr", corr);
+        st.set("t", t);
+        st.set("p", pv);
+        let mut resid = vec![f64::NAN; n0];
+        let mut residp = vec![f64::NAN; n0];
+        let mut residd = vec![f64::NAN; n0];
+        let mut resida = vec![f64::NAN; n0];
+        let mut wts = vec![f64::NAN; n0];
+        for (k, &i) in idx.iter().enumerate() {
+            let (yk, mk, nk) = (y[k], f.mu[k], nn[k]);
+            resid[i] = if dist == Dist::Binomial { (yk - mk) * nk } else { yk - mk };
+            residp[i] = (yk - mk) / (dist.sqrtvar(mk, nk) + if yk == mk { 1.0 } else { 0.0 });
+            let di = dist.dev(mk, yk, nk);
+            residd[i] = (yk - mk).signum() * di.max(0.0).sqrt() * if yk == mk { 0.0 } else { 1.0 };
+            resida[i] = match dist {
+                Dist::Normal => yk - mk,
+                Dist::Binomial => {
+                    let tt = 2.0 / 3.0;
+                    let bb = betaln(tt, tt).exp();
+                    bb * (betainc_pair(yk, tt, tt).0 - betainc_pair(mk, tt, tt).0) / ((mk * (1.0 - mk)).powf(1.0 / 6.0) / nk.sqrt())
+                }
+                Dist::Poisson => 1.5 * (yk.powf(2.0 / 3.0) - mk.powf(2.0 / 3.0)) / mk.powf(1.0 / 6.0),
+                Dist::Gamma => 3.0 * (yk.powf(1.0 / 3.0) - mk.powf(1.0 / 3.0)) / mk.powf(1.0 / 3.0),
+                Dist::InvGaussian => (yk.ln() - mk.ln()) / mk,
+            };
+            let m0 = f.mu_start[k];
+            let si = link.dlink(m0).abs() * dist.sqrtvar(m0, nk);
+            wts[i] = 1.0 / (si * si);
+        }
+        st.set("resid", colv(resid));
+        st.set("residp", colv(residp));
+        st.set("residd", colv(residd));
+        st.set("resida", colv(resida));
+        st.set("wts", colv(wts));
+        out.push(Value::Struct(st));
+    }
+    let _ = it;
+    Ok(Some(out))
 }
