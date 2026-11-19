@@ -482,6 +482,11 @@ fn polyconf(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
 }
 
 pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Ret {
+    let expanded = if name == "knnsearch" || name == "rangesearch" { super::searchers::expand_args(name, a) } else { None };
+    let a: &[Value] = match &expanded {
+        Some(v) => v,
+        None => a,
+    };
     match name {
         "knnsearch" => knnsearch(it, a),
         "rangesearch" => rangesearch(it, a),
