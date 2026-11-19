@@ -3,14 +3,14 @@
 Every function in the MATLAB R2023b, Symbolic Math Toolbox and Statistics and Machine Learning Toolbox function references (the
 installation's `help/*/helpfuncbycat.xml`), plus key classes and undocumented public functions
 found in the toolbox folders, checked against MatLivre. Regenerate with
-`tools/coverage/update.sh` after merging work (2026-11-18).
+`tools/coverage/update.sh` after merging work (2026-11-19).
 
 | Status | Count |
 |---|---:|
-| Implemented | 2092 |
+| Implemented | 2102 |
 | In a branch not merged yet | 0 |
 | Language keyword (check it works) | 25 |
-| **To implement** | **392** |
+| **To implement** | **382** |
 | Out of scope | 1355 |
 
 Out of scope, by category of the function reference: app building, external language
@@ -316,7 +316,7 @@ Implemented: `&amp;`, `&gt;`, `&gt;=`, `&lt;`, `&lt;=`, `'`, `*`, `+`, `-`, `.'`
 
 Implemented: 84. To implement: 0. In a branch: 0. Out of scope: 0.
 
-Implemented: `addboundary`, `alphaShape`, `alphaSpectrum`, `alphaTriangulation`, `area`, `barycentricToCartesian`, `baryToCart`, `boundary`, `boundaryFacets`, `boundaryshape`, `boundingbox`, `cartesianToBarycentric`, `cartToBary`, `centroid`, `circumcenter`, `circumcenters`, `convexHull`, `convhull`, `convhulln`, `criticalAlpha`, `delaunay`, `delaunayn`, `DelaunayTri`, `delaunayTriangulation`, `dsearchn`, `edgeAttachments`, `edges`, `faceNormal`, `faceNormals`, `featureEdges`, `freeBoundary`, `holes`, `incenter`, `incenters`, `inOutStatus`, `inpolygon`, `inShape`, `isConnected`, `isEdge`, `ishole`, `isinterior`, `isInterior`, `issimplified`, `nearestNeighbor`, `nearestvertex`, `nsidedpoly`, `numboundaries`, `numRegions`, `numsides`, `overlaps`, `patch`, `perimeter`, `pointLocation`, `polyarea`, `polybuffer`, `polyshape`, `rectint`, `regions`, `rmboundary`, `rmholes`, `rmslivers`, `rotate`, `scale`, `sortboundaries`, `sortregions`, `stlread`, `stlwrite`, `subtract`, `surfaceArea`, `tetramesh`, `translate`, `triangulation`, `trimesh`, `triplot`, `TriRep`, `trisurf`, `tsearchn`, `turningdist`, `vertexAttachments`, `vertexNormal`, `volume`, `voronoi`, `voronoiDiagram`, `voronoin`
+Implemented: `addboundary`, `alphaShape`, `alphaSpectrum`, `alphaTriangulation`, `area`, `barycentricToCartesian`, `baryToCart`, `boundary`, `boundaryFacets`, `boundaryshape`, `boundingbox`, `cartesianToBarycentric`, `cartToBary`, `centroid`, `circumcenter`, `circumcenters`, `convexHull`, `convhull`, `convhulln`, `criticalAlpha`, `delaunay`, `delaunayn`, `DelaunayTri`, `delaunayTriangulation`, `dsearchn`, `edgeAttachments`, `edges`, `faceNormal`, `faceNormals`, `featureEdges`, `freeBoundary`, `holes`, `incenter`, `incenters`, `inOutStatus`, `inpolygon`, `inShape`, `isConnected`, `isEdge`, `ishole`, `isInterior`, `isinterior`, `issimplified`, `nearestNeighbor`, `nearestvertex`, `nsidedpoly`, `numboundaries`, `numRegions`, `numsides`, `overlaps`, `patch`, `perimeter`, `pointLocation`, `polyarea`, `polybuffer`, `polyshape`, `rectint`, `regions`, `rmboundary`, `rmholes`, `rmslivers`, `rotate`, `scale`, `sortboundaries`, `sortregions`, `stlread`, `stlwrite`, `subtract`, `surfaceArea`, `tetramesh`, `translate`, `triangulation`, `trimesh`, `triplot`, `TriRep`, `trisurf`, `tsearchn`, `turningdist`, `vertexAttachments`, `vertexNormal`, `volume`, `voronoi`, `voronoiDiagram`, `voronoin`
 
 ## MATLAB > Mathematics > Elementary Math
 
@@ -758,13 +758,13 @@ To implement:
 
 ## Statistics and Machine Learning Toolbox > Classification > Discriminant Analysis
 
-Implemented: 0. To implement: 3. In a branch: 0. Out of scope: 0.
+Implemented: 2. To implement: 1. In a branch: 0. Out of scope: 0.
 
 To implement:
 
-- [ ] `classify`
-- [ ] `fitcdiscr`
 - [ ] `makecdiscr`
+
+Implemented: `classify`, `fitcdiscr`
 
 ## Statistics and Machine Learning Toolbox > Classification > Fairness in Binary Classification
 
@@ -793,7 +793,7 @@ Out of scope: `incrementalClassificationECOC` (Incremental Learning), `increment
 
 ## Statistics and Machine Learning Toolbox > Classification > Model Building and Assessment
 
-Implemented: 1. To implement: 9. In a branch: 0. Out of scope: 0.
+Implemented: 2. To implement: 8. In a branch: 0. Out of scope: 0.
 
 To implement:
 
@@ -803,34 +803,28 @@ To implement:
 - [ ] `fscmrmr`
 - [ ] `fscnca`
 - [ ] `gencfeatures`
-- [ ] `perfcurve`
 - [ ] `rocmetrics`
 - [ ] `testcholdout`
 
-Implemented: `confusionmat`
+Implemented: `confusionmat`, `perfcurve`
 
 ## Statistics and Machine Learning Toolbox > Classification > Naive Bayes
 
-Implemented: 0. To implement: 1. In a branch: 0. Out of scope: 0.
+Implemented: 1. To implement: 0. In a branch: 0. Out of scope: 0.
 
-To implement:
-
-- [ ] `fitcnb`
+Implemented: `fitcnb`
 
 ## Statistics and Machine Learning Toolbox > Classification > Nearest Neighbors
 
-Implemented: 2. To implement: 6. In a branch: 0. Out of scope: 0.
+Implemented: 5. To implement: 3. In a branch: 0. Out of scope: 0.
 
 To implement:
 
 - [ ] `createns`
 - [ ] `ExhaustiveSearcher`
-- [ ] `fitcknn`
 - [ ] `KDTreeSearcher`
-- [ ] `knnsearch`
-- [ ] `rangesearch`
 
-Implemented: `pdist`, `pdist2`
+Implemented: `fitcknn`, `knnsearch`, `pdist`, `pdist2`, `rangesearch`
 
 ## Statistics and Machine Learning Toolbox > Classification > Neural Networks
 
@@ -942,17 +936,16 @@ Implemented: `kmeans`, `mahal`
 
 ## Statistics and Machine Learning Toolbox > Descriptive Statistics and Visualization > Descriptive Statistics
 
-Implemented: 23. To implement: 5. In a branch: 0. Out of scope: 0.
+Implemented: 24. To implement: 4. In a branch: 0. Out of scope: 0.
 
 To implement:
 
-- [ ] `crosstab`
 - [ ] `grpstats`
 - [ ] `nearcorr`
 - [ ] `partialcorri`
 - [ ] `robustcov`
 
-Implemented: `cholcov`, `corr`, `corrcov`, `geomean`, `harmmean`, `kurtosis`, `mad`, `moment`, `nancov`, `nanmax`, `nanmean`, `nanmedian`, `nanmin`, `nanstd`, `nansum`, `nanvar`, `partialcorr`, `range`, `skewness`, `tabulate`, `tiedrank`, `trimmean`, `zscore`
+Implemented: `cholcov`, `corr`, `corrcov`, `crosstab`, `geomean`, `harmmean`, `kurtosis`, `mad`, `moment`, `nancov`, `nanmax`, `nanmean`, `nanmedian`, `nanmin`, `nanstd`, `nansum`, `nanvar`, `partialcorr`, `range`, `skewness`, `tabulate`, `tiedrank`, `trimmean`, `zscore`
 
 ## Statistics and Machine Learning Toolbox > Descriptive Statistics and Visualization > Managing Data
 
@@ -1254,7 +1247,7 @@ Out of scope: `incrementalConceptDriftDetector` (Incremental Learning), `increme
 
 ## Statistics and Machine Learning Toolbox > Regression > Linear Regression
 
-Implemented: 5. To implement: 18. In a branch: 0. Out of scope: 1.
+Implemented: 7. To implement: 16. In a branch: 0. Out of scope: 1.
 
 To implement:
 
@@ -1268,16 +1261,14 @@ To implement:
 - [ ] `mvregress`
 - [ ] `mvregresslike`
 - [ ] `plsregress`
-- [ ] `polyconf`
 - [ ] `regstats`
 - [ ] `relieff`
-- [ ] `robustfit`
 - [ ] `shapley`
 - [ ] `stepwise`
 - [ ] `stepwisefit`
 - [ ] `stepwiselm`
 
-Implemented: `fitlm`, `linhyptest`, `regress`, `ridge`, `x2fx`
+Implemented: `fitlm`, `linhyptest`, `polyconf`, `regress`, `ridge`, `robustfit`, `x2fx`
 
 Out of scope: `Polynomial Fitting Tool` (App)
 
