@@ -7,7 +7,7 @@ use crate::error::rt;
 use crate::interp::Interpreter;
 use crate::value::*;
 
-pub const NAMES: &[&str] = &["capability", "hist3"];
+pub const NAMES: &[&str] = &["capability", "hist3", "controlrules"];
 
 fn is_empty_val(v: &Value) -> bool {
     matches!(v, Value::Num(m) if m.is_empty())
@@ -320,6 +320,188 @@ fn hist3(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
 pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Ret {
     match name {
         "capability" => capability(a),
+        "controlrules" => controlrules(a),
         _ => hist3(it, a, nargout),
     }
+}
+
+// ---------------------------------------------------------------------------------------------
+// controlrules
+
+/// Counts, for each position, how many of the last `w` flags (including the current one) are set.
+fn window_count(flags: &[bool], w: usize) -> Vec<usize> {
+    (0..flags.len()).map(|i| flags[i.saturating_sub(w - 1)..=i].iter().filter(|&&f| f).count()).collect()
+}
+
+fn rule_names() -> Vec<String> {
+    let mut v: Vec<String> = vec!["we".into(), "n".into()];
+    v.extend((1..=10).map(|k| format!("we{k}")));
+    v.extend((1..=8).map(|k| format!("n{k}")));
+    v
+}
+
+fn controlrules(a: &[Value]) -> Ret {
+    if a.len() < 4 {
+        return rt("Not enough input arguments.");
+    }
+    if a.len() > 4 {
+        return rt("Too many input arguments.");
+    }
+    let mut rules: Vec<String> = Vec::new();
+    let given: Vec<Value> = match &a[0] {
+        Value::Cell(c) => c.data.clone(),
+        v if v.is_text() => vec![v.clone()],
+        v if is_empty_val(v) => vec![],
+        _ => return rt("Invalid RULES argument, must be a character array or cell array of character vectors"),
+    };
+    let all = rule_names();
+    let names: Vec<&str> = all.iter().map(|s| s.as_str()).collect();
+    for g in &given {
+        if !g.is_text() {
+            return rt("Invalid RULES argument, must be a character array or cell array of character vectors");
+        }
+        let t = g.text().unwrap_or_default();
+        let low = t.to_lowercase();
+        let idx = if let Some(i) = names.iter().position(|n| *n == low) {
+            i
+        } else {
+            let hits: Vec<usize> = names.iter().enumerate().filter(|(_, n)| !low.is_empty() && n.starts_with(&low)).map(|(i, _)| i).collect();
+            match hits.len() {
+                1 => hits[0],
+                0 => return rt(format!("'{t}' is not a valid value for the RULES argument.")),
+                _ => return rt(format!("The value '{t}' is a partial match for more than one valid value for the RULES argument.")),
+            }
+        };
+        let nm = names[idx];
+        if nm == "we" {
+            rules.extend((1..=10).map(|k| format!("we{k}")));
+        } else if nm == "n" {
+            rules.extend((1..=8).map(|k| format!("n{k}")));
+        } else {
+            rules.push(nm.to_string());
+        }
+    }
+    let num = |v: &Value| -> Option<Vec<f64>> {
+        match v {
+            Value::Num(m) if m.kind != Kind::Char && m.kind != Kind::Logical => Some(m.data.clone()),
+            Value::Num(m) if m.kind == Kind::Logical => Some(m.data.clone()),
+            _ => None,
+        }
+    };
+    let (Some(x0), Some(cl0), Some(se0)) = (num(&a[1]), num(&a[2]), num(&a[3])) else { return rt("X, CL, and SE must be numeric vectors.") };
+    let n = x0.len();
+    let cl: Vec<f64> = if cl0.len() == 1 {
+        vec![cl0[0]; n]
+    } else if cl0.len() == n {
+        cl0
+    } else {
+        return rt("CL must be a scalar or must have the same length as X.");
+    };
+    let se: Vec<f64> = if se0.len() == 1 {
+        vec![se0[0]; n]
+    } else if se0.len() == n {
+        se0
+    } else {
+        return rt("SE must be a scalar or must have the same length as X.");
+    };
+    let notnan: Vec<bool> = (0..n).map(|i| !(x0[i].is_nan() || cl[i].is_nan() || se[i].is_nan())).collect();
+    let keep: Vec<usize> = (0..n).filter(|&i| notnan[i]).collect();
+    let x: Vec<f64> = keep.iter().map(|&i| x0[i]).collect();
+    let cl: Vec<f64> = keep.iter().map(|&i| cl[i]).collect();
+    let se: Vec<f64> = keep.iter().map(|&i| se[i]).collect();
+    let m = x.len();
+    let idx: Vec<usize> = (0..m).collect();
+    let gt = |off: f64, k: f64| -> Vec<bool> { idx.iter().map(|&i| x[i] > cl[i] + off * se[i] * k).collect() };
+    let _ = gt;
+    let above = |k: f64| -> Vec<bool> { idx.iter().map(|&i| x[i] > cl[i] + k * se[i]).collect() };
+    let below = |k: f64| -> Vec<bool> { idx.iter().map(|&i| x[i] < cl[i] - k * se[i]).collect() };
+    let mut cols: Vec<Vec<bool>> = Vec::new();
+    for r in &rules {
+        let c: Vec<bool> = match r.as_str() {
+            "we1" => above(3.0),
+            "we2" => {
+                let hi = above(2.0);
+                let cnt = window_count(&hi, 3);
+                (0..m).map(|i| cnt[i] >= 2 && hi[i]).collect()
+            }
+            "we3" => {
+                let hi = above(1.0);
+                let cnt = window_count(&hi, 5);
+                (0..m).map(|i| cnt[i] >= 4 && hi[i]).collect()
+            }
+            "we4" => {
+                let f: Vec<bool> = idx.iter().map(|&i| x[i] > cl[i]).collect();
+                window_count(&f, 8).iter().map(|&c| c >= 8).collect()
+            }
+            "we5" => below(3.0),
+            "we6" => {
+                let lo = below(2.0);
+                let cnt = window_count(&lo, 3);
+                (0..m).map(|i| cnt[i] >= 2 && lo[i]).collect()
+            }
+            "we7" => {
+                let lo = below(1.0);
+                let cnt = window_count(&lo, 5);
+                (0..m).map(|i| cnt[i] >= 4 && lo[i]).collect()
+            }
+            "we8" => {
+                let f: Vec<bool> = idx.iter().map(|&i| x[i] < cl[i]).collect();
+                window_count(&f, 8).iter().map(|&c| c >= 8).collect()
+            }
+            "we9" | "n7" => {
+                let f: Vec<bool> = idx.iter().map(|&i| x[i] > cl[i] - se[i] && x[i] < cl[i] + se[i]).collect();
+                window_count(&f, 15).iter().map(|&c| c >= 15).collect()
+            }
+            "we10" | "n8" => {
+                let f: Vec<bool> = idx.iter().map(|&i| x[i] < cl[i] - se[i] || x[i] > cl[i] + se[i]).collect();
+                window_count(&f, 8).iter().map(|&c| c >= 8).collect()
+            }
+            "n1" => idx.iter().map(|&i| x[i] > cl[i] + 3.0 * se[i] || x[i] < cl[i] - 3.0 * se[i]).collect(),
+            "n2" => {
+                let up: Vec<bool> = idx.iter().map(|&i| x[i] > cl[i]).collect();
+                let dn: Vec<bool> = idx.iter().map(|&i| x[i] < cl[i]).collect();
+                let (c1, c2) = (window_count(&up, 9), window_count(&dn, 9));
+                (0..m).map(|i| c1[i] >= 9 || c2[i] >= 9).collect()
+            }
+            "n3" => {
+                let d: Vec<f64> = (0..m).map(|i| if i == 0 { 0.0 } else { x[i] - x[i - 1] }).collect();
+                let up: Vec<bool> = d.iter().map(|&v| v > 0.0).collect();
+                let dn: Vec<bool> = d.iter().map(|&v| v < 0.0).collect();
+                let (c1, c2) = (window_count(&up, 5), window_count(&dn, 5));
+                (0..m).map(|i| c1[i] >= 5 || c2[i] >= 5).collect()
+            }
+            "n4" => {
+                let d: Vec<f64> = (0..m)
+                    .map(|i| {
+                        let sg = if i == 0 { 0.0 } else { (x[i] - x[i - 1]).signum() * if x[i] == x[i - 1] { 0.0 } else { 1.0 } };
+                        sg * if i % 2 == 1 { -1.0 } else { 1.0 }
+                    })
+                    .collect();
+                (0..m).map(|i| d[i.saturating_sub(12)..=i].iter().sum::<f64>()).map(|s| s <= -13.0 || s >= 13.0).collect()
+            }
+            "n5" => {
+                let (hi, lo) = (above(2.0), below(2.0));
+                let (c1, c2) = (window_count(&hi, 3), window_count(&lo, 3));
+                (0..m).map(|i| (c1[i] >= 2 && hi[i]) || (c2[i] >= 2 && lo[i])).collect()
+            }
+            _ => {
+                // n6
+                let (hi, lo) = (above(1.0), below(1.0));
+                let (c1, c2) = (window_count(&hi, 5), window_count(&lo, 5));
+                (0..m).map(|i| (c1[i] >= 4 && hi[i]) || (c2[i] >= 4 && lo[i])).collect()
+            }
+        };
+        cols.push(c);
+    }
+    let rows = n;
+    let nr = rules.len();
+    let mut out = vec![0.0; rows * nr];
+    for (j, c) in cols.iter().enumerate() {
+        for (k, &i) in keep.iter().enumerate() {
+            out[j * rows + i] = if c[k] { 1.0 } else { 0.0 };
+        }
+    }
+    let rm = Matrix::from_dims(vec![rows, nr], out).cast_to(Kind::Logical);
+    let rcell = Value::Cell(CellArray::from_dims(vec![1, nr], rules.iter().map(|s| Value::chars(s)).collect()));
+    Ok(Some(vec![Value::Num(rm), rcell]))
 }

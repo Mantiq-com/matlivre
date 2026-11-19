@@ -149,6 +149,21 @@ for c in ["hist3()", "hist3(XH,[2 2],'nbins',[2 2])", "hist3(XH,'nbins',3)", "hi
     L7.append(PRE7 + h3.replace("{c}", c))
 L += L7
 
+PRE8 = "xr=[sin((1:40)*0.7)*0.9+0.2*(1:40)/40, 2.5, 2.6, 0.1, 2.4, 2.5, -2.4, -2.6, 2.7 ]'; xr2=1.2*[0.1 0.5 -0.2 1.5 1.6 0.2 1.4 1.7 1.8 0.3 -0.1 -1.6 -1.4 -1.5 -1.7 0.2 0.6 0.7 0.8 0.9 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 -2 -2.1 2.3 -2.2 2.2 -2.3 2.4 -2.4 2.5 -2.5 3.2 -3.3 2 -2]'; xz=[0.1*(1:20) 0.3 -0.5 0.2 -0.1 0.4 -0.3 0.2 0.1 -0.2 0.3 0.1 -0.1 0.2 -0.3 0.1 0.2 -0.2 0.1]'; xalt=0.2*((-1).^(1:30)'); "
+cr = "[R_,rl_] = {c}; r = {R_, strjoin(rl_,',')};"
+L8 = []
+for c in ["controlrules('we1',xr,0,1)", "controlrules('we2',xr,0,1)", "controlrules('we3',xr,0,1)", "controlrules('we4',xr,0,1)", "controlrules('we5',xr,0,1)", "controlrules('we6',xr,0,1)", "controlrules('we7',xr,0,1)", "controlrules('we8',xr,0,1)",
+          "controlrules('we9',xz,0,1)", "controlrules('we10',xr,0,1)", "controlrules('n1',xr,0,1)", "controlrules('n2',xr,0,1)", "controlrules('n3',xr,0,1)", "controlrules('n4',xalt,0,1)", "controlrules('n5',xr,0,1)", "controlrules('n6',xr,0,1)",
+          "controlrules('n7',xz,0,1)", "controlrules('n8',xr,0,1)", "controlrules('we',xr2,0,1)", "controlrules('n',xr2,0,1)", "controlrules({'we1','n2','we4'},xr,0,1)", "controlrules('WE1',xr,0,1)", "controlrules('we',xr,0.2,0.8)",
+          "controlrules('we',xr,0.2*ones(size(xr)),0.8*ones(size(xr)))", "controlrules('we1',[xr(1:10);NaN;xr(11:20)],0,1)", "controlrules('n',[xr(1:10);NaN;xr(11:30)],0,1)", "controlrules('we1',xr',0,1)", "controlrules('we1',ones(3,3)*4,0,1)",
+          "controlrules('n4',xalt,0,0.5)", "controlrules('n3',cumsum(ones(20,1)),10,2)", "controlrules('n3',-cumsum(ones(20,1)),10,2)", "controlrules('n2',xr2*0+1,0,1)", "controlrules({},xr,0,1)", "controlrules('n1',xr,[0;ones(48,1)*0.5],1)",
+          "controlrules('we1',single(xr),0,1)", "controlrules('we1',xr,0,[1;2;ones(46,1)])", "controlrules('we1',xr,0,'a')"]:
+    L8.append(PRE8 + cr.replace("{c}", c))
+for c in ["controlrules('foo',xr,0,1)", "controlrules('w',xr,0,1)", "controlrules('we1',xr,[0 0],1)", "controlrules('we1',xr,0,[1 1])", "controlrules('we1',{1},0,1)", "controlrules('we1',xr,0)", "controlrules({'we1',3},xr,0,1)",
+          "controlrules(3,xr,0,1)", "controlrules('we1',xr,'a',1)", "controlrules('we1',xr,0,1,2)", "controlrules('we1',xr,0,1,2,3)"]:
+    L8.append(PRE8 + cr.replace("{c}", c))
+L += L8
+
 with open(os.path.join(here, "cases_u1.txt"), "w", encoding="utf-8", newline="\n") as f:
     f.write("\n".join(L) + "\n")
 print(len(L) - 1)
