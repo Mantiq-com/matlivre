@@ -122,7 +122,7 @@ const LILLIE_C3: [[f64; 12]; 3] = [
 
 /// Shape-preserving cubic interpolation (the slopes of Fritsch and Carlson that MATLAB's `pchip`
 /// uses) of `(x, y)` at `q`; `x` increases strictly.
-fn pchip_at(x: &[f64], y: &[f64], q: f64) -> f64 {
+pub(crate) fn pchip_at(x: &[f64], y: &[f64], q: f64) -> f64 {
     let n = x.len();
     let h: Vec<f64> = (0..n - 1).map(|i| x[i + 1] - x[i]).collect();
     let del: Vec<f64> = (0..n - 1).map(|i| (y[i + 1] - y[i]) / h[i]).collect();

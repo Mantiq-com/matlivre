@@ -317,6 +317,28 @@ for c in ["multcompare(sn1,'Display','off','Dimension',0)", "multcompare(sn1,'Di
     L14.append(PAN + mca.replace("{c}", c))
 L += L14
 
+PD = ("xe=exp(x(1:40)'*1.5); xk=norminv(((1:30)'-0.5)/30); xw=abs(y(1:50)')+0.2; xg=[x(1:25) 100*x(26:30)]'; xn1=x(1:30)'; xn1([4 9])=NaN; xs=x(1:4)'; ")
+ad = "lastwarn(''); [h_,p_,a_,c_] = {c}; r = {h_,p_,a_,c_,lastwarn};"
+ad1 = "lastwarn(''); [h_,p_] = {c}; r = {h_,p_,lastwarn};"
+L15 = []
+good = ["adtest(x(1:40)')", "adtest(x(1:40))", "adtest(y(1:60)')", "adtest(xe)", "adtest(xk)", "adtest(xg)", "adtest(xs)", "adtest(x(1:5)')", "adtest(x(1:10)')", "adtest(x')", "adtest(cumsum(x(1:300))')", "adtest(xn1)",
+        "adtest(xe,'Distribution','exponential')", "adtest(xw,'Distribution','exponential')", "adtest(xw,'Distribution','exp')", "adtest(xw,'Distribution','ev')", "adtest(xw,'Distribution','extreme value')", "adtest(xe,'Distribution','lognormal')",
+        "adtest(xe,'Distribution','logn')", "adtest(xw,'Distribution','weibull')", "adtest(xw,'Distribution','w')", "adtest(x(1:40)','Distribution','normal')", "adtest(x(1:40)','Distribution','NORMAL')", "adtest(x(1:40)','dist','norm')",
+        "adtest(xe,'Distribution','ev')", "adtest(xe,'Distribution','weibull')", "adtest(x(1:40)','Distribution','lognormal')", "adtest(x(1:40)','Distribution','weibull')", "adtest(x(1:40)','Distribution','exponential')",
+        "adtest(xk,'Distribution','exponential')", "adtest(xk,'Distribution','ev')", "adtest(abs(xk)+0.1,'Distribution','exponential')", "adtest(abs(xk)+0.1,'Distribution','weibull')",
+        "adtest(x(1:40)','Alpha',0.01)", "adtest(x(1:40)','Alpha',0.001)", "adtest(x(1:40)','Alpha',0.0005)", "adtest(x(1:40)','Alpha',0.0001)", "adtest(x(1:40)','Alpha',0.99)", "adtest(x(1:40)','Alpha',0.995)", "adtest(x(1:40)','Alpha',0.5)",
+        "adtest(x(1:40)','Alpha',0.1,'Distribution','ev')", "adtest(xe,'Alpha',0.2)", "adtest(xe,'Alpha',0.0001,'Distribution','exp')", "adtest(single(x(1:40)'))", "adtest(x(1:40)','Alpha',single(0.1))", "adtest(xe,'MCTol',[])",
+        "adtest(xe,'Asymptotic',false)", "adtest(x(1:40)','Alpha',0.0123)", "adtest(x(1:40)','Alpha',0.077)", "adtest([x(1:40) x(1:40)*0+1])", "adtest(ones(10,1))", "adtest([1 2 3 4])", "adtest([1 1 1 2])", "adtest(round(x(1:60)'*3))"]
+for c in good:
+    L15.append(PD + ad.replace("{c}", c))
+for c in good[:6]:
+    L15.append(PD + ad1.replace("{c}", c))
+for c in ["adtest()", "adtest(x(1:3))", "adtest(ones(3,3))", "adtest(complex(x(1:20),1))", "adtest('abcdef')", "adtest(x(1:40),'Alpha',0)", "adtest(x(1:40),'Alpha',1)", "adtest(x(1:40),'Alpha',[0.1 0.2])", "adtest(x(1:40),'Alpha','a')",
+          "adtest(x(1:40),'MCTol',-1)", "adtest(x(1:40),'MCTol',[1 2])", "adtest(x(1:40),'Distribution','foo')", "adtest(x(1:40),'Distribution','e')", "adtest(x(1:40),'Distribution',3)", "adtest(x(1:40),'bogus',1)",
+          "adtest(x(1:40),'Alpha')", "adtest(x(1:40),'Asymptotic',true)", "adtest(x(1:40),'Distribution','ex')", "adtest({1,2,3,4})", "adtest(x(1:40),3,4)", "adtest([])", "adtest(NaN(1,10))", "adtest([1 2 NaN 4 5 NaN])"]:
+    L15.append(PD + ad.replace("{c}", c))
+L += L15
+
 with open(os.path.join(here, "cases_u1.txt"), "w", encoding="utf-8", newline="\n") as f:
     f.write("\n".join(L) + "\n")
 print(len(L) - 1)
