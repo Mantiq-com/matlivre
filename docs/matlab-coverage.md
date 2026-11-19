@@ -7,10 +7,10 @@ found in the toolbox folders, checked against MatLivre. Regenerate with
 
 | Status | Count |
 |---|---:|
-| Implemented | 2119 |
+| Implemented | 2121 |
 | In a branch not merged yet | 0 |
 | Language keyword (check it works) | 25 |
-| **To implement** | **365** |
+| **To implement** | **363** |
 | Out of scope | 1355 |
 
 Out of scope, by category of the function reference: app building, external language
@@ -711,16 +711,15 @@ Out of scope: `allMuPADNotebooks` (desktop, IDE, GUI, printing or interactive to
 
 ## Statistics and Machine Learning Toolbox > ANOVA > Analysis of Variance and Covariance
 
-Implemented: 2. To implement: 4. In a branch: 0. Out of scope: 0.
+Implemented: 3. To implement: 3. In a branch: 0. Out of scope: 0.
 
 To implement:
 
 - [ ] `anova`
-- [ ] `anova2`
 - [ ] `anovan`
 - [ ] `aoctool`
 
-Implemented: `anova1`, `canoncorr`
+Implemented: `anova1`, `anova2`, `canoncorr`
 
 ## Statistics and Machine Learning Toolbox > ANOVA > Repeated Measures and MANOVA
 
@@ -1067,7 +1066,7 @@ Implemented: `cdf`, `icdf`, `pdf`, `random`
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Hypothesis Tests
 
-Implemented: 12. To implement: 12. In a branch: 0. Out of scope: 0.
+Implemented: 13. To implement: 11. In a branch: 0. Out of scope: 0.
 
 To implement:
 
@@ -1075,7 +1074,6 @@ To implement:
 - [ ] `ansaribradley`
 - [ ] `detectdrift`
 - [ ] `dwtest`
-- [ ] `friedman`
 - [ ] `gardnerAltmanPlot`
 - [ ] `jbtest`
 - [ ] `lillietest`
@@ -1084,7 +1082,7 @@ To implement:
 - [ ] `sampsizepwr`
 - [ ] `vartestn`
 
-Implemented: `barttest`, `fishertest`, `kruskalwallis`, `kstest`, `kstest2`, `ranksum`, `runstest`, `signrank`, `signtest`, `vartest`, `vartest2`, `ztest`
+Implemented: `barttest`, `fishertest`, `friedman`, `kruskalwallis`, `kstest`, `kstest2`, `ranksum`, `runstest`, `signrank`, `signtest`, `vartest`, `vartest2`, `ztest`
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Multivariate Distributions
 
