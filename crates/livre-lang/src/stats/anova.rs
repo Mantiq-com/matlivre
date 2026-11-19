@@ -11,12 +11,12 @@ use crate::value::*;
 pub const NAMES: &[&str] = &["anova1", "kruskalwallis"];
 
 #[derive(Clone, PartialEq)]
-enum Label {
+pub(crate) enum Label {
     Num(f64),
     Str(String),
 }
 
-fn group_labels(v: &Value) -> Res<Vec<Label>> {
+pub(crate) fn group_labels(v: &Value) -> Res<Vec<Label>> {
     match v {
         Value::Num(m) if m.kind == Kind::Char => {
             let (r, c) = (m.dims[0], m.dims[1]);
@@ -37,7 +37,7 @@ fn group_labels(v: &Value) -> Res<Vec<Label>> {
 }
 
 /// `grp2idx`: group numbers (NaN for missing) and group names.
-fn grp2idx(labels: &[Label]) -> (Vec<f64>, Vec<String>) {
+pub(crate) fn grp2idx(labels: &[Label]) -> (Vec<f64>, Vec<String>) {
     let numeric = labels.iter().all(|l| matches!(l, Label::Num(_)));
     if numeric {
         let mut vals: Vec<f64> = labels.iter().filter_map(|l| if let Label::Num(v) = l { Some(*v) } else { None }).filter(|v| !v.is_nan()).collect();

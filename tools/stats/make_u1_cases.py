@@ -242,6 +242,81 @@ for c in ["multcompare(5)", "multcompare(struct('a',1))", "multcompare(s1,'Alpha
     L11.append(PM + mc.replace("{c}", c))
 L += L11
 
+PA = ("ya=x(1:24)'; a1=repmat((1:4)',6,1); a2=repmat([1;1;2;2;3;3],4,1); "
+      "yu=x(1:12)'; u1=[1 1 1 2 2 2 2 3 3 3 3 3]'; u2=[1 2 1 2 1 2 1 2 1 2 1 2]'; "
+      "y3=y(1:36)'; f1=repmat((1:3)',12,1); f2=repmat([1;1;1;2;2;2],6,1); f3=repmat([1;1;1;1;1;1;2;2;2;2;2;2],3,1); "
+      "cn=(1:24)'/5+0.3*sin((1:24)'); sg=repmat({'lo','mid','hi'},1,8)'; "
+      "yn=ya; yn(5)=NaN; an=a1; an(9)=NaN; ")
+ac = "[p_,t_,s_,te_] = {c}; r = {p_,t_,te_,s_.source,s_.resid,s_.coeffs,s_.dfe,s_.mse,s_.terms,s_.nlevels,s_.continuous,s_.vmeans,s_.termcols,s_.coeffnames,s_.vars,s_.varnames,s_.grpnames};"
+ac3 = "[p_,t_,te_] = {c}; r = {p_,t_,te_};"
+ac1 = "p_ = {c}; r = {p_};"
+L12 = []
+good = ["anovan(ya,{a1,a2},'display','off')", "anovan(ya,{a1,a2},'model','interaction','display','off')", "anovan(ya,{a1,a2},'model','full','display','off')",
+        "anovan(ya,{a1,a2},'model',2,'display','off')", "anovan(ya,{a1,a2},'model',1,'display','off')", "anovan(ya,{a1,a2},'model','linear','display','off')", "anovan(ya,{a1,a2},'model','i','display','off')",
+        "anovan(ya,{a1,a2},'model',[1 0;0 1;1 1],'display','off')", "anovan(ya,{a1,a2},'model',[1 1],'display','off')", "anovan(ya,{a1,a2},'model',[0 1;1 0],'display','off')",
+        "anovan(yu,{u1,u2},'display','off')", "anovan(yu,{u1,u2},'model','interaction','display','off')", "anovan(yu,{u1,u2},'model','interaction','sstype',1,'display','off')",
+        "anovan(yu,{u1,u2},'model','interaction','sstype',2,'display','off')", "anovan(yu,{u1,u2},'model','interaction','sstype',3,'display','off')", "anovan(yu,{u1,u2},'model','interaction','sstype','h','display','off')",
+        "anovan(yu,{u1,u2},'model','interaction','sstype','one','display','off')", "anovan(yu,{u1,u2},'sstype','two','display','off')", "anovan(yu,{u1,u2},'sstype','hierarchical','display','off')",
+        "anovan(y3,{f1,f2,f3},'display','off')", "anovan(y3,{f1,f2,f3},'model','interaction','display','off')", "anovan(y3,{f1,f2,f3},'model','full','display','off')", "anovan(y3,{f1,f2,f3},'model',2,'display','off')",
+        "anovan(y3,{f1,f2,f3},'model','full','sstype',1,'display','off')", "anovan(y3,{f1,f2,f3},'model','full','sstype',2,'display','off')", "anovan(y3,{f1,f2,f3},'model',3,'varnames',{'A','B','C'},'display','off')",
+        "anovan(y3,{f1,f2,f3},'varnames',['aa';'bb';'cc'],'display','off')", "anovan(y3,{f1,f2,f3},'model',[1 0 0;0 1 0;0 0 1;1 0 1],'display','off')", "anovan(y3,{f1,f2,f3},'model',[0 0 1;1 1 0],'display','off')",
+        "anovan(ya,{a1,cn},'continuous',2,'display','off')", "anovan(ya,{a1,cn},'continuous',2,'model','interaction','display','off')", "anovan(ya,{a1,cn},'continuous',2,'model','interaction','sstype',1,'display','off')",
+        "anovan(ya,{a1,cn},'continuous',2,'model','interaction','sstype',2,'display','off')", "anovan(ya,{a1,cn},'continuous',2,'model','interaction','sstype','h','display','off')",
+        "anovan(ya,{a1,cn},'continuous',[2],'model',[1 0;0 1;0 2],'display','off')", "anovan(ya,{a1,cn},'continuous',[false true],'display','off')", "anovan(ya,{a1,cn,a2},'continuous',2,'model','interaction','display','off')",
+        "anovan(ya,{cn,cn.^2},'continuous',[1 2],'display','off')", "anovan(ya,{cn,a1},'continuous',1,'model','interaction','display','off')",
+        "anovan(ya,{sg,a2},'display','off')", "anovan(ya,{sg,a2},'model','interaction','display','off')", "anovan(ya,[a1 a2],'display','off')", "anovan(ya,a1,'display','off')", "anovan(ya,{a1},'display','off')",
+        "anovan(ya',{a1,a2},'display','off')", "anovan(ya,{a1',a2'},'display','off')", "anovan(single(ya),{a1,a2},'display','off')",
+        "anovan(yn,{a1,a2},'display','off')", "anovan(ya,{an,a2},'display','off')", "anovan(yn,{an,a2},'model','interaction','display','off')",
+        "anovan(ya,{a1,a2},'alpha',0.1,'display','off')", "anovan(ya,{a1,a2},'Display','off','SSType',3)", "anovan(ya,{a1,a2},'dis','off','mod','i')", "anovan(ya,{a1,a2},'varnames',{'Row','Col'},'display','off')",
+        "anovan(ya,{a1,a2},'varnames',{'Row';'Col'},'display','off')", "anovan(ya,{a1,a2},'varnames',[],'display','off')",
+        "anovan(ya,{a1,a1},'display','off')", "anovan(ya(1:8),{a1(1:8),a2(1:8)},'model','interaction','display','off')", "anovan(ya(1:6),{a1(1:6),a2(1:6)},'display','off')",
+        "anovan(ya(1:5),{a1(1:5),a2(1:5)},'display','off')", "anovan(ya(1:4),{a1(1:4),a2(1:4)},'display','off')", "anovan(ya(1:12),{a1(1:12),a2(1:12)},'model','interaction','display','off')",
+        "anovan(ya(1:7),{a1(1:7),a2(1:7)},'model','interaction','display','off')", "anovan(ya(1:6),{[1 1 1 2 2 2]',[1 2 1 2 1 2]'},'model','interaction','display','off')",
+        "anovan(ya,{[ones(12,1);2*ones(12,1)],[ones(6,1);2*ones(6,1);ones(6,1);2*ones(6,1)]},'display','off')", "anovan(ya(1:10),{[1 1 1 1 1 2 2 2 2 2]',[1 1 1 1 1 1 1 2 2 2]'},'model','interaction','display','off')",
+        "anovan(zeros(12,1),{u1,u2},'display','off')", "anovan(ones(12,1)+0*yu,{u1,u2},'display','off')", "anovan(yu,{u1,u2},'model','interaction','alpha',0.2,'display','off')"]
+for c in good:
+    L12.append(PA + ac.replace("{c}", c))
+for c in good[:10] + good[19:22] + good[30:34]:
+    L12.append(PA + ac3.replace("{c}", c))
+for c in ["anovan(ya,{a1,a2},'display','off')", "anovan(ya,{a1,a2},'model','interaction')", "anovan(ya,{a1,a2})"]:
+    L12.append(PA + ac1.replace("{c}", c) + " close all;")
+errs = ["anovan()", "anovan(ya)", "anovan(ya,{a1,a2},'display')", "anovan('abc',{a1,a2},'display','off')", "anovan(ya,5,'display','off')", "anovan(ya,{a1(1:5),a2},'display','off')", "anovan(ya,{a1,a2},'bogus',1)",
+        "anovan(ya,{a1,a2},'model','foo','display','off')", "anovan(ya,{a1,a2},'model',[1 2 3],'display','off')", "anovan(ya,{a1,a2},'model',[1 0 0;0 1 0],'display','off')", "anovan(ya,{a1,a2},'model',[1 1.5;0 1],'display','off')",
+        "anovan(ya,{a1,a2},'model',[-1 0;0 1],'display','off')", "anovan(ya,{a1,a2},'model',0,'display','off')", "anovan(ya,{a1,a2},'model',[0 0;0 0],'display','off')", "anovan(ya,{a1,a2},'model',[2 0;0 1],'display','off')",
+        "anovan(ya,{a1,a2},'sstype',4,'display','off')", "anovan(ya,{a1,a2},'sstype','foo','display','off')", "anovan(ya,{a1,a2},'sstype',[1 2],'display','off')", "anovan(ya,{a1,a2},'varnames',{'A'},'display','off')",
+        "anovan(ya,{a1,a2},'varnames',{1,2},'display','off')", "anovan(ya,{a1,a2},'varnames',5,'display','off')", "anovan(ya,{a1,a2},'continuous',3,'display','off')", "anovan(ya,{a1,a2},'continuous',[1 0 1],'display','off')",
+        "anovan(ya,{a1,a2},'alpha',0,'display','off')", "anovan(ya,{a1,a2},'alpha',[0.1 0.2],'display','off')", "anovan(ya,{a1,a2},'alpha',1.5,'display','off')", "anovan(ya,{sg,a2},'continuous',1,'display','off')",
+        "anovan(ya,{a1,a2},'random',3,'display','off')", "anovan(ya,{a1,a2},'random',1,'display','off')", "anovan(ya,{a1,a2},'nested',[0 1;0 0],'display','off')", "anovan(ya,{a1,a2},'nested',[0 1;1 0],'display','off')",
+        "anovan(ya,{a1,a2},'nested',[0 1],'display','off')", "anovan(ya,{a1,a2},'continuous',1,'random',1,'display','off')", "anovan(ya,{a1,a2},'d','off')", "anovan(ya,{a1,a2},'m','i','display','off')",
+        "anovan(ya,{a1,a2},3,'display','off')", "anovan(ya,{a1,a2,sg(1:12)},'display','off')", "anovan(ya,{a1,a2(1:5)},'display','off')", "anovan(ya,ones(5,2),'display','off')", "anovan([ya ya],{a1,a2},'display','off')",
+        "anovan(int8(ya),{a1,a2},'display','off')", "anovan(complex(ya,1),{a1,a2},'display','off')", "anovan(ya,{a1,{1,2}},'display','off')", "anovan(ya,{a1,[a2 a2]},'display','off')", "anovan(ya,{a1,a2},'model','full','continuous',2,'sstype',4,'display','off')"]
+for c in errs:
+    L12.append(PA + ac3.replace("{c}", c))
+L += L12
+
+L += ["r = tcdf(1.2,Inf);", "r = tcdf([-2 0 0.5 3],Inf);", "r = tinv([0.1 0.5 0.975],Inf);", "r = fcdf(2.3,4,Inf);", "r = fcdf(2.3,4,Inf,'upper');", "r = fcdf(2.3,Inf,5);", "r = fcdf(2.3,Inf,5,'upper');",
+      "r = fcdf([0.5 1 2],Inf,Inf);", "r = finv(0.95,4,Inf);", "r = finv(0.95,Inf,10);", "r = finv([0.1 0.9],Inf,Inf);", "r = tcdf(1.2,Inf,'upper');"]
+
+PAN = (PA + "[~,~,sn1]=anovan(ya,{a1,a2},'display','off'); [~,~,sn2]=anovan(ya,{a1,a2},'model','interaction','display','off'); "
+       "[~,~,sn3]=anovan(y3,{f1,f2,f3},'model','interaction','display','off'); [~,~,sn4]=anovan(yu,{u1,u2},'display','off'); "
+       "[~,~,sn5]=anovan(ya,{a1,cn},'continuous',2,'display','off'); [~,~,sn6]=anovan(ya,{sg,a2},'varnames',{'S','T'},'display','off'); "
+       "[~,~,sn7]=anovan(yu,{u1,u2},'model','interaction','display','off'); [~,~,sn8]=anovan(ya,{a1,cn},'continuous',2,'model','interaction','display','off'); ")
+mca = "[c_,m_,h_,g_] = {c}; r = {c_,m_,g_};"
+L14 = []
+mgood = ["multcompare(sn1,'Display','off')", "multcompare(sn1,'Display','off','Dimension',2)", "multcompare(sn1,'Display','off','Dimension',[1 2])", "multcompare(sn2,'Display','off')", "multcompare(sn2,'Display','off','Dimension',2)",
+         "multcompare(sn2,'Display','off','Dimension',[1 2])", "multcompare(sn3,'Display','off')", "multcompare(sn3,'Display','off','Dimension',3)", "multcompare(sn3,'Display','off','Dimension',[2 3])",
+         "multcompare(sn3,'Display','off','Dimension',[1 3],'CType','bonferroni')", "multcompare(sn4,'Display','off')", "multcompare(sn4,'Display','off','Dimension',2)", "multcompare(sn7,'Display','off')", "multcompare(sn7,'Display','off','Dimension',[1 2])",
+         "multcompare(sn5,'Display','off')", "multcompare(sn6,'Display','off')", "multcompare(sn6,'Display','off','Dimension',[1 2])", "multcompare(sn8,'Display','off')",
+         "multcompare(sn1,'Display','off','CType','lsd')", "multcompare(sn1,'Display','off','CType','scheffe')", "multcompare(sn1,'Display','off','CType','dunn-sidak')", "multcompare(sn1,'Display','off','Alpha',0.01)",
+         "multcompare(sn1,'Display','off','CType','lsd bonferroni')", "multcompare(sn4,'Display','off','CType','lsd','Alpha',0.2)", "multcompare(sn1,0.05,'off')", "multcompare(sn1,'Display','off','Dimension',1)",
+         "multcompare(sn1,'Display','off','CType','dunnett')", "multcompare(sn1,'Display','off','CType','dunnett','ControlGroup',2)"]
+for c in mgood:
+    L14.append(PAN + mca.replace("{c}", c))
+for c in ["multcompare(sn1,'Display','off','Dimension',0)", "multcompare(sn1,'Display','off','Dimension',3)", "multcompare(sn1,'Display','off','Dimension',1.5)", "multcompare(sn1,'Display','off','Dimension',[1 1 2])",
+          "multcompare(sn1,'Display','off','Dimension','a')", "multcompare(sn1,'Display','off','Dimension',[])", "multcompare(sn5,'Display','off','Dimension',2)", "multcompare(sn1,'Display','off','Dimension',-1)"]:
+    L14.append(PAN + mca.replace("{c}", c))
+L += L14
+
 with open(os.path.join(here, "cases_u1.txt"), "w", encoding="utf-8", newline="\n") as f:
     f.write("\n".join(L) + "\n")
 print(len(L) - 1)

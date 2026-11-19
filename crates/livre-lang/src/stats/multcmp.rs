@@ -240,6 +240,8 @@ struct Model {
     gmeans: Vec<f64>,
     /// Variances of the group means (the covariance matrix is diagonal for these sources).
     gvar: Vec<f64>,
+    /// The full covariance of the means, when it is not diagonal.
+    gcov: Option<Vec<Vec<f64>>>,
     df: f64,
     ng_crit: usize,
     gnames: Value,
@@ -269,8 +271,9 @@ fn single_of(st: &StructArray, name: &str) -> bool {
     matches!(st.get(name), Some(Value::Num(m)) if is_single(m))
 }
 
-fn model(st: &StructArray, source: &str, estimate: &Option<String>, dodisp: bool, alpha: f64) -> Res<Model> {
+fn model(st: &StructArray, source: &str, estimate: &Option<String>, dim_v: &Option<Value>, dodisp: bool, alpha: f64) -> Res<Model> {
     match source {
+        "anovan" => anovan_model(st, dim_v),
         "anova1" => {
             let gmeans = field_vec(st, "means")?;
             let n = field_vec(st, "n")?;
@@ -282,7 +285,7 @@ fn model(st: &StructArray, source: &str, estimate: &Option<String>, dodisp: bool
             }
             let gvar = n.iter().map(|&c| s * s / c).collect();
             let gnames = st.get("gnames").cloned().unwrap_or_else(|| number_names(gmeans.len()));
-            Ok(Model { gmeans, gvar, df, ng_crit: ng, gnames, single: single_of(st, "means"), note: None })
+            Ok(Model { gmeans, gvar, gcov: None, df, ng_crit: ng, gnames, single: single_of(st, "means"), note: None })
         }
         "anova2" => {
             let docols = estimate.as_deref() != Some("row");
@@ -305,7 +308,7 @@ fn model(st: &StructArray, source: &str, estimate: &Option<String>, dodisp: bool
             } else {
                 None
             };
-            Ok(Model { gmeans: gmeans.clone(), gvar: vec![sigma * sigma / n; ng], df, ng_crit: ng, gnames: number_names(ng), single: single_of(st, if docols { "colmeans" } else { "rowmeans" }), note })
+            Ok(Model { gmeans: gmeans.clone(), gcov: None, gvar: vec![sigma * sigma / n; ng], df, ng_crit: ng, gnames: number_names(ng), single: single_of(st, if docols { "colmeans" } else { "rowmeans" }), note })
         }
         "kruskalwallis" => {
             let gmeans = field_vec(st, "meanranks")?;
@@ -315,14 +318,14 @@ fn model(st: &StructArray, source: &str, estimate: &Option<String>, dodisp: bool
             let big_n: f64 = n.iter().sum();
             let gvar = n.iter().map(|&c| ((big_n * (big_n + 1.0) / 12.0) - (sumt / (12.0 * (big_n - 1.0)))) / c).collect();
             let gnames = st.get("gnames").cloned().unwrap_or_else(|| number_names(gmeans.len()));
-            Ok(Model { gmeans, gvar, df: f64::INFINITY, ng_crit: ng, gnames, single: single_of(st, "meanranks"), note: Some("Note: Intervals can be used for testing but are not simultaneous confidence intervals.".into()) })
+            Ok(Model { gmeans, gvar, gcov: None, df: f64::INFINITY, ng_crit: ng, gnames, single: single_of(st, "meanranks"), note: Some("Note: Intervals can be used for testing but are not simultaneous confidence intervals.".into()) })
         }
         "friedman" => {
             let gmeans = field_vec(st, "meanranks")?;
             let n = field_scalar(st, "n")?;
             let sigma = field_scalar(st, "sigma")?;
             let ng = gmeans.len();
-            Ok(Model { gmeans: gmeans.clone(), gvar: vec![sigma * sigma / n; ng], df: f64::INFINITY, ng_crit: ng, gnames: number_names(ng), single: single_of(st, "meanranks"), note: Some("Note: Intervals can be used for testing but are not simultaneous confidence intervals.".into()) })
+            Ok(Model { gmeans: gmeans.clone(), gcov: None, gvar: vec![sigma * sigma / n; ng], df: f64::INFINITY, ng_crit: ng, gnames: number_names(ng), single: single_of(st, "meanranks"), note: Some("Note: Intervals can be used for testing but are not simultaneous confidence intervals.".into()) })
         }
         _ => rt(BAD_STATS),
     }
@@ -364,6 +367,7 @@ pub fn call(it: &mut Interpreter, _name: &str, a: &[Value], nargout: usize) -> R
     let mut disp_v = Value::chars("on");
     let mut ctype_v = Value::chars("");
     let mut est_v = Value::chars("");
+    let mut dim_v: Option<Value> = None;
     let mut control_set = false;
     let mut control_v = Value::num(1.0);
     let mut alt_v = Value::chars("notequal");
@@ -384,7 +388,7 @@ pub fn call(it: &mut Interpreter, _name: &str, a: &[Value], nargout: usize) -> R
                 "displayopt" => disp_v = v,
                 "ctype" => ctype_v = v,
                 "estimate" => est_v = v,
-                "dimension" => {}
+                "dimension" => dim_v = Some(v),
                 "controlgroup" => {
                     control_set = true;
                     control_v = v;
@@ -473,7 +477,7 @@ pub fn call(it: &mut Interpreter, _name: &str, a: &[Value], nargout: usize) -> R
     } else {
         None
     };
-    let md = model(st, &source, &estimate, dodisp, alpha)?;
+    let md = model(st, &source, &estimate, &dim_v, dodisp, alpha)?;
     if !ctype_v.is_text() && !is_empty_val(&ctype_v) {
         return rt(BAD_CTYPE);
     }
@@ -481,7 +485,19 @@ pub fn call(it: &mut Interpreter, _name: &str, a: &[Value], nargout: usize) -> R
     let ng = md.gmeans.len();
     // gvar of groups with a NaN mean does not enter the comparisons
     let nan_g: Vec<bool> = md.gmeans.iter().map(|v| v.is_nan()).collect();
-    let gvar: Vec<f64> = md.gvar.iter().zip(&nan_g).map(|(&v, &nn)| if nn { 0.0 } else { v }).collect();
+    let cov0: Vec<Vec<f64>> = match &md.gcov {
+        Some(c) => c.clone(),
+        None => (0..ng).map(|i| (0..ng).map(|j| if i == j { md.gvar[i] } else { 0.0 }).collect()).collect(),
+    };
+    let mut cov = cov0.clone();
+    for i in 0..ng {
+        if nan_g[i] {
+            for j in 0..ng {
+                cov[i][j] = 0.0;
+                cov[j][i] = 0.0;
+            }
+        }
+    }
     let (g1, g2): (Vec<usize>, Vec<usize>) = if is_dunnett {
         let control = match &control_v {
             Value::Num(m) if m.kind != Kind::Char && m.data.len() == 1 && m.data[0] >= 1.0 && m.data[0] <= ng as f64 && m.data[0] == m.data[0].round() => m.data[0] as usize,
@@ -502,7 +518,7 @@ pub fn call(it: &mut Interpreter, _name: &str, a: &[Value], nargout: usize) -> R
         (g1, g2)
     };
     let mn: Vec<f64> = g1.iter().zip(&g2).map(|(&i, &j)| md.gmeans[i - 1] - md.gmeans[j - 1]).collect();
-    let se: Vec<f64> = g1.iter().zip(&g2).map(|(&i, &j)| (gvar[i - 1] + gvar[j - 1]).sqrt()).collect();
+    let se: Vec<f64> = g1.iter().zip(&g2).map(|(&i, &j)| (cov[i - 1][i - 1] + cov[j - 1][j - 1] - 2.0 * cov[i - 1][j - 1]).sqrt()).collect();
     let t: Vec<f64> = mn.iter().zip(&se).map(|(m, s)| m / s).collect();
     let (crit, pval) = getcrit(&ctype, alpha, md.df, md.ng_crit, &t, &alternative)?;
     let np = mn.len();
@@ -533,7 +549,7 @@ pub fn call(it: &mut Interpreter, _name: &str, a: &[Value], nargout: usize) -> R
     let mut mm = vec![0.0; ng * 2];
     for i in 0..ng {
         mm[i] = md.gmeans[i];
-        mm[ng + i] = if nan_g[i] { f64::NAN } else { md.gvar[i].sqrt() };
+        mm[ng + i] = if nan_g[i] { f64::NAN } else { cov0[i][i].sqrt() };
     }
     let mut out = vec![Value::Num(finish(Matrix::from_dims(vec![np, 6], m), md.single))];
     if nargout > 1 {
@@ -571,4 +587,177 @@ mod tests {
         assert_eq!(stdrinv(0.0, 10.0, 3.0), 0.0);
         assert!(stdrcdf(1.0, 0.5, 3.0, false).is_nan());
     }
+}
+
+/// The group means and their covariance after `anovan`, for the combinations of the levels of the
+/// factors in `Dimension`.
+fn anovan_model(st: &StructArray, dim_v: &Option<Value>) -> Res<Model> {
+    let nlevels = field_vec(st, "nlevels")?;
+    let nvars = nlevels.len();
+    let terms_m = match st.get("terms") {
+        Some(Value::Num(m)) => m.clone(),
+        _ => return rt(BAD_STATS),
+    };
+    let nt = terms_m.dims[0];
+    let termcols = field_vec(st, "termcols")?;
+    let coeffs = field_vec(st, "coeffs")?;
+    let continuous: Vec<bool> = match st.get("continuous") {
+        Some(Value::Num(m)) => m.data.iter().map(|&d| d != 0.0).collect(),
+        _ => vec![false; nvars],
+    };
+    let vmeans = field_vec(st, "vmeans")?;
+    let dfe = field_scalar(st, "dfe")?;
+    let mse0 = field_scalar(st, "mse")?;
+    let single = single_of(st, "coeffs");
+    if let Some(Value::Num(m)) = st.get("vnested") {
+        if m.data.iter().any(|&d| d != 0.0) {
+            return rt("MULTCOMPARE does not support nested models.");
+        }
+    }
+    let missing = "The STATS structure is missing the information needed for the comparisons.";
+    let nullp = match st.get("nullproject") {
+        Some(Value::Num(m)) => m.clone(),
+        _ => return rt(missing),
+    };
+    let rtr = match st.get("Rtr") {
+        Some(Value::Num(m)) => m.clone(),
+        _ => return rt(missing),
+    };
+    let rowb = match st.get("rowbasis") {
+        Some(Value::Num(m)) => m.clone(),
+        _ => return rt(missing),
+    };
+    let bad_dim = format!("Values of DIM must be integers between 1 and {nvars}.");
+    let mut dim: Vec<usize> = match dim_v {
+        Some(Value::Num(m)) if !m.is_empty() => {
+            if m.data.iter().any(|&d| d < 1.0 || d > nvars as f64 || d != d.round()) {
+                return rt(bad_dim);
+            }
+            m.data.iter().map(|&d| d as usize).collect()
+        }
+        _ => match nlevels.iter().position(|&l| l > 1.0) {
+            Some(p) => vec![p + 1],
+            None => return rt(bad_dim),
+        },
+    };
+    dim.sort();
+    dim.dedup();
+    if dim.iter().any(|&d| nlevels[d - 1] < 2.0) {
+        return rt("DIM must specify only categorical factors with 2 or more degrees of freedom.");
+    }
+    // every combination of the levels (the first factor varies fastest)
+    let dl: Vec<usize> = dim.iter().map(|&d| nlevels[d - 1] as usize).collect();
+    let nrows: usize = dl.iter().product();
+    let mut ffd = vec![vec![0usize; dim.len()]; nrows];
+    for r in 0..nrows {
+        let mut rem = r;
+        for (c, &l) in dl.iter().enumerate() {
+            ffd[r][c] = rem % l;
+            rem /= l;
+        }
+    }
+    // dummy variables of every factor: the chosen ones, or the average over the levels
+    let dums: Vec<Vec<Vec<f64>>> = (0..nvars)
+        .map(|j| {
+            let l = nlevels[j] as usize;
+            if let Some(c) = dim.iter().position(|&d| d == j + 1) {
+                (0..l).map(|k| (0..nrows).map(|r| if ffd[r][c] == k { 1.0 } else { 0.0 }).collect()).collect()
+            } else if continuous[j] {
+                vec![vec![vmeans[j]; nrows]]
+            } else {
+                (0..l).map(|_| vec![1.0 / l as f64; nrows]).collect()
+            }
+        })
+        .collect();
+    let ncols: usize = termcols.iter().sum::<f64>() as usize;
+    let mut x = vec![vec![0.0; ncols]; nrows];
+    let mut t0 = 0usize;
+    for j in 0..=nt {
+        let width = termcols[j] as usize;
+        if j == 0 {
+            for r in 0..nrows {
+                x[r][0] = 1.0;
+            }
+        } else {
+            let mut x0: Vec<Vec<f64>> = vec![];
+            for k in (0..nvars).rev() {
+                if terms_m.data[k * nt + (j - 1)] != 0.0 {
+                    let d = &dums[k];
+                    if x0.is_empty() {
+                        x0 = d.clone();
+                    } else {
+                        let mut next = Vec::with_capacity(x0.len() * d.len());
+                        for cb in d {
+                            for ca in &x0 {
+                                next.push(ca.iter().zip(cb).map(|(a, b)| a * b).collect());
+                            }
+                        }
+                        x0 = next;
+                    }
+                }
+            }
+            for (c, col) in x0.iter().enumerate().take(width) {
+                for r in 0..nrows {
+                    x[r][t0 + c] = col[r];
+                }
+            }
+        }
+        t0 += width;
+    }
+    let mut gmeans: Vec<f64> = x.iter().map(|row| row.iter().zip(&coeffs).map(|(a, b)| a * b).sum()).collect();
+    // covariance: mse * (L^-1 (x P0)')' (L^-1 (x P0)')
+    let kk = nullp.dims[1];
+    let pp = nullp.dims[0];
+    let mse = if dfe == 0.0 { f64::NAN } else { mse0.max(0.0) };
+    let mut tmp: Vec<Vec<f64>> = Vec::with_capacity(nrows);
+    for r in 0..nrows {
+        let v: Vec<f64> = (0..kk).map(|c| (0..pp).map(|i| x[r][i] * nullp.data[c * pp + i]).sum()).collect();
+        // forward substitution with the lower-triangular Rtr
+        let mut w = vec![0.0; kk];
+        for i in 0..kk {
+            let mut sacc = v[i];
+            for j in 0..i {
+                sacc -= rtr.data[j * kk + i] * w[j];
+            }
+            w[i] = sacc / rtr.data[i * kk + i];
+        }
+        tmp.push(w);
+    }
+    let gcov: Vec<Vec<f64>> = (0..nrows).map(|i| (0..nrows).map(|j| mse * dot_v(&tmp[i], &tmp[j])).collect()).collect();
+    // means outside the row space of the design are not estimable
+    let nb = rowb.dims[0];
+    for r in 0..nrows {
+        let mut resid: Vec<f64> = x[r].clone();
+        for b in 0..nb {
+            let c: f64 = (0..pp).map(|i| rowb.data[i * nb + b] * x[r][i]).sum();
+            for i in 0..pp {
+                resid[i] -= c * rowb.data[i * nb + b];
+            }
+        }
+        let sum_abs: f64 = resid.iter().map(|v| v.abs()).sum();
+        if sum_abs > f64::EPSILON.sqrt() * nrows as f64 {
+            gmeans[r] = f64::NAN;
+        }
+    }
+    // names of the groups
+    let varnames: Vec<String> = match st.get("varnames") {
+        Some(Value::Cell(c)) => c.data.iter().map(|v| v.text().unwrap_or_default()).collect(),
+        _ => (1..=nvars).map(|i| format!("X{i}")).collect(),
+    };
+    let grpnames: Vec<Vec<String>> = match st.get("grpnames") {
+        Some(Value::Cell(c)) => c.data.iter().map(|v| if let Value::Cell(cc) = v { cc.data.iter().map(|e| e.text().unwrap_or_default()).collect() } else { vec![] }).collect(),
+        _ => vec![vec![]; nvars],
+    };
+    let gnames: Vec<Value> = (0..nrows)
+        .map(|r| {
+            let parts: Vec<String> = dim.iter().enumerate().map(|(c, &d)| format!("{}={}", varnames[d - 1], grpnames[d - 1][ffd[r][c]])).collect();
+            Value::chars(&parts.join(","))
+        })
+        .collect();
+    let gvar: Vec<f64> = (0..nrows).map(|i| gcov[i][i]).collect();
+    Ok(Model { gmeans, gvar, gcov: Some(gcov), df: dfe, ng_crit: nrows, gnames: Value::Cell(CellArray::col(gnames)), single, note: None })
+}
+
+fn dot_v(a: &[f64], b: &[f64]) -> f64 {
+    a.iter().zip(b).map(|(x, y)| x * y).sum()
 }
