@@ -37,7 +37,7 @@ The coverage checklist (`tools/coverage/update.sh`, `coverage.pl`) reads `stats.
 | Functions and classes in scope list (`stats.tsv`, R2023b-era) | 485 |
 | Out of scope (see below) | 15 |
 | In scope | 470 |
-| Implemented in MatLivre (`crates/livre-lang/src/stats/`) | 232 |
+| Implemented in MatLivre (`crates/livre-lang/src/stats/`) | 244 |
 | Class methods (`stats_methods.tsv`), implemented with their classes | 510 |
 
 Names per table-of-contents category (first listing): Probability distributions and hypothesis
@@ -175,3 +175,5 @@ Update: `kmeans` (sqeuclidean, cosine, correlation), `randsample`, `datasample`,
 Update 2: `kstest`, `kstest2` and `fitlm` (matrix input, LinearModel properties, display, predict, feval, coefCI) are done (2322 recorded cases). Not done in fitlm: table/formula input, weights, categorical predictors, rank-deficient designs, anova. Next: fitglm, fitdist/makedist, learners.
 
 Update 3: `fitglm` (matrix input; GeneralizedLinearModel properties, display, predict, feval, coefCI) done (2383 recorded cases). Next: fitdist/makedist, classification learners.
+
+Update 4 (4672 recorded cases in `tools/stats/cases*.txt`, `cases_u1.txt` is the newest): `jbtest`, `dwtest`, `chi2gof`, `vartestn`, `ansaribradley`, `lillietest` (hypothesis tests), `glmfit`, `capability`, `hist3`, `controlrules`, `fracfact` and `ccdesign` are done and recorded against R2023b (244 implemented, 226 of the 470 in scope left). Critical-value tables of `jbtest` and `lillietest` were recovered from MATLAB's output, not copied. Deviations listed in `stats_known_deviations.tsv`: single-precision p-value of `lillietest`, single-precision `capability` Cp and `glmfit`, and the `weights`/`offset` options of `glmfit` (not implemented). Not done in this round: `adtest` (large tables and an asymptotic distribution), `multcompare` (needs the studentized range distribution `stdrcdf`/`stdrinv`), `anovan`, `mle`/`mlecov`, `cvpartition`, `fitctree`, the `*rnd` functions (`randn`'s Ziggurat is still not recovered) and the `jbtest`/`lillietest` `MCTol` Monte Carlo path (random, so it cannot match). `vartestn` shows no table or figure with `'on'`. Next: `multcompare` (after `stdrcdf`), `anovan`, `adtest`, `mle`, `cvpartition`, `fitctree`.
