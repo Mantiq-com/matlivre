@@ -7,10 +7,10 @@ found in the toolbox folders, checked against MatLivre. Regenerate with
 
 | Status | Count |
 |---|---:|
-| Implemented | 2043 |
+| Implemented | 2054 |
 | In a branch not merged yet | 0 |
 | Language keyword (check it works) | 25 |
-| **To implement** | **441** |
+| **To implement** | **430** |
 | Out of scope | 1355 |
 
 Out of scope, by category of the function reference: app building, external language
@@ -940,21 +940,19 @@ Implemented: `kmeans`, `mahal`
 
 ## Statistics and Machine Learning Toolbox > Descriptive Statistics and Visualization > Descriptive Statistics
 
-Implemented: 19. To implement: 9. In a branch: 0. Out of scope: 0.
+Implemented: 21. To implement: 7. In a branch: 0. Out of scope: 0.
 
 To implement:
 
 - [ ] `cholcov`
 - [ ] `crosstab`
 - [ ] `grpstats`
-- [ ] `nancov`
 - [ ] `nearcorr`
 - [ ] `partialcorr`
 - [ ] `partialcorri`
 - [ ] `robustcov`
-- [ ] `tabulate`
 
-Implemented: `corr`, `corrcov`, `geomean`, `harmmean`, `kurtosis`, `mad`, `moment`, `nanmax`, `nanmean`, `nanmedian`, `nanmin`, `nanstd`, `nansum`, `nanvar`, `range`, `skewness`, `tiedrank`, `trimmean`, `zscore`
+Implemented: `corr`, `corrcov`, `geomean`, `harmmean`, `kurtosis`, `mad`, `moment`, `nancov`, `nanmax`, `nanmean`, `nanmedian`, `nanmin`, `nanstd`, `nansum`, `nanvar`, `range`, `skewness`, `tabulate`, `tiedrank`, `trimmean`, `zscore`
 
 ## Statistics and Machine Learning Toolbox > Descriptive Statistics and Visualization > Managing Data
 
@@ -1033,7 +1031,7 @@ To implement:
 
 ## Statistics and Machine Learning Toolbox > Industrial Statistics > Design of Experiments (DOE)
 
-Implemented: 0. To implement: 20. In a branch: 0. Out of scope: 0.
+Implemented: 2. To implement: 18. In a branch: 0. Out of scope: 0.
 
 To implement:
 
@@ -1044,10 +1042,8 @@ To implement:
 - [ ] `cordexch`
 - [ ] `daugment`
 - [ ] `dcovary`
-- [ ] `ff2n`
 - [ ] `fracfact`
 - [ ] `fracfactgen`
-- [ ] `fullfact`
 - [ ] `haltonset`
 - [ ] `interactionplot`
 - [ ] `lhsdesign`
@@ -1057,6 +1053,8 @@ To implement:
 - [ ] `qrandstream`
 - [ ] `rowexch`
 - [ ] `sobolset`
+
+Implemented: `ff2n`, `fullfact`
 
 ## Statistics and Machine Learning Toolbox > Industrial Statistics > Statistical Process Control
 
@@ -1118,7 +1116,7 @@ Implemented: `kruskalwallis`, `kstest`, `kstest2`, `ranksum`, `signrank`, `signt
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Multivariate Distributions
 
-Implemented: 0. To implement: 16. In a branch: 0. Out of scope: 0.
+Implemented: 3. To implement: 13. In a branch: 0. Out of scope: 0.
 
 To implement:
 
@@ -1129,15 +1127,14 @@ To implement:
 - [ ] `copularnd`
 - [ ] `copulastat`
 - [ ] `iwishrnd`
-- [ ] `mnpdf`
 - [ ] `mnrnd`
 - [ ] `mvncdf`
-- [ ] `mvnpdf`
 - [ ] `mvnrnd`
 - [ ] `mvtcdf`
-- [ ] `mvtpdf`
 - [ ] `mvtrnd`
 - [ ] `wishrnd`
+
+Implemented: `mnpdf`, `mvnpdf`, `mvtpdf`
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Pseudorandom and Quasirandom Number Generation
 
@@ -1152,17 +1149,16 @@ To implement:
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Resampling Techniques
 
-Implemented: 2. To implement: 5. In a branch: 0. Out of scope: 0.
+Implemented: 3. To implement: 4. In a branch: 0. Out of scope: 0.
 
 To implement:
 
 - [ ] `bootci`
 - [ ] `bootstrp`
-- [ ] `combnk`
 - [ ] `crossval`
 - [ ] `jackknife`
 
-Implemented: `datasample`, `randsample`
+Implemented: `combnk`, `datasample`, `randsample`
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions
 
@@ -1219,11 +1215,10 @@ Implemented: `betacdf`, `betainv`, `betapdf`, `betastat`, `chi2cdf`, `chi2inv`, 
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions
 
-Implemented: 29. To implement: 10. In a branch: 0. Out of scope: 0.
+Implemented: 30. To implement: 9. In a branch: 0. Out of scope: 0.
 
 To implement:
 
-- [ ] `ecdf`
 - [ ] `ecdfhist`
 - [ ] `fitdist`
 - [ ] `makedist`
@@ -1234,7 +1229,7 @@ To implement:
 - [ ] `poisstat`
 - [ ] `qqplot`
 
-Implemented: `binocdf`, `binofit`, `binoinv`, `binopdf`, `binornd`, `binostat`, `geocdf`, `geoinv`, `geopdf`, `geornd`, `geostat`, `hygecdf`, `hygeinv`, `hygepdf`, `hygernd`, `hygestat`, `nbincdf`, `nbininv`, `nbinpdf`, `nbinstat`, `poisscdf`, `poissfit`, `poissinv`, `poisspdf`, `unidcdf`, `unidinv`, `unidpdf`, `unidrnd`, `unidstat`
+Implemented: `binocdf`, `binofit`, `binoinv`, `binopdf`, `binornd`, `binostat`, `ecdf`, `geocdf`, `geoinv`, `geopdf`, `geornd`, `geostat`, `hygecdf`, `hygeinv`, `hygepdf`, `hygernd`, `hygestat`, `nbincdf`, `nbininv`, `nbinpdf`, `nbinstat`, `poisscdf`, `poissfit`, `poissinv`, `poisspdf`, `unidcdf`, `unidinv`, `unidpdf`, `unidrnd`, `unidstat`
 
 ## Statistics and Machine Learning Toolbox > Regression > Direct Forecasting
 
@@ -1291,7 +1286,7 @@ Out of scope: `incrementalConceptDriftDetector` (Incremental Learning), `increme
 
 ## Statistics and Machine Learning Toolbox > Regression > Linear Regression
 
-Implemented: 3. To implement: 20. In a branch: 0. Out of scope: 1.
+Implemented: 4. To implement: 19. In a branch: 0. Out of scope: 1.
 
 To implement:
 
@@ -1309,20 +1304,19 @@ To implement:
 - [ ] `polyconf`
 - [ ] `regstats`
 - [ ] `relieff`
-- [ ] `ridge`
 - [ ] `robustfit`
 - [ ] `shapley`
 - [ ] `stepwise`
 - [ ] `stepwisefit`
 - [ ] `stepwiselm`
 
-Implemented: `fitlm`, `regress`, `x2fx`
+Implemented: `fitlm`, `regress`, `ridge`, `x2fx`
 
 Out of scope: `Polynomial Fitting Tool` (App)
 
 ## Statistics and Machine Learning Toolbox > Regression > Model Building and Assessment
 
-Implemented: 0. To implement: 13. In a branch: 0. Out of scope: 0.
+Implemented: 1. To implement: 12. In a branch: 0. Out of scope: 0.
 
 To implement:
 
@@ -1335,10 +1329,11 @@ To implement:
 - [ ] `fsrnca`
 - [ ] `genrfeatures`
 - [ ] `hyperparameters`
-- [ ] `leverage`
 - [ ] `optimizableVariable`
 - [ ] `rcoplot`
 - [ ] `sequentialfs`
+
+Implemented: `leverage`
 
 ## Statistics and Machine Learning Toolbox > Regression > Neural Networks
 
