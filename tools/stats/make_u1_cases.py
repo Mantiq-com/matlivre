@@ -484,6 +484,35 @@ for c in ["hmmtrain()", "hmmtrain(hS)", "hmmtrain(hS,hT)", "hmmtrain(hS,[0.9 0.1
     L19.append(P9 + ht.replace("{c}", c))
 L += L19
 
+P10 = ("bd=x(1:25)'; bd2=[x(1:25)' y(1:25)']; bw=y(1:25); bz=y(1:25)'; ")
+L20 = []
+bs = "rng(7); [b_,s_] = {c}; r = {b_,s_};"
+bs1 = "rng(3); b_ = {c}; r = {b_};"
+for c in ["bootstrp(10,@mean,bd)", "bootstrp(50,@std,bd)", "bootstrp(5,@(v) [mean(v) median(v)],bd)", "bootstrp(8,@mean,bd2)", "bootstrp(8,@(v) corr(v(:,1),v(:,2)),bd2)", "bootstrp(8,@corr,bd,bz)", "bootstrp(8,@(a,b) mean(a)-mean(b),bd,bz)",
+          "bootstrp(8,@(a,b,c) mean(a)+c,bd,bz,10)", "bootstrp(8,@mean,bw)", "bootstrp(8,'mean',bd)", "bootstrp(8,'mean',bd2)", "bootstrp(1,@mean,bd)", "bootstrp(3,@(v) v,bd(1:4))", "bootstrp(4,@(v) v(1:2),bd)", "bootstrp(6,@median,bd,'options',[])",
+          "bootstrp(4,[],bd)", "bootstrp(6,@numel,bd)", "bootstrp(5,@(v) max(v)-min(v),bd2)", "bootstrp(10,@var,bd)", "bootstrp(20,@(a,b) polyfit(a,b,1),bd,bz)"]:
+    L20.append(P10 + bs.replace("{c}", c))
+    L20.append(P10 + bs1.replace("{c}", c))
+for c in ["bootstrp(10,@mean,bd,'Weights',ones(25,1))"]:
+    L20.append(P10 + bs.replace("{c}", c))
+for c in ["bootstrp()", "bootstrp(10)", "bootstrp(0,@mean,bd)", "bootstrp(2.5,@mean,bd)", "bootstrp(-3,@mean,bd)", "bootstrp(10,@mean)", "bootstrp(10,@mean,5)", "bootstrp(10,@mean,bd,bz(1:10))", "bootstrp(5,@(v) error('boom'),bd)",
+          "bootstrp(5,@(v) v(100),bd)", "bootstrp(5,'nosuchfunction',bd)", "bootstrp(5,@mean,bd,'bogus',1)", "bootstrp(5,@(v) ones(1,mod(numel(v),3)+1),bd)", "bootstrp(5,@mean,{1,2,3})", "bootstrp(5,@mean,bd,'options')"]:
+    L20.append(P10 + bs.replace("{c}", c))
+cg = "[x_,f_] = {c}; r = {x_,f_};"
+cg1 = "x_ = {c}; r = {x_};"
+for c in ["candgen(2)", "candgen(3)", "candgen(2,'linear')", "candgen(2,'interaction')", "candgen(2,'quadratic')", "candgen(2,'purequadratic')", "candgen(3,'quadratic')", "candgen(2,'additive')", "candgen(1)", "candgen(1,'quadratic')",
+          "candgen(2,[0 0;1 0;0 1;1 1;2 0])", "candgen(3,[0 0 0;1 0 0;0 1 0;0 0 1;0 0 3])", "candgen(2,'linear','levels',3)", "candgen(2,'linear','levels',[2 4])", "candgen(2,'linear','bounds',[0 10;5 20])", "candgen(2,'linear','bounds',[0 0;1 1],'levels',3)",
+          "candgen(2,'linear','categorical',2)", "candgen(2,'linear','categorical',[1 2])", "candgen(3,'quadratic','categorical',3)", "candgen(2,'linear','categorical',2,'levels',[2 3])", "candgen(2,'quadratic','bounds',{[1 2 5],[10 20 30 40]})",
+          "candgen(2,'linear','bounds',{[1 2 5],[10 20 30 40]})", "candgen(2,'linear','bounds',{[1 2],[3 4]})", "candgen(2,'quadratic','levels',4)", "candgen(2,'full')", "candgen(2,'foo')", "candgen(3,'interaction','levels',[2 2 3],'categorical',3)",
+          "candgen(2,[],'levels',2)", "candgen(2,'lin')", "candgen(2,'quad')", "candgen(2,'linear','Bounds',[-2 -2;2 2],'Levels',5)"]:
+    L20.append(cg.replace("{c}", c))
+    L20.append(cg1.replace("{c}", c))
+for c in ["candgen()", "candgen(0)", "candgen(2.5)", "candgen(2,'linear','bounds',[0 1])", "candgen(2,'linear','bounds',{[1 2]})", "candgen(2,'linear','bounds',{1,[1 2]})", "candgen(2,'linear','bounds',3)",
+          "candgen(2,'linear','levels',1)", "candgen(2,'linear','levels',[2 3 4])", "candgen(2,'linear','levels',2.5)", "candgen(2,'linear','categorical',3)", "candgen(2,[0 0 1;1 0 0])", "candgen(2,'linear','bogus',1)", "candgen(2,'linear','levels')",
+          "candgen(2,'linear','bounds',{[1 2 3],[1 2]},'levels',[2 2])"]:
+    L20.append(cg.replace("{c}", c))
+L += L20
+
 with open(os.path.join(here, "cases_u1.txt"), "w", encoding="utf-8", newline="\n") as f:
     f.write("\n".join(L) + "\n")
 print(len(L) - 1)
