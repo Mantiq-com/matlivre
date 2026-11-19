@@ -339,6 +339,74 @@ for c in ["adtest()", "adtest(x(1:3))", "adtest(ones(3,3))", "adtest(complex(x(1
     L15.append(PD + ad.replace("{c}", c))
 L += L15
 
+P6 = ("hb=[1.25 0.06 0.04 0.11 1.2]; hx=[470 300 10;285 80 10;470 300 120;470 80 120;470 80 10;100 190 10;100 80 65;470 190 65;100 300 54;100 300 120;100 80 120;285 300 10;285 190 120]; "
+      "ef=(0:30)'/30; ex=sort(x(1:30)'); ex=[ex(1); ex]; "
+      "yt=round(2+1.5*sin(0.9*(1:80)')+0.4*cos((1:80)')); h1=round(2+1.4*sin(0.9*(1:80)'+0.2)+0.4*cos((1:80)')); h2=round(2+1.2*sin(0.9*(1:80)'+0.5)+0.5*cos((1:80)')); "
+      "bt=(x(1:60)'>0)+1; b1=(x(1:60)'+0.3*y(1:60)'>0)+1; b2=(x(1:60)'+0.8*y(1:60)'>0.2)+1; "
+      "ix=(1:10)'; iy=2*ix+0.7*sin(2*ix); "
+      "pX=[x(1:30)' y(1:30)' x(31:60)'.^2]; pY=[x(61:90)'+y(1:30)' y(31:60)'.^2+0.3*x(1:30)']; pZ=[cos(1:30)' (1:30)'/10]; ")
+L16 = []
+hf = "r = {c};"
+for c in ["hougen(hb,hx)", "hougen(hb',hx)", "hougen(single(hb),hx)", "hougen(hb,single(hx))", "hougen([1 2 3 4 5],[1 2 3])", "hougen([1 2 3 4 5],[1 2 3;4 5 6])", "hougen(hb,hx(:,1:2))", "hougen([1 2 3 4],hx)",
+          "hougen(hb)", "hougen()", "hougen(hb,[])", "hougen(hb,hx(1,:))", "hougen(2*ones(1,5),hx(1:3,:))"]:
+    L16.append(P6 + hf.replace("{c}", c))
+ec = "lastwarn(''); [n_,c_] = {c}; r = {n_,c_,lastwarn};"
+for c in ["ecdfhist(ef,ex)", "ecdfhist(ef,ex,5)", "ecdfhist(ef,ex,20)", "ecdfhist(ef,ex,'nbins',7)", "ecdfhist(ef,ex,-1:0.5:1)", "ecdfhist(ef,ex,'ctrs',[-0.9 -0.3 0.3 0.9])", "ecdfhist(ef,ex,'edges',[-2 -1 0 1 2])",
+          "ecdfhist(ef,ex,'edges',[-0.5 0 0.5])", "ecdfhist(ef,ex,'edges',[-1 -0.5 0.1 0.8 1.5])", "ecdfhist(ef,ex,'edges',[-1 -0.5 0 0.5 1 2 4])", "ecdfhist(1-ef,ex)", "ecdfhist(1-ef,ex,6)", "ecdfhist(ef',ex')",
+          "ecdfhist(ef,ex,1)", "ecdfhist([0 0.5 1],[0 1 2])", "ecdfhist([0 1],[0 1])", "ecdfhist([0 0.2 0.2 1],[1 2 2 3],3)", "ecdfhist(ef,ex,'ctrs',[-1 0 2])", "ecdfhist(ef(1:11),ex(1:11),4)",
+          "ecdfhist(ef,ex,'edges',[-1.0 -0.4 0.1 0.6 1.1])", "ecdfhist(single(ef),ex,4)", "ecdfhist(ef,ex,'nbins',3)", "ecdfhist(ef,ex,[-1.5 -0.5 0.5 1.5])"]:
+    L16.append(P6 + ec.replace("{c}", c))
+ec1 = "lastwarn(''); n_ = {c}; r = {n_,lastwarn};"
+for c in ["ecdfhist(ef,ex)", "ecdfhist(ef,ex,'ctrs',[-0.9 -0.3 0.3 0.9])"]:
+    L16.append(P6 + ec1.replace("{c}", c))
+for c in ["ecdfhist()", "ecdfhist(ef)", "ecdfhist('a',ex)", "ecdfhist(ef,'ab')", "ecdfhist(ef(1:3),ex(1:4))", "ecdfhist(ones(3,3),ex(1:9))", "ecdfhist(ef(1),ex(1))", "ecdfhist(ef,flipud(ex))", "ecdfhist([0 1 0.5],[0 1 2])", "ecdfhist([1 0.2 0.5],[0 1 2])",
+          "ecdfhist(ef,ex,'foo',3)", "ecdfhist(ef,ex,'edges',[1 0 2])", "ecdfhist(ef,ex,[2 1 3])", "ecdfhist(ef,ex,'ctrs',[1 1 2])"]:
+    L16.append(P6 + ec.replace("{c}", c))
+tc = "lastwarn(''); [h_,p_,e1_,e2_] = {c}; r = {h_,p_,e1_,e2_,lastwarn};"
+tc2 = "[h_,p_] = {c}; r = {h_,p_};"
+for c in ["testcholdout(b1,b2,bt)", "testcholdout(b1,b2,bt,'Test','asymptotic')", "testcholdout(b1,b2,bt,'Test','exact')", "testcholdout(b1,b2,bt,'Test','midp')", "testcholdout(b1,b2,bt,'Alternative','less')",
+          "testcholdout(b1,b2,bt,'Alternative','greater')", "testcholdout(b1,b2,bt,'Alternative','less','Test','exact')", "testcholdout(b1,b2,bt,'Alternative','greater','Test','asymptotic')", "testcholdout(b1,b2,bt,'Alpha',0.5)",
+          "testcholdout(b1,b2,bt,'Alpha',0.0001)", "testcholdout(b2,b1,bt)", "testcholdout(yt,h1,h2)", "testcholdout(h1,h2,yt)", "testcholdout(h1,h2,yt,'Test','exact','Alternative','less')", "testcholdout(h1',h2',yt')",
+          "testcholdout(num2cell(h1),num2cell(h2),num2cell(yt))", "testcholdout(cellstr(num2str(h1)),cellstr(num2str(h2)),cellstr(num2str(yt)))", "testcholdout(b1,b1,bt)", "testcholdout(b1,b2,bt,'ClassNames',[1 2])", "testcholdout(h1,h2,yt,'ClassNames',[1 2 3])",
+          "testcholdout(b1,b2,bt,'Cost',[0 1;2 0])", "testcholdout(b1,b2,bt,'Cost',[0 1;1 0])", "testcholdout(b1,b2,bt,'Cost',[0 3;1 0])", "testcholdout(b1,b2,bt,'Cost',[0 1;2 0],'CostTest','likelihood')", "testcholdout(h1,h2,yt,'Cost',[0 1 2 3 4;1 0 1 2 3;2 1 0 1 2;3 2 1 0 1;4 3 2 1 0])",
+          "testcholdout(b1,b2,bt,'Cost',[0 0;0 0])", "testcholdout(b1,b2,bt,'Cost',[0 1;2 0],'Test','asymptotic','Alternative','unequal')", "testcholdout(single(b1),b2,bt)", "testcholdout(b1==2,b2==2,bt==2)",
+          "testcholdout(['a';'b';'a';'b'],['a';'a';'a';'b'],['a';'b';'b';'b'])", "testcholdout({'a','b','a','b','b','a'},{'a','a','a','b','a','b'},{'a','b','b','b','a','a'})", "testcholdout(b1,b2,[bt(1:20);NaN(40,1)])",
+          "testcholdout(b1,b2,bt,'alt','less')", "testcholdout(b1,b2,bt,'test','ex')", "testcholdout(b1,b2,bt,'ALPHA',0.2)"]:
+    L16.append(P6 + tc.replace("{c}", c))
+for c in ["testcholdout(b1,b2,bt)", "testcholdout(b1,b1,bt)", "testcholdout(b1,b2,bt,'Alternative','less')"]:
+    L16.append(P6 + tc2.replace("{c}", c))
+for c in ["testcholdout()", "testcholdout(b1,b2)", "testcholdout(b1(1:10),b2,bt)", "testcholdout(b1,b2(1:10),bt)", "testcholdout(b1,b2,bt,'Alpha',0)", "testcholdout(b1,b2,bt,'Alpha',1)", "testcholdout(b1,b2,bt,'Alpha','a')", "testcholdout(b1,b2,bt,'Alpha',[0.1 0.2])",
+          "testcholdout(b1,b2,bt,'Alternative','foo')", "testcholdout(b1,b2,bt,'Test','foo')", "testcholdout(b1,b2,bt,'CostTest','foo')", "testcholdout(b1,b2,bt,'Cost',[0 1;2 0],'Test','exact')", "testcholdout(b1,b2,bt,'Cost',[0 1;2 0],'Alternative','less')",
+          "testcholdout(b1,b2,bt,'Cost',[1 1;2 0])", "testcholdout(b1,b2,bt,'Cost',[0 -1;2 0])", "testcholdout(b1,b2,bt,'Cost',[0 1 2;2 0 1])", "testcholdout(b1,b2,bt,'Cost',5)", "testcholdout(b1,b2,NaN(60,1))", "testcholdout(b1,b2,bt,'ClassNames',[7 8])",
+          "testcholdout(b1,b2,bt,'bogus',1)", "testcholdout(b1,b2,bt,'Alpha')", "testcholdout(b1,b2,bt,'Cost',[0 1;2 0],'CostTest','chisquare')", "testcholdout({1,2},b2(1:2),bt(1:2))"]:
+    L16.append(P6 + tc.replace("{c}", c))
+ip = "[x0_,dl_,du_] = {c}; r = {x0_,dl_,du_};"
+for c in ["invpred(ix,iy,10)", "invpred(ix,iy,[5 10 15])", "invpred(ix',iy',10)", "invpred(ix,iy,[5 10;15 20])", "invpred(ix,iy,10,'Alpha',0.1)", "invpred(ix,iy,10,'PredOpt','curve')", "invpred(ix,iy,10,'PredOpt','observation')",
+          "invpred(ix,iy,10,'PredOpt','c','Alpha',0.01)", "invpred(ix,iy,30)", "invpred(ix,iy,-5)", "invpred(ix,iy,1.0)", "invpred(ix,iy,[0 1 2 22 23])", "invpred([ix;NaN],[iy;3],10)", "invpred(ix,[iy(1:9);NaN],10)",
+          "invpred(ix(1:3),iy(1:3),4)", "invpred(ix(1:2),iy(1:2),4)", "invpred(ix,0*iy+1,1)", "invpred(ix,0*iy+1,2)", "invpred(ix,iy,10,'Alpha',0.9)", "invpred(ix,iy+3*sin(3*ix).^2,10)", "invpred(ix,iy+5*sin(7*ix),10,'PredOpt','curve')",
+          "invpred(single(ix),iy,10)", "invpred(ix,iy,single(10))", "invpred(1:10,iy,10)", "invpred(ix,iy,10,'alpha',0.2)", "invpred(ix,iy,10,'pred','curve')", "invpred(ix,-iy,-10)", "invpred(ix,iy,[])"]:
+    L16.append(P6 + ip.replace("{c}", c))
+for c in ["invpred()", "invpred(ix,iy)", "invpred(ones(3,3),iy,1)", "invpred(ix,ones(3,3),1)", "invpred(ix,iy(1:5),1)", "invpred(complex(ix,1),iy,1)", "invpred(ix,iy,complex(1,2))", "invpred(ix,iy,10,'Alpha',0)", "invpred(ix,iy,10,'Alpha',2)",
+          "invpred(ix,iy,10,'PredOpt','foo')", "invpred(ix,iy,10,'PredOpt','')", "invpred(ix,iy,10,'bogus',1)", "invpred(ones(10,1),iy,10)", "invpred(ix,iy,10,'Alpha')", "invpred(ix,iy,10,'PredOpt',3)", "invpred('abcdefghij',iy,10)"]:
+    L16.append(P6 + ip.replace("{c}", c))
+pc = "lastwarn(''); [c_,p_] = {c}; r = {c_,p_,lastwarn};"
+pc1 = "c_ = {c}; r = {c_};"
+for c in ["partialcorri(pY,pX)", "partialcorri(pY(:,1),pX)", "partialcorri(pY,pX(:,1))", "partialcorri(pY,pX,pZ)", "partialcorri(pY(:,2),pX,pZ(:,1))", "partialcorri(pY,pX,'Type','Spearman')", "partialcorri(pY,pX,pZ,'Type','Spearman')",
+          "partialcorri(pY,pX,'Tail','right')", "partialcorri(pY,pX,'Tail','left')", "partialcorri(pY,pX,'Tail','gt')", "partialcorri(pY,pX,'Tail','lt')", "partialcorri(pY,pX,'Tail','ne')", "partialcorri(pY,pX,'Tail','b')",
+          "partialcorri(pY,pX,'Rows','complete')", "partialcorri(pY,pX,'Rows','pairwise')", "partialcorri([pY(1:28,:);NaN NaN;pY(30,:)],pX,'Rows','pairwise')", "partialcorri([pY(1:28,:);NaN NaN;pY(30,:)],pX,'Rows','complete')",
+          "partialcorri([pY(1:28,:);NaN NaN;pY(30,:)],pX)", "partialcorri([pY(1:28,:);NaN 1;pY(30,:)],pX,'Rows','pairwise')", "partialcorri(pY,[pX(1:5,:);NaN 1 2;pX(7:30,:)],'Rows','complete')", "partialcorri(pY,[pX(1:5,:);NaN 1 2;pX(7:30,:)])",
+          "partialcorri(pY,[pX(1:5,:);NaN 1 2;pX(7:30,:)],'Rows','pairwise')", "partialcorri(pY,pX,pZ,'Rows','complete','Tail','right')", "partialcorri(pY,[pX pX(:,1)+pX(:,2)])", "partialcorri(pY,[pX(:,1) pX(:,1)])",
+          "partialcorri(pY(1:5,:),pX(1:5,:))", "partialcorri(pY(1:4,:),pX(1:4,:))", "partialcorri(pY(1:3,:),pX(1:3,:))", "partialcorri(pY,pX,'type','pearson')", "partialcorri(pY,pX,'TYPE','s')", "partialcorri(pY,pX,'rows','all','tail','both')",
+          "partialcorri(pY(:,1),pX(:,1))", "partialcorri(pY(:,1),pX(:,1),pZ)", "partialcorri(pY,pX,pZ,'Rows','pairwise')", "partialcorri(pY,pX,[pZ pX(:,1)])", "partialcorri(pY+1000,pX+500)", "partialcorri(pY(:,1),pX(:,2:3)+pX(:,1)*0.01)"]:
+    L16.append(P6 + pc.replace("{c}", c))
+for c in ["partialcorri(pY,pX)", "partialcorri(pY,pX,pZ)"]:
+    L16.append(P6 + pc1.replace("{c}", c))
+for c in ["partialcorri()", "partialcorri(pY)", "partialcorri(pY,pX(1:10,:))", "partialcorri(pY,pX,pZ(1:10,:))", "partialcorri('abc',pX)", "partialcorri(pY,pX,'Type','kendall')", "partialcorri(pY,pX,'Type','foo')", "partialcorri(pY,pX,'Tail','foo')",
+          "partialcorri(pY,pX,'Tail',3)", "partialcorri(pY,pX,'Rows','foo')", "partialcorri(pY,pX,'bogus',1)", "partialcorri([],[])", "partialcorri(zeros(0,2),zeros(0,2))", "partialcorri(pY,pX,'Tail')", "partialcorri(cat(3,pY,pY),pX)",
+          "partialcorri(pY,pX,'Type','k')", "partialcorri(pY,pX,'Rows','c','Rows','a')", "partialcorri(pY,pX,'Tail','l')"]:
+    L16.append(P6 + pc.replace("{c}", c))
+L += L16
+
 with open(os.path.join(here, "cases_u1.txt"), "w", encoding="utf-8", newline="\n") as f:
     f.write("\n".join(L) + "\n")
 print(len(L) - 1)
