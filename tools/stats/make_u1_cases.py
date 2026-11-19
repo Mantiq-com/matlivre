@@ -407,6 +407,38 @@ for c in ["partialcorri()", "partialcorri(pY)", "partialcorri(pY,pX(1:10,:))", "
     L16.append(P6 + pc.replace("{c}", c))
 L += L16
 
+P7 = ("rX=[x(1:30)' y(1:30)' x(31:60)'.*y(31:60)' (1:30)'/10]; rY=1+2*rX(:,1)-rX(:,2)+0.5*rX(:,3)+0.3*sin(3*(1:30)')+0.1*cos(7*(1:30)'); rXn=rX; rXn(5,2)=NaN; rYn=rY; rYn(9)=NaN; "
+      "sX=[rX(:,1) rX(:,2) rX(:,3) rX(:,4) rX(:,1)+rX(:,2)]; sY=rY+0.5*rX(:,4); sN=sX; sN(3,1)=NaN; ")
+L17 = []
+rs = "s_ = {c}; fn_ = fieldnames(s_); r = cell(1,numel(fn_)); for k_=1:numel(fn_), v_=s_.(fn_{k_}); if isstruct(v_), v_ = struct2cell(v_); end, r{k_} = v_; end; r = [{fn_}, r];"
+for c in ["regstats(rY,rX)", "regstats(rY,rX,'linear')", "regstats(rY,rX,'interaction')", "regstats(rY,rX(:,1:2),'quadratic')", "regstats(rY,rX(:,1:2),'purequadratic')", "regstats(rY,rX(:,1:2),[0 0;1 0;0 1;1 1;2 0])",
+          "regstats(rY,rX,'linear','beta')", "regstats(rY,rX,'linear',{'beta','rsquare','mse'})", "regstats(rY,rX,'linear',{'leverage','cookd','dffits'})", "regstats(rY,rX,'linear','tstat')", "regstats(rY,rX,'linear','fstat')",
+          "regstats(rY,rX,'linear','dwstat')", "regstats(rY,rX,'linear',{'Q','R'})", "regstats(rY,rX,'linear',{'hatmat'})", "regstats(rY,rX,'linear',{'beta_i','dfbetas'})", "regstats(rY,rX,'linear',{'s2_i','standres','studres','covratio','dffit','adjrsquare','covb','yhat','r'})",
+          "regstats(rYn,rX)", "regstats(rY,rXn)", "regstats(rYn,rXn,'linear',{'hatmat','beta_i','dfbetas','yhat','leverage'})", "regstats(rY',rX)", "regstats(rY,rX(:,1))", "regstats(rY,rX(:,1)')", "regstats(rY,rX,[])", "regstats(rY,rX,'linear',[])",
+          "regstats(rY(1:10),rX(1:10,:),'interaction')", "regstats(single(rY),rX)", "regstats(rY,single(rX),'linear','beta')", "regstats(rY,rX,'linear','all')", "regstats(rY,rX,'linear',{'all'})", "regstats(rY,rX,'linear',{})"]:
+    L17.append(P7 + rs.replace("{c}", c))
+for c in ["regstats()", "regstats(rY)", "regstats(rY(1:5),rX)", "regstats([rY rY],rX)", "regstats(rY,rX,'linear','foo')", "regstats(rY,rX,'linear',{'beta','foo'})", "regstats(rY,rX,'linear',3)", "regstats(rY(1:3),rX(1:3,:))", "regstats(rY,rX,'foo')",
+          "regstats(rY,rX,3)", "regstats(rY,rX,'linear',{1,2})"]:
+    L17.append(P7 + rs.replace("{c}", c))
+sw = "lastwarn(''); [b_,se_,p_,in_,st_,nx_,h_] = {c}; r = {b_,se_,p_,in_,st_.dfe,st_.df0,st_.SStotal,st_.SSresid,st_.fstat,st_.pval,st_.rmse,st_.xr,st_.yr,st_.B,st_.SE,st_.TSTAT,st_.PVAL,st_.covb,st_.intercept,st_.wasnan,nx_,h_.B,h_.rmse,h_.df0,h_.in,lastwarn};"
+sw1 = "lastwarn(''); [b_,se_,p_,in_] = {c}; r = {b_,se_,p_,in_,lastwarn};"
+for c in ["stepwisefit(sX,sY,'display','off')", "stepwisefit(rX,rY,'display','off')", "stepwisefit(rX,rY,'display','off','penter',0.01,'premove',0.05)", "stepwisefit(rX,rY,'display','off','penter',0.3)", "stepwisefit(rX,rY,'display','off','premove',0.02)",
+          "stepwisefit(rX,rY,'display','off','inmodel',[1 2])", "stepwisefit(rX,rY,'display','off','inmodel',logical([1 1 1 1]))", "stepwisefit(rX,rY,'display','off','inmodel',[1 2 3 4])", "stepwisefit(rX,rY,'display','off','inmodel',[1 2 3 4],'premove',0.001,'penter',0.0001)",
+          "stepwisefit(rX,rY,'display','off','keep',[4])", "stepwisefit(rX,rY,'display','off','keep',logical([0 0 0 1]),'inmodel',4)", "stepwisefit(rX,rY,'display','off','maxiter',1)", "stepwisefit(rX,rY,'display','off','maxiter',0)", "stepwisefit(rX,rY,'display','off','maxiter',2)",
+          "stepwisefit(rX,rY,'display','off','scale','on')", "stepwisefit(sX,sY,'display','off','scale','on')", "stepwisefit(sX,sY,'display','off','inmodel',[1 2 5])", "stepwisefit(sN,sY,'display','off')", "stepwisefit(sX,[sY(1:9);NaN;sY(11:30)],'display','off')",
+          "stepwisefit(rX(:,1:2),rY,'display','off')", "stepwisefit(rX(:,1),rY,'display','off')", "stepwisefit(rX(1:5,:),rY(1:5),'display','off')", "stepwisefit(rX(1:4,:),rY(1:4),'display','off')", "stepwisefit(rX(1:3,:),rY(1:3),'display','off','inmodel',[1 2])",
+          "stepwisefit([rX 0*rY],rY,'display','off')", "stepwisefit([rX ones(30,1)],rY,'display','off')", "stepwisefit(rX,rY,'display','off','penter',0.5,'premove',0.5)", "stepwisefit(single(rX),single(rY),'display','off')",
+          "stepwisefit(rX,rY,'dis','off','pent',0.2)", "stepwisefit(rX,rY,'Display','off','InModel',[])", "stepwisefit(rX,rY,'display','off','Keep',[])", "stepwisefit(rX,rY,'display','off','maxiter',Inf)", "stepwisefit(rX*1000,rY,'display','off')", "stepwisefit(rX,rY*1e6,'display','off')"]:
+    L17.append(P7 + sw.replace("{c}", c))
+for c in ["stepwisefit(sX,sY,'display','off')", "stepwisefit(rX,rY,'display','off','inmodel',[1 2])", "stepwisefit(rX,rY,'display','on')", "stepwisefit(rX,rY,'inmodel',[1 4])", "stepwisefit(rX,rY)"]:
+    L17.append(P7 + sw1.replace("{c}", c))
+for c in ["stepwisefit()", "stepwisefit(rX)", "stepwisefit(rX,rY,'display')", "stepwisefit(rX,rY,'display','off','inmodel',[1 2 9])", "stepwisefit(rX,rY,'display','off','inmodel',logical([1 0]))", "stepwisefit(rX,rY,'display','off','keep',7)",
+          "stepwisefit(rX,rY,'display','off','keep',logical([1 0]))", "stepwisefit(rX,rY,'display','off','penter',0)", "stepwisefit(rX,rY,'display','off','penter',1)", "stepwisefit(rX,rY,'display','off','penter',[0.1 0.2])", "stepwisefit(rX,rY,'display','off','premove',1.5)",
+          "stepwisefit(rX,rY,'display','off','penter',0.2,'premove',0.1)", "stepwisefit(rX,[rY rY],'display','off')", "stepwisefit(rX,rY(1:10),'display','off')", "stepwisefit(complex(rX,1),rY,'display','off')", "stepwisefit(rX,rY,'display','off','bogus',1)",
+          "stepwisefit(rX,rY,'display','off','penter','a')", "stepwisefit(rX,rY','display','off')", "stepwisefit(rX,rY,3,4)"]:
+    L17.append(P7 + sw.replace("{c}", c))
+L += L17
+
 with open(os.path.join(here, "cases_u1.txt"), "w", encoding="utf-8", newline="\n") as f:
     f.write("\n".join(L) + "\n")
 print(len(L) - 1)
