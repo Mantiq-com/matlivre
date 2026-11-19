@@ -463,6 +463,27 @@ for c in ["plsregress()", "plsregress(pX)", "plsregress(pX,pY(1:10,:),2)", "plsr
     L18.append(P8 + pl8.replace("{c}", c))
 L += L18
 
+P9 = ("hT=[0.9 0.1;0.2 0.8]; hE=[0.5 0.3 0.2;0.2 0.3 0.5]; hS=mod(floor(3*abs(sin((1:60)*0.37)+0.3*cos((1:60)*1.3))),3)+1; hS2=mod(floor(3*abs(sin((1:40)*0.81))),3)+1; hM=[hS(1:40);hS2]; "
+      "hC={hS(1:30),hS2,hS(31:60)}; h3T=[0.5 0.3 0.2;0.2 0.6 0.2;0.1 0.3 0.6]; h3E=[0.6 0.4;0.3 0.7;0.1 0.9]; hB=mod(floor(2*abs(sin((1:50)*0.9))),2)+1; hAB=char('a'+hB-1); ")
+L19 = []
+ht = "lastwarn(''); [tr_,e_,ll_] = {c}; r = {tr_,e_,ll_,lastwarn};"
+ht2 = "[tr_,e_] = {c}; r = {tr_,e_};"
+for c in ["hmmtrain(hS,hT,hE)", "hmmtrain(hS,hT,hE,'Tolerance',1e-3)", "hmmtrain(hS,hT,hE,'Tolerance',1e-9)", "hmmtrain(hS,hT,hE,'Maxiterations',5)", "hmmtrain(hS,hT,hE,'Maxiterations',1)", "hmmtrain(hS,hT,hE,'Algorithm','Viterbi')",
+          "hmmtrain(hS,hT,hE,'Algorithm','BaumWelch')", "hmmtrain(hS,hT,hE,'Algorithm','v','Maxiterations',20)", "hmmtrain(hM,hT,hE)", "hmmtrain(hC,hT,hE)", "hmmtrain(hC,hT,hE,'Tolerance',1e-4)", "hmmtrain(hB,h3T,h3E)", "hmmtrain(hB,h3T,h3E,'Tolerance',1e-5)",
+          "hmmtrain(hB,[0.5 0.5;0.5 0.5],[0.5 0.5;0.5 0.5])", "hmmtrain(hS,hT,hE,'Pseudoemissions',[1 1 1;1 1 1])", "hmmtrain(hS,hT,hE,'Pseudotransitions',[1 1;1 1])", "hmmtrain(hS,hT,hE,'Pseudoemissions',[1 1 1;1 1 1],'Pseudotransitions',[1 2;2 1])",
+          "hmmtrain(hS,hT,hE,'Algorithm','viterbi','Pseudoemissions',[1 1 1;1 1 1],'Pseudotransitions',[1 1;1 1])", "hmmtrain(hB,[1 0;0 1],[0.5 0.5;0.5 0.5])", "hmmtrain(hAB,hT,[0.5 0.5 0;0.5 0.5 0],'Symbols','abc')",
+          "hmmtrain(hAB,[0.9 0.1;0.1 0.9],[0.7 0.3;0.4 0.6],'Symbols','ab')", "hmmtrain(hAB,[0.9 0.1;0.1 0.9],[0.7 0.3;0.4 0.6],'Symbols',{'a','b'})", "hmmtrain(hB,[0.9 0.1;0.1 0.9],[0.7 0.3;0.4 0.6],'Symbols',[1 2])",
+          "hmmtrain(hS,hT,hE,'tol',1e-2)", "hmmtrain(hS,hT,hE,'Tolerance',1e-3,'trtol',1e-1,'etol',1e-1)", "hmmtrain(hS,hT,hE,'Verbose',false)", "hmmtrain(hS,hT,hE,'Verbose','on','Maxiterations',3)", "hmmtrain(hS,hT,hE,'Tolerance',[])",
+          "hmmtrain(hS,hT,hE,'Maxiterations',2,'Tolerance',1e-12)", "hmmtrain(hS(1:5),hT,hE)", "hmmtrain(hS(1:2),hT,hE,'Maxiterations',50)", "hmmtrain([],[],[])", "hmmtrain(hS,zeros(0,0),zeros(0,3))", "hmmtrain(hS,hT,[0.5 0.5 0;0.5 0.5 0])"]:
+    L19.append(P9 + ht.replace("{c}", c))
+for c in ["hmmtrain(hS,hT,hE)", "hmmtrain(hS,hT,hE,'Algorithm','viterbi')", "hmmtrain(hC,hT,hE)"]:
+    L19.append(P9 + ht2.replace("{c}", c))
+for c in ["hmmtrain()", "hmmtrain(hS)", "hmmtrain(hS,hT)", "hmmtrain(hS,[0.9 0.1 0;0.2 0.8 0],hE)", "hmmtrain(hS,hT,[0.5 0.3 0.2])", "hmmtrain(hS,hT,hE,'Symbols')", "hmmtrain(hS,hT,hE,'Symbols',[1 2])", "hmmtrain(hS,hT,hE,'Symbols',[4 5 6])",
+          "hmmtrain(hS,hT,hE,'Pseudoemissions',[1 1;1 1])", "hmmtrain(hS,hT,hE,'Pseudoemissions',[1 1 1])", "hmmtrain(hS,hT,hE,'Pseudotransitions',[1 1 1;1 1 1])", "hmmtrain(hS,hT,hE,'Pseudotransitions',1)", "hmmtrain(hS,hT,hE,'Algorithm','foo')",
+          "hmmtrain(hS,hT,hE,'bogus',1)", "hmmtrain({1},hT,hE)", "hmmtrain('abc',hT,hE)", "hmmtrain(hS,hT,hE,3,4)", "hmmtrain(hS+5,hT,hE)", "hmmtrain(hS,hT,hE,'Tolerance','a')"]:
+    L19.append(P9 + ht.replace("{c}", c))
+L += L19
+
 with open(os.path.join(here, "cases_u1.txt"), "w", encoding="utf-8", newline="\n") as f:
     f.write("\n".join(L) + "\n")
 print(len(L) - 1)
