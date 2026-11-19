@@ -194,6 +194,54 @@ for c in ["ccdesign(1)", "ccdesign(27)", "ccdesign(2.5)", "ccdesign([2 3])", "cc
     L10.append(cc.replace("{c}", c))
 L += L10
 
+PM = ("xa=x(1:30)'; ga=repmat((1:5)',6,1); gu=[ones(8,1);2*ones(5,1);3*ones(12,1);4*ones(5,1)]; xu=x(1:30)'+0.8*gu; "
+      "gnm=repmat({'ab','cd','e'},1,10)'; xn=y(1:30)'; "
+      "[~,~,s1]=anova1(xa,ga,'off'); [~,~,s1u]=anova1(xu,gu,'off'); [~,~,s1n]=anova1(xn,gnm,'off'); [~,~,s1s]=anova1(single(xa),ga,'off'); "
+      "[~,~,sk]=kruskalwallis(xa,ga,'off'); [~,~,sk2]=kruskalwallis(round(xa*3),ga,'off'); "
+      "[~,~,s2]=anova2(reshape(x(1:30),6,5),1,'off'); [~,~,s2r]=anova2(reshape(x(1:60),12,5)+repmat([0;0;0;2;2;2;0;0;0;1;1;1],1,5),3,'off'); "
+      "[~,~,sf]=friedman(reshape(x(1:30),6,5),1,'off'); [~,~,s2g]=anova1(x(1:2*12*1)',repmat((1:12)',2,1),'off'); "
+      "[~,~,s1t]=anova1([x(1:3) 5 6]',[1 1 1 2 2]','off'); [~,~,s1b]=anova1(reshape(x(1:60),6,10),[],'off'); [~,~,s1k]=anova1(x(1:9)',[1 1 1 2 2 2 3 3 3]','off'); ")
+mc = "[c_,m_,h_,g_] = {c}; r = {c_,m_,g_};"
+mc2 = "[c_,m_] = {c}; r = {c_,m_}; close all;"
+L11 = []
+good = []
+for s_ in ["s1", "s1u", "s1n", "s1s", "sk", "sk2", "s2", "s2r", "sf", "s2g", "s1t", "s1b", "s1k"]:
+    good.append("multcompare(%s,'Display','off')" % s_)
+for s_ in ["s1", "s1u", "sk", "s2r", "sf"]:
+    for ct in ["tukey-kramer", "hsd", "dunn-sidak", "bonferroni", "lsd", "scheffe", "t", "d", "b", "s", "h", "l", "lsd bonferroni", "tukey-kramer lsd scheffe", "bonferroni dunn-sidak"]:
+        good.append("multcompare(%s,'Display','off','CType','%s')" % (s_, ct))
+    for al in [0.01, 0.1, 0.5, 0.001, 1e-6, 0.999, 0.0123]:
+        good.append("multcompare(%s,'Display','off','Alpha',%g)" % (s_, al))
+good += ["multcompare(s1,'Display','off','CriticalValueType','lsd')", "multcompare(s1,'Display','off','C','lsd')", "multcompare(s1,'display','off','ALPHA',0.2,'ctype','bonferroni')",
+         "multcompare(s1,0.05,'off')", "multcompare(s1,0.01,'off','lsd')", "multcompare(s2,0.05,'off','bonferroni','row')", "multcompare(s2,0.05,'off','bonferroni','column')",
+         "multcompare(s2r,'Display','off','Estimate','row')", "multcompare(s2r,'Display','off','Estimate','r')", "multcompare(s2r,'Display','off','Estimate','column')",
+         "multcompare(s2r,'Display','off','Estimate','co','CType','lsd')", "multcompare(s2,'Display','off','Estimate','row','Alpha',0.01)", "multcompare(s2r,0.05,'off','scheffe','row')",
+         "multcompare(s1,'Display','off','Estimate','row')", "multcompare(s1,'Display','off','Dimension',2)", "multcompare(s1,'Display','off','Alpha',0.05,'Alpha',0.1)",
+         "multcompare(s1,'Display','off','Approximate',true)", "multcompare(s1,'Display','off','Approximate',0)", "multcompare(s1,'Display','off','Approximate',[])",
+         "multcompare(s1,'Display','off','Alternative','notequal')", "multcompare(s1,'Display','off','Alternative','')", "multcompare(s1,'Display','off','Alternative',[])",
+         "multcompare(s1,'Display','off','CType',\"lsd\")", "multcompare(s1,\"Display\",\"off\",\"Alpha\",0.1)", "multcompare(s1,'Display','off','CType','')", "multcompare(s1,'Display','off','CType',[])",
+         "multcompare(s1,'dis','off','cr','lsd','al',0.2)", "multcompare(s1,'Display','off','Alpha',single(0.1))", "multcompare(s1,'Display','off','Alpha',0.05,'Estimate','')",
+         "multcompare(s1k,'Display','off','CType','dunnett')", "multcompare(s1t,'Display','off','CType','dunnett')", "multcompare(s1t,'Display','off','CType','dunnett','Alternative','less')",
+         "multcompare(s1t,'Display','off','CType','dunnett','Alternative','greater')", "multcompare(s1t,'Display','off','CType','dunnett','Alternative','g','Alpha',0.1)",
+         "multcompare(s1t,'Display','off','CType','dunnett','ControlGroup',2)"]
+for c in good:
+    L11.append(PM + mc.replace("{c}", c))
+for c in ["multcompare(s1)", "multcompare(sk)", "multcompare(s2r)", "multcompare(sf)", "multcompare(s2)", "multcompare(s1,'Alpha',0.1)"]:
+    L11.append(PM + mc2.replace("{c}", c))
+for c in ["multcompare(5)", "multcompare(struct('a',1))", "multcompare(s1,'Alpha',0)", "multcompare(s1,'Alpha',1.5)", "multcompare(s1,'Alpha',[0.1 0.2])", "multcompare(s1,'Alpha','a')", "multcompare(s1,'Alpha',NaN)",
+          "multcompare(s1,'Alpha',1)", "multcompare(s1,'Alpha',int8(1))", "multcompare(s1,'Alpha',true)",
+          "multcompare(s1,'Display','x')", "multcompare(s1,'Display',1)", "multcompare(s1,'Display')", "multcompare(s1,'Display','ON')", "multcompare(s1,'Display','of')",
+          "multcompare(s1,'Display','off','ControlGroup',1)", "multcompare(s1,'Display','off','Alternative','less')", "multcompare(s1,'Display','off','Alternative','foo','CType','dunnett')",
+          "multcompare(s1,'Display','off','Alternative',3,'CType','dunnett')", "multcompare(s1,'Display','off','CType','foo')", "multcompare(s1,'Display','off','CType',3)", "multcompare(s1,'Display','off','CType','LSD')",
+          "multcompare(s1,'Display','off','CType','dunnett lsd')", "multcompare(s1,'Display','off','CType','x')", "multcompare(s1,'bogus',1)", "multcompare(s1,'Display','off','a',0.1)", "multcompare(s1,'Display','off','d',2)",
+          "multcompare(s1,'Display','off','Approximate',5)", "multcompare(s1,'Display','off','Approximate',-1)", "multcompare(s1,'Display','off','Approximate',0.5)", "multcompare(s1,'Display','off','Approximate',[1 1])", "multcompare(s1,'Display','off','Approximate','a')",
+          "multcompare(s1,'Display','off','Approximate',2)", "multcompare(s2,'Display','off','Estimate','foo')", "multcompare(s2,'Display','off','Estimate',3)", "multcompare(s2,'Display','off','Estimate','x')",
+          "multcompare(s1,'Display','off','CType','dunnett','ControlGroup',7)", "multcompare(s1t,'Display','off','CType','dunnett','ControlGroup',7)", "multcompare(s1t,'Display','off','CType','dunnett','ControlGroup',[1 2])",
+          "multcompare(s1,'Display','off','Alpha')", "multcompare()", "multcompare(s1,0.05)", "multcompare(s1,0.05,'maybe')", "multcompare(s1,{1},'off')", "multcompare(rmfield(s1,'source'))", "multcompare(rmfield(s1,'n'),'Display','off')",
+          "multcompare(setfield(s1,'source','zzz'),'Display','off')", "multcompare(setfield(s1,'source',3),'Display','off')", "multcompare(s1,'Display','off',3,4)", "multcompare(s1,'Display','off','CType','lsd',1)"]:
+    L11.append(PM + mc.replace("{c}", c))
+L += L11
+
 with open(os.path.join(here, "cases_u1.txt"), "w", encoding="utf-8", newline="\n") as f:
     f.write("\n".join(L) + "\n")
 print(len(L) - 1)

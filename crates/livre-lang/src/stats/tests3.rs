@@ -832,7 +832,7 @@ fn chi2gof(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
 
 /// MATLAB's matching of a value against a list of names: exact (any case) first, then a unique
 /// prefix. `what` is used as in "the {what} argument"; with `list` the valid values are named.
-fn param_val(v: &Value, choices: &[&str], what: &str, list: bool) -> Res<usize> {
+pub(crate) fn param_val(v: &Value, choices: &[&str], what: &str, list: bool) -> Res<usize> {
     if !v.is_text() {
         return rt(format!("Invalid '{}' data type. Argument must be a character vector or string scalar.", what.trim_matches('\'')));
     }
