@@ -20,6 +20,7 @@ pub mod learners;
 pub mod cluster2;
 pub mod fits2;
 pub mod distobj;
+pub mod anova2;
 pub mod misc;
 pub mod searchers;
 pub mod neighbors;
@@ -85,6 +86,9 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
     if glmodel::NAMES.contains(&name) {
         return glmodel::call(it, name, a, nargout);
     }
+    if anova2::NAMES.contains(&name) {
+        return anova2::call(it, name, a, nargout);
+    }
     if distobj::NAMES.contains(&name) {
         return distobj::call(it, name, a, nargout);
     }
@@ -129,5 +133,5 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
 
 /// Every name the stats modules provide.
 pub fn names() -> Vec<&'static str> {
-    [descr::NAMES, corr::NAMES, dist::NAMES, rnd::NAMES, htest::NAMES, dist_matrix::NAMES, hier::NAMES, pca::NAMES, regress::NAMES, kmeans::NAMES, sampling::NAMES, nonpar::NAMES, anova::NAMES, fitters::NAMES, ks::NAMES, linmodel::NAMES, glmodel::NAMES, misc::NAMES, tests2::NAMES, lifefit::NAMES, generic::NAMES, neighbors::NAMES, classif::NAMES, learners::NAMES, cluster2::NAMES, fits2::NAMES, searchers::NAMES, distobj::NAMES].concat()
+    [descr::NAMES, corr::NAMES, dist::NAMES, rnd::NAMES, htest::NAMES, dist_matrix::NAMES, hier::NAMES, pca::NAMES, regress::NAMES, kmeans::NAMES, sampling::NAMES, nonpar::NAMES, anova::NAMES, fitters::NAMES, ks::NAMES, linmodel::NAMES, glmodel::NAMES, misc::NAMES, tests2::NAMES, lifefit::NAMES, generic::NAMES, neighbors::NAMES, classif::NAMES, learners::NAMES, cluster2::NAMES, fits2::NAMES, searchers::NAMES, distobj::NAMES, anova2::NAMES].concat()
 }
