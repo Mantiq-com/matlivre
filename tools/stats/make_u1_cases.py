@@ -439,6 +439,30 @@ for c in ["stepwisefit()", "stepwisefit(rX)", "stepwisefit(rX,rY,'display')", "s
     L17.append(P7 + sw.replace("{c}", c))
 L += L17
 
+P8 = ("pX=[x(1:30)' y(1:30)' x(31:60)'.*y(31:60)' (1:30)'/10 sin((1:30)'/3)]; pY=[1+2*pX(:,1)-pX(:,2)+0.3*sin(3*(1:30)') pX(:,3)-0.5*pX(:,4)+0.2*cos(5*(1:30)')]; pY1=pY(:,1); "
+      "pX2=pX(1:6,1:3); pY2=pY(1:6,:); ")
+L18 = []
+pl8 = "[a1_,a2_,a3_,a4_,a5_,a6_,a7_,s_] = {c}; r = {abs(a1_),abs(a2_),abs(a3_),abs(a4_),a5_,a6_,a7_,abs(s_.W),s_.T2,s_.Xresiduals,s_.Yresiduals};"
+pl8raw = "[a1_,a2_,a3_,a4_,a5_,a6_,a7_,s_] = {c}; r = {a1_,a2_,a3_,a4_,s_.W};"
+pl4 = "[a1_,a2_,a3_,a4_] = {c}; r = {abs(a1_),abs(a2_),abs(a3_),abs(a4_)};"
+pl2 = "[a1_,a2_] = {c}; r = {abs(a1_),abs(a2_)};"
+pl5 = "[a1_,a2_,a3_,a4_,a5_] = {c}; r = {abs(a1_),abs(a2_),abs(a3_),abs(a4_),a5_};"
+for c in ["plsregress(pX,pY,2)", "plsregress(pX,pY,1)", "plsregress(pX,pY,3)", "plsregress(pX,pY,4)", "plsregress(pX,pY)", "plsregress(pX,pY1,2)", "plsregress(pX,pY1,5)", "plsregress(pX,pY,2,'Intercept',false)",
+          "plsregress(pX,pY,3,'Intercept','off')", "plsregress(pX,pY,3,'intercept',true)", "plsregress(pX,pY,2,'cv','resubstitution')", "plsregress(pX,pY,2,'CV','resubstitution','MCReps',1)", "plsregress(pX2,pY2,2)", "plsregress(pX2,pY2)",
+          "plsregress(single(pX),pY,2)", "plsregress(pX,single(pY),2)", "plsregress(pX(:,1:2),pY,1)", "plsregress(pX(:,1:2),pY,2)", "plsregress(pX(:,1),pY,1)", "plsregress(pX,pY,2,'int',0)"]:
+    L18.append(P8 + pl8.replace("{c}", c))
+for c in ["plsregress(pX,pY,2)", "plsregress(pX,pY1,3)", "plsregress(pX,pY,3,'Intercept',false)"]:
+    L18.append(P8 + pl4.replace("{c}", c))
+    L18.append(P8 + pl2.replace("{c}", c))
+    L18.append(P8 + pl5.replace("{c}", c))
+for c in ["plsregress(pX,pY,2)", "plsregress(pX,pY1,3)", "plsregress(pX,pY,3,'Intercept',false)"]:
+    L18.append(P8 + pl8raw.replace("{c}", c))
+for c in ["plsregress()", "plsregress(pX)", "plsregress(pX,pY(1:10,:),2)", "plsregress(pX,pY,0)", "plsregress(pX,pY,1.5)", "plsregress(pX,pY,[1 2])", "plsregress(pX,pY,'a')", "plsregress(pX,pY,30)", "plsregress(pX,pY,6)",
+          "plsregress(pX,pY,2,'cv','foo')", "plsregress(pX,pY,2,'cv',0)", "plsregress(pX,pY,2,'cv',100)", "plsregress(pX,pY,2,'MCReps',0)", "plsregress(pX,pY,2,'MCReps',2)", "plsregress(pX,pY,2,'MCReps',1.5)", "plsregress(pX,pY,2,'Intercept','maybe')",
+          "plsregress(pX,pY,2,'bogus',1)", "plsregress(pX,pY,2,'cv')"]:
+    L18.append(P8 + pl8.replace("{c}", c))
+L += L18
+
 with open(os.path.join(here, "cases_u1.txt"), "w", encoding="utf-8", newline="\n") as f:
     f.write("\n".join(L) + "\n")
 print(len(L) - 1)
