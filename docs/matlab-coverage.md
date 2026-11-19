@@ -7,10 +7,10 @@ found in the toolbox folders, checked against MatLivre. Regenerate with
 
 | Status | Count |
 |---|---:|
-| Implemented | 2121 |
+| Implemented | 2133 |
 | In a branch not merged yet | 0 |
 | Language keyword (check it works) | 25 |
-| **To implement** | **363** |
+| **To implement** | **351** |
 | Out of scope | 1355 |
 
 Out of scope, by category of the function reference: app building, external language
@@ -316,7 +316,7 @@ Implemented: `&amp;`, `&gt;`, `&gt;=`, `&lt;`, `&lt;=`, `'`, `*`, `+`, `-`, `.'`
 
 Implemented: 84. To implement: 0. In a branch: 0. Out of scope: 0.
 
-Implemented: `addboundary`, `alphaShape`, `alphaSpectrum`, `alphaTriangulation`, `area`, `barycentricToCartesian`, `baryToCart`, `boundary`, `boundaryFacets`, `boundaryshape`, `boundingbox`, `cartesianToBarycentric`, `cartToBary`, `centroid`, `circumcenter`, `circumcenters`, `convexHull`, `convhull`, `convhulln`, `criticalAlpha`, `delaunay`, `delaunayn`, `DelaunayTri`, `delaunayTriangulation`, `dsearchn`, `edgeAttachments`, `edges`, `faceNormal`, `faceNormals`, `featureEdges`, `freeBoundary`, `holes`, `incenter`, `incenters`, `inOutStatus`, `inpolygon`, `inShape`, `isConnected`, `isEdge`, `ishole`, `isInterior`, `isinterior`, `issimplified`, `nearestNeighbor`, `nearestvertex`, `nsidedpoly`, `numboundaries`, `numRegions`, `numsides`, `overlaps`, `patch`, `perimeter`, `pointLocation`, `polyarea`, `polybuffer`, `polyshape`, `rectint`, `regions`, `rmboundary`, `rmholes`, `rmslivers`, `rotate`, `scale`, `sortboundaries`, `sortregions`, `stlread`, `stlwrite`, `subtract`, `surfaceArea`, `tetramesh`, `translate`, `triangulation`, `trimesh`, `triplot`, `TriRep`, `trisurf`, `tsearchn`, `turningdist`, `vertexAttachments`, `vertexNormal`, `volume`, `voronoi`, `voronoiDiagram`, `voronoin`
+Implemented: `addboundary`, `alphaShape`, `alphaSpectrum`, `alphaTriangulation`, `area`, `barycentricToCartesian`, `baryToCart`, `boundary`, `boundaryFacets`, `boundaryshape`, `boundingbox`, `cartesianToBarycentric`, `cartToBary`, `centroid`, `circumcenter`, `circumcenters`, `convexHull`, `convhull`, `convhulln`, `criticalAlpha`, `delaunay`, `delaunayn`, `DelaunayTri`, `delaunayTriangulation`, `dsearchn`, `edgeAttachments`, `edges`, `faceNormal`, `faceNormals`, `featureEdges`, `freeBoundary`, `holes`, `incenter`, `incenters`, `inOutStatus`, `inpolygon`, `inShape`, `isConnected`, `isEdge`, `ishole`, `isinterior`, `isInterior`, `issimplified`, `nearestNeighbor`, `nearestvertex`, `nsidedpoly`, `numboundaries`, `numRegions`, `numsides`, `overlaps`, `patch`, `perimeter`, `pointLocation`, `polyarea`, `polybuffer`, `polyshape`, `rectint`, `regions`, `rmboundary`, `rmholes`, `rmslivers`, `rotate`, `scale`, `sortboundaries`, `sortregions`, `stlread`, `stlwrite`, `subtract`, `surfaceArea`, `tetramesh`, `translate`, `triangulation`, `trimesh`, `triplot`, `TriRep`, `trisurf`, `tsearchn`, `turningdist`, `vertexAttachments`, `vertexNormal`, `volume`, `voronoi`, `voronoiDiagram`, `voronoin`
 
 ## MATLAB > Mathematics > Elementary Math
 
@@ -938,7 +938,7 @@ Implemented: `cholcov`, `corr`, `corrcov`, `crosstab`, `geomean`, `harmmean`, `k
 
 ## Statistics and Machine Learning Toolbox > Descriptive Statistics and Visualization > Managing Data
 
-Implemented: 2. To implement: 19. In a branch: 0. Out of scope: 0.
+Implemented: 3. To implement: 18. In a branch: 0. Out of scope: 0.
 
 To implement:
 
@@ -949,7 +949,6 @@ To implement:
 - [ ] `dataset2table`
 - [ ] `gplotmatrix`
 - [ ] `gscatter`
-- [ ] `hist3`
 - [ ] `mat2dataset`
 - [ ] `nominal`
 - [ ] `onehotdecode`
@@ -962,7 +961,7 @@ To implement:
 - [ ] `tdfread`
 - [ ] `xptread`
 
-Implemented: `dummyvar`, `grp2idx`
+Implemented: `dummyvar`, `grp2idx`, `hist3`
 
 ## Statistics and Machine Learning Toolbox > Descriptive Statistics and Visualization > Statistical Visualization
 
@@ -1011,17 +1010,15 @@ To implement:
 
 ## Statistics and Machine Learning Toolbox > Industrial Statistics > Design of Experiments (DOE)
 
-Implemented: 3. To implement: 17. In a branch: 0. Out of scope: 0.
+Implemented: 5. To implement: 15. In a branch: 0. Out of scope: 0.
 
 To implement:
 
 - [ ] `candexch`
 - [ ] `candgen`
-- [ ] `ccdesign`
 - [ ] `cordexch`
 - [ ] `daugment`
 - [ ] `dcovary`
-- [ ] `fracfact`
 - [ ] `fracfactgen`
 - [ ] `haltonset`
 - [ ] `interactionplot`
@@ -1033,19 +1030,19 @@ To implement:
 - [ ] `rowexch`
 - [ ] `sobolset`
 
-Implemented: `bbdesign`, `ff2n`, `fullfact`
+Implemented: `bbdesign`, `ccdesign`, `ff2n`, `fracfact`, `fullfact`
 
 ## Statistics and Machine Learning Toolbox > Industrial Statistics > Statistical Process Control
 
-Implemented: 0. To implement: 5. In a branch: 0. Out of scope: 0.
+Implemented: 2. To implement: 3. In a branch: 0. Out of scope: 0.
 
 To implement:
 
-- [ ] `capability`
 - [ ] `capaplot`
 - [ ] `controlchart`
-- [ ] `controlrules`
 - [ ] `gagerr`
+
+Implemented: `capability`, `controlrules`
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Exploration and Visualization
 
@@ -1066,23 +1063,18 @@ Implemented: `cdf`, `icdf`, `pdf`, `random`
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Hypothesis Tests
 
-Implemented: 13. To implement: 11. In a branch: 0. Out of scope: 0.
+Implemented: 18. To implement: 6. In a branch: 0. Out of scope: 0.
 
 To implement:
 
 - [ ] `adtest`
-- [ ] `ansaribradley`
 - [ ] `detectdrift`
-- [ ] `dwtest`
 - [ ] `gardnerAltmanPlot`
-- [ ] `jbtest`
-- [ ] `lillietest`
 - [ ] `meanEffectSize`
 - [ ] `multcompare`
 - [ ] `sampsizepwr`
-- [ ] `vartestn`
 
-Implemented: `barttest`, `fishertest`, `friedman`, `kruskalwallis`, `kstest`, `kstest2`, `ranksum`, `runstest`, `signrank`, `signtest`, `vartest`, `vartest2`, `ztest`
+Implemented: `ansaribradley`, `barttest`, `dwtest`, `fishertest`, `friedman`, `jbtest`, `kruskalwallis`, `kstest`, `kstest2`, `lillietest`, `ranksum`, `runstest`, `signrank`, `signtest`, `vartest`, `vartest2`, `vartestn`, `ztest`
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Multivariate Distributions
 
@@ -1131,12 +1123,11 @@ Implemented: `combnk`, `datasample`, `jackknife`, `randsample`
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions
 
-Implemented: 99. To implement: 20. In a branch: 0. Out of scope: 0.
+Implemented: 100. To implement: 19. In a branch: 0. Out of scope: 0.
 
 To implement:
 
 - [ ] `betarnd`
-- [ ] `chi2gof`
 - [ ] `chi2rnd`
 - [ ] `frnd`
 - [ ] `gamrnd`
@@ -1156,7 +1147,7 @@ To implement:
 - [ ] `trnd`
 - [ ] `wblplot`
 
-Implemented: `betacdf`, `betafit`, `betainv`, `betalike`, `betapdf`, `betastat`, `chi2cdf`, `chi2inv`, `chi2pdf`, `chi2stat`, `evcdf`, `evfit`, `evinv`, `evlike`, `evpdf`, `evrnd`, `evstat`, `expcdf`, `expfit`, `expinv`, `explike`, `exppdf`, `exprnd`, `expstat`, `fcdf`, `finv`, `fpdf`, `fstat`, `gamcdf`, `gamfit`, `gaminv`, `gamlike`, `gampdf`, `gamstat`, `gevcdf`, `gevfit`, `gevinv`, `gevlike`, `gevpdf`, `gevrnd`, `gevstat`, `gpcdf`, `gpfit`, `gpinv`, `gplike`, `gppdf`, `gprnd`, `gpstat`, `logncdf`, `lognfit`, `logninv`, `lognlike`, `lognpdf`, `lognrnd`, `lognstat`, `ncfcdf`, `ncfinv`, `ncfpdf`, `ncfstat`, `nctcdf`, `nctinv`, `nctpdf`, `nctstat`, `ncx2cdf`, `ncx2inv`, `ncx2pdf`, `ncx2stat`, `normcdf`, `normfit`, `norminv`, `normlike`, `normpdf`, `normrnd`, `normstat`, `raylcdf`, `raylfit`, `raylinv`, `raylpdf`, `raylrnd`, `raylstat`, `tcdf`, `tinv`, `tpdf`, `tstat`, `ttest`, `ttest2`, `unifcdf`, `unifinv`, `unifit`, `unifpdf`, `unifrnd`, `unifstat`, `wblcdf`, `wblfit`, `wblinv`, `wbllike`, `wblpdf`, `wblrnd`, `wblstat`
+Implemented: `betacdf`, `betafit`, `betainv`, `betalike`, `betapdf`, `betastat`, `chi2cdf`, `chi2gof`, `chi2inv`, `chi2pdf`, `chi2stat`, `evcdf`, `evfit`, `evinv`, `evlike`, `evpdf`, `evrnd`, `evstat`, `expcdf`, `expfit`, `expinv`, `explike`, `exppdf`, `exprnd`, `expstat`, `fcdf`, `finv`, `fpdf`, `fstat`, `gamcdf`, `gamfit`, `gaminv`, `gamlike`, `gampdf`, `gamstat`, `gevcdf`, `gevfit`, `gevinv`, `gevlike`, `gevpdf`, `gevrnd`, `gevstat`, `gpcdf`, `gpfit`, `gpinv`, `gplike`, `gppdf`, `gprnd`, `gpstat`, `logncdf`, `lognfit`, `logninv`, `lognlike`, `lognpdf`, `lognrnd`, `lognstat`, `ncfcdf`, `ncfinv`, `ncfpdf`, `ncfstat`, `nctcdf`, `nctinv`, `nctpdf`, `nctstat`, `ncx2cdf`, `ncx2inv`, `ncx2pdf`, `ncx2stat`, `normcdf`, `normfit`, `norminv`, `normlike`, `normpdf`, `normrnd`, `normstat`, `raylcdf`, `raylfit`, `raylinv`, `raylpdf`, `raylrnd`, `raylstat`, `tcdf`, `tinv`, `tpdf`, `tstat`, `ttest`, `ttest2`, `unifcdf`, `unifinv`, `unifit`, `unifpdf`, `unifrnd`, `unifstat`, `wblcdf`, `wblfit`, `wblinv`, `wbllike`, `wblpdf`, `wblrnd`, `wblstat`
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions
 
@@ -1200,7 +1191,7 @@ To implement:
 
 ## Statistics and Machine Learning Toolbox > Regression > Generalized Linear Models
 
-Implemented: 2. To implement: 11. In a branch: 0. Out of scope: 0.
+Implemented: 3. To implement: 10. In a branch: 0. Out of scope: 0.
 
 To implement:
 
@@ -1209,14 +1200,13 @@ To implement:
 - [ ] `fitclinear`
 - [ ] `fitglme`
 - [ ] `fitmnr`
-- [ ] `glmfit`
 - [ ] `lassoglm`
 - [ ] `mnrfit`
 - [ ] `mnrval`
 - [ ] `stepwiseglm`
 - [ ] `templateLinear`
 
-Implemented: `fitglm`, `glmval`
+Implemented: `fitglm`, `glmfit`, `glmval`
 
 ## Statistics and Machine Learning Toolbox > Regression > Incremental Learning
 
