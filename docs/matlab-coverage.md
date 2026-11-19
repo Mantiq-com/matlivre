@@ -7,10 +7,10 @@ found in the toolbox folders, checked against MatLivre. Regenerate with
 
 | Status | Count |
 |---|---:|
-| Implemented | 2114 |
+| Implemented | 2119 |
 | In a branch not merged yet | 0 |
 | Language keyword (check it works) | 25 |
-| **To implement** | **370** |
+| **To implement** | **365** |
 | Out of scope | 1355 |
 
 Out of scope, by category of the function reference: app building, external language
@@ -815,15 +815,9 @@ Implemented: `fitcnb`
 
 ## Statistics and Machine Learning Toolbox > Classification > Nearest Neighbors
 
-Implemented: 5. To implement: 3. In a branch: 0. Out of scope: 0.
+Implemented: 8. To implement: 0. In a branch: 0. Out of scope: 0.
 
-To implement:
-
-- [ ] `createns`
-- [ ] `ExhaustiveSearcher`
-- [ ] `KDTreeSearcher`
-
-Implemented: `fitcknn`, `knnsearch`, `pdist`, `pdist2`, `rangesearch`
+Implemented: `createns`, `ExhaustiveSearcher`, `fitcknn`, `KDTreeSearcher`, `knnsearch`, `pdist`, `pdist2`, `rangesearch`
 
 ## Statistics and Machine Learning Toolbox > Classification > Neural Networks
 
@@ -1168,19 +1162,17 @@ Implemented: `betacdf`, `betafit`, `betainv`, `betalike`, `betapdf`, `betastat`,
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions
 
-Implemented: 32. To implement: 7. In a branch: 0. Out of scope: 0.
+Implemented: 34. To implement: 5. In a branch: 0. Out of scope: 0.
 
 To implement:
 
 - [ ] `ecdfhist`
-- [ ] `fitdist`
-- [ ] `makedist`
 - [ ] `mle`
 - [ ] `nbinrnd`
 - [ ] `poissrnd`
 - [ ] `qqplot`
 
-Implemented: `binocdf`, `binofit`, `binoinv`, `binopdf`, `binornd`, `binostat`, `ecdf`, `geocdf`, `geoinv`, `geopdf`, `geornd`, `geostat`, `hygecdf`, `hygeinv`, `hygepdf`, `hygernd`, `hygestat`, `nbincdf`, `nbinfit`, `nbininv`, `nbinpdf`, `nbinstat`, `poisscdf`, `poissfit`, `poissinv`, `poisspdf`, `poisstat`, `unidcdf`, `unidinv`, `unidpdf`, `unidrnd`, `unidstat`
+Implemented: `binocdf`, `binofit`, `binoinv`, `binopdf`, `binornd`, `binostat`, `ecdf`, `fitdist`, `geocdf`, `geoinv`, `geopdf`, `geornd`, `geostat`, `hygecdf`, `hygeinv`, `hygepdf`, `hygernd`, `hygestat`, `makedist`, `nbincdf`, `nbinfit`, `nbininv`, `nbinpdf`, `nbinstat`, `poisscdf`, `poissfit`, `poissinv`, `poisspdf`, `poisstat`, `unidcdf`, `unidinv`, `unidpdf`, `unidrnd`, `unidstat`
 
 ## Statistics and Machine Learning Toolbox > Regression > Direct Forecasting
 
