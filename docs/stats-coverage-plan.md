@@ -37,7 +37,7 @@ The coverage checklist (`tools/coverage/update.sh`, `coverage.pl`) reads `stats.
 | Functions and classes in scope list (`stats.tsv`, R2023b-era) | 485 |
 | Out of scope (see below) | 15 |
 | In scope | 470 |
-| Implemented in MatLivre (`crates/livre-lang/src/stats/`) | 225 |
+| Implemented in MatLivre (`crates/livre-lang/src/stats/`) | 230 |
 | Class methods (`stats_methods.tsv`), implemented with their classes | 510 |
 
 Names per table-of-contents category (first listing): Probability distributions and hypothesis
