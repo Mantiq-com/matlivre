@@ -7,10 +7,10 @@ found in the toolbox folders, checked against MatLivre. Regenerate with
 
 | Status | Count |
 |---|---:|
-| Implemented | 2102 |
+| Implemented | 2114 |
 | In a branch not merged yet | 0 |
 | Language keyword (check it works) | 25 |
-| **To implement** | **382** |
+| **To implement** | **370** |
 | Out of scope | 1355 |
 
 Out of scope, by category of the function reference: app building, external language
@@ -711,7 +711,7 @@ Out of scope: `allMuPADNotebooks` (desktop, IDE, GUI, printing or interactive to
 
 ## Statistics and Machine Learning Toolbox > ANOVA > Analysis of Variance and Covariance
 
-Implemented: 1. To implement: 5. In a branch: 0. Out of scope: 0.
+Implemented: 2. To implement: 4. In a branch: 0. Out of scope: 0.
 
 To implement:
 
@@ -719,9 +719,8 @@ To implement:
 - [ ] `anova2`
 - [ ] `anovan`
 - [ ] `aoctool`
-- [ ] `canoncorr`
 
-Implemented: `anova1`
+Implemented: `anova1`, `canoncorr`
 
 ## Statistics and Machine Learning Toolbox > ANOVA > Repeated Measures and MANOVA
 
@@ -883,11 +882,9 @@ Implemented: `silhouette`
 
 ## Statistics and Machine Learning Toolbox > Cluster Analysis and Anomaly Detection > Density-Based Spatial Clustering of Applications with Noise
 
-Implemented: 0. To implement: 1. In a branch: 0. Out of scope: 0.
+Implemented: 1. To implement: 0. In a branch: 0. Out of scope: 0.
 
-To implement:
-
-- [ ] `dbscan`
+Implemented: `dbscan`
 
 ## Statistics and Machine Learning Toolbox > Cluster Analysis and Anomaly Detection > Gaussian Mixture Models
 
@@ -900,15 +897,14 @@ To implement:
 
 ## Statistics and Machine Learning Toolbox > Cluster Analysis and Anomaly Detection > Hidden Markov Models
 
-Implemented: 0. To implement: 5. In a branch: 0. Out of scope: 0.
+Implemented: 3. To implement: 2. In a branch: 0. Out of scope: 0.
 
 To implement:
 
-- [ ] `hmmdecode`
-- [ ] `hmmestimate`
 - [ ] `hmmgenerate`
 - [ ] `hmmtrain`
-- [ ] `hmmviterbi`
+
+Implemented: `hmmdecode`, `hmmestimate`, `hmmviterbi`
 
 ## Statistics and Machine Learning Toolbox > Cluster Analysis and Anomaly Detection > Hierarchical Clustering
 
@@ -995,7 +991,7 @@ To implement:
 
 ## Statistics and Machine Learning Toolbox > Dimensionality Reduction and Feature Extraction
 
-Implemented: 4. To implement: 10. In a branch: 0. Out of scope: 0.
+Implemented: 5. To implement: 9. In a branch: 0. Out of scope: 0.
 
 To implement:
 
@@ -1004,13 +1000,12 @@ To implement:
 - [ ] `mdscale`
 - [ ] `nnmf`
 - [ ] `ppca`
-- [ ] `procrustes`
 - [ ] `rica`
 - [ ] `rotatefactors`
 - [ ] `sparsefilt`
 - [ ] `tsne`
 
-Implemented: `cmdscale`, `pca`, `pcacov`, `pcares`
+Implemented: `cmdscale`, `pca`, `pcacov`, `pcares`, `procrustes`
 
 ## Statistics and Machine Learning Toolbox > Industrial Statistics > Analysis of Lifetime Data
 
@@ -1023,11 +1018,10 @@ To implement:
 
 ## Statistics and Machine Learning Toolbox > Industrial Statistics > Design of Experiments (DOE)
 
-Implemented: 2. To implement: 18. In a branch: 0. Out of scope: 0.
+Implemented: 3. To implement: 17. In a branch: 0. Out of scope: 0.
 
 To implement:
 
-- [ ] `bbdesign`
 - [ ] `candexch`
 - [ ] `candgen`
 - [ ] `ccdesign`
@@ -1046,7 +1040,7 @@ To implement:
 - [ ] `rowexch`
 - [ ] `sobolset`
 
-Implemented: `ff2n`, `fullfact`
+Implemented: `bbdesign`, `ff2n`, `fullfact`
 
 ## Statistics and Machine Learning Toolbox > Industrial Statistics > Statistical Process Control
 
@@ -1079,13 +1073,12 @@ Implemented: `cdf`, `icdf`, `pdf`, `random`
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Hypothesis Tests
 
-Implemented: 11. To implement: 13. In a branch: 0. Out of scope: 0.
+Implemented: 12. To implement: 12. In a branch: 0. Out of scope: 0.
 
 To implement:
 
 - [ ] `adtest`
 - [ ] `ansaribradley`
-- [ ] `barttest`
 - [ ] `detectdrift`
 - [ ] `dwtest`
 - [ ] `friedman`
@@ -1097,7 +1090,7 @@ To implement:
 - [ ] `sampsizepwr`
 - [ ] `vartestn`
 
-Implemented: `fishertest`, `kruskalwallis`, `kstest`, `kstest2`, `ranksum`, `runstest`, `signrank`, `signtest`, `vartest`, `vartest2`, `ztest`
+Implemented: `barttest`, `fishertest`, `kruskalwallis`, `kstest`, `kstest2`, `ranksum`, `runstest`, `signrank`, `signtest`, `vartest`, `vartest2`, `ztest`
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Multivariate Distributions
 
@@ -1146,7 +1139,7 @@ Implemented: `combnk`, `datasample`, `jackknife`, `randsample`
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Univariate Continuous Distributions
 
-Implemented: 97. To implement: 22. In a branch: 0. Out of scope: 0.
+Implemented: 99. To implement: 20. In a branch: 0. Out of scope: 0.
 
 To implement:
 
@@ -1155,8 +1148,6 @@ To implement:
 - [ ] `chi2rnd`
 - [ ] `frnd`
 - [ ] `gamrnd`
-- [ ] `gevfit`
-- [ ] `gpfit`
 - [ ] `histfit`
 - [ ] `ksdensity`
 - [ ] `mlecov`
@@ -1173,11 +1164,11 @@ To implement:
 - [ ] `trnd`
 - [ ] `wblplot`
 
-Implemented: `betacdf`, `betafit`, `betainv`, `betalike`, `betapdf`, `betastat`, `chi2cdf`, `chi2inv`, `chi2pdf`, `chi2stat`, `evcdf`, `evfit`, `evinv`, `evlike`, `evpdf`, `evrnd`, `evstat`, `expcdf`, `expfit`, `expinv`, `explike`, `exppdf`, `exprnd`, `expstat`, `fcdf`, `finv`, `fpdf`, `fstat`, `gamcdf`, `gamfit`, `gaminv`, `gamlike`, `gampdf`, `gamstat`, `gevcdf`, `gevinv`, `gevlike`, `gevpdf`, `gevrnd`, `gevstat`, `gpcdf`, `gpinv`, `gplike`, `gppdf`, `gprnd`, `gpstat`, `logncdf`, `lognfit`, `logninv`, `lognlike`, `lognpdf`, `lognrnd`, `lognstat`, `ncfcdf`, `ncfinv`, `ncfpdf`, `ncfstat`, `nctcdf`, `nctinv`, `nctpdf`, `nctstat`, `ncx2cdf`, `ncx2inv`, `ncx2pdf`, `ncx2stat`, `normcdf`, `normfit`, `norminv`, `normlike`, `normpdf`, `normrnd`, `normstat`, `raylcdf`, `raylfit`, `raylinv`, `raylpdf`, `raylrnd`, `raylstat`, `tcdf`, `tinv`, `tpdf`, `tstat`, `ttest`, `ttest2`, `unifcdf`, `unifinv`, `unifit`, `unifpdf`, `unifrnd`, `unifstat`, `wblcdf`, `wblfit`, `wblinv`, `wbllike`, `wblpdf`, `wblrnd`, `wblstat`
+Implemented: `betacdf`, `betafit`, `betainv`, `betalike`, `betapdf`, `betastat`, `chi2cdf`, `chi2inv`, `chi2pdf`, `chi2stat`, `evcdf`, `evfit`, `evinv`, `evlike`, `evpdf`, `evrnd`, `evstat`, `expcdf`, `expfit`, `expinv`, `explike`, `exppdf`, `exprnd`, `expstat`, `fcdf`, `finv`, `fpdf`, `fstat`, `gamcdf`, `gamfit`, `gaminv`, `gamlike`, `gampdf`, `gamstat`, `gevcdf`, `gevfit`, `gevinv`, `gevlike`, `gevpdf`, `gevrnd`, `gevstat`, `gpcdf`, `gpfit`, `gpinv`, `gplike`, `gppdf`, `gprnd`, `gpstat`, `logncdf`, `lognfit`, `logninv`, `lognlike`, `lognpdf`, `lognrnd`, `lognstat`, `ncfcdf`, `ncfinv`, `ncfpdf`, `ncfstat`, `nctcdf`, `nctinv`, `nctpdf`, `nctstat`, `ncx2cdf`, `ncx2inv`, `ncx2pdf`, `ncx2stat`, `normcdf`, `normfit`, `norminv`, `normlike`, `normpdf`, `normrnd`, `normstat`, `raylcdf`, `raylfit`, `raylinv`, `raylpdf`, `raylrnd`, `raylstat`, `tcdf`, `tinv`, `tpdf`, `tstat`, `ttest`, `ttest2`, `unifcdf`, `unifinv`, `unifit`, `unifpdf`, `unifrnd`, `unifstat`, `wblcdf`, `wblfit`, `wblinv`, `wbllike`, `wblpdf`, `wblrnd`, `wblstat`
 
 ## Statistics and Machine Learning Toolbox > Probability Distributions and Hypothesis Tests > Univariate Discrete Distributions
 
-Implemented: 30. To implement: 9. In a branch: 0. Out of scope: 0.
+Implemented: 32. To implement: 7. In a branch: 0. Out of scope: 0.
 
 To implement:
 
@@ -1185,13 +1176,11 @@ To implement:
 - [ ] `fitdist`
 - [ ] `makedist`
 - [ ] `mle`
-- [ ] `nbinfit`
 - [ ] `nbinrnd`
 - [ ] `poissrnd`
-- [ ] `poisstat`
 - [ ] `qqplot`
 
-Implemented: `binocdf`, `binofit`, `binoinv`, `binopdf`, `binornd`, `binostat`, `ecdf`, `geocdf`, `geoinv`, `geopdf`, `geornd`, `geostat`, `hygecdf`, `hygeinv`, `hygepdf`, `hygernd`, `hygestat`, `nbincdf`, `nbininv`, `nbinpdf`, `nbinstat`, `poisscdf`, `poissfit`, `poissinv`, `poisspdf`, `unidcdf`, `unidinv`, `unidpdf`, `unidrnd`, `unidstat`
+Implemented: `binocdf`, `binofit`, `binoinv`, `binopdf`, `binornd`, `binostat`, `ecdf`, `geocdf`, `geoinv`, `geopdf`, `geornd`, `geostat`, `hygecdf`, `hygeinv`, `hygepdf`, `hygernd`, `hygestat`, `nbincdf`, `nbinfit`, `nbininv`, `nbinpdf`, `nbinstat`, `poisscdf`, `poissfit`, `poissinv`, `poisspdf`, `poisstat`, `unidcdf`, `unidinv`, `unidpdf`, `unidrnd`, `unidstat`
 
 ## Statistics and Machine Learning Toolbox > Regression > Direct Forecasting
 
