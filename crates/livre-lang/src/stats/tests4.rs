@@ -7,7 +7,7 @@ use crate::error::rt;
 use crate::interp::Interpreter;
 use crate::value::*;
 
-pub const NAMES: &[&str] = &["capability", "hist3", "controlrules"];
+pub const NAMES: &[&str] = &["capability", "hist3", "controlrules", "fracfact"];
 
 fn is_empty_val(v: &Value) -> bool {
     matches!(v, Value::Num(m) if m.is_empty())
@@ -321,6 +321,7 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
     match name {
         "capability" => capability(a),
         "controlrules" => controlrules(a),
+        "fracfact" => fracfact(a, nargout),
         _ => hist3(it, a, nargout),
     }
 }
@@ -504,4 +505,179 @@ fn controlrules(a: &[Value]) -> Ret {
     let rm = Matrix::from_dims(vec![rows, nr], out).cast_to(Kind::Logical);
     let rcell = Value::Cell(CellArray::from_dims(vec![1, nr], rules.iter().map(|s| Value::chars(s)).collect()));
     Ok(Some(vec![Value::Num(rm), rcell]))
+}
+
+// ---------------------------------------------------------------------------------------------
+// fracfact
+
+/// All k-element subsets of 1..=n in lexicographic order.
+fn combinations(n: usize, k: usize) -> Vec<Vec<usize>> {
+    let mut out = Vec::new();
+    if k == 0 || k > n {
+        return out;
+    }
+    let mut idx: Vec<usize> = (1..=k).collect();
+    loop {
+        out.push(idx.clone());
+        let Some(i) = (0..k).rev().find(|&i| idx[i] < n - (k - 1 - i)) else { return out };
+        idx[i] += 1;
+        for j in i + 1..k {
+            idx[j] = idx[j - 1] + 1;
+        }
+    }
+}
+
+fn fracfact(a: &[Value], nargout: usize) -> Ret {
+    const BAD: &str = "Invalid generator character vector or string scalar.";
+    let Some(g0) = a.first() else { return rt("Not enough input arguments.") };
+    let gen_text: String = match g0 {
+        Value::Cell(c) => {
+            let mut s = String::new();
+            for v in &c.data {
+                if !v.is_text() {
+                    return rt(BAD);
+                }
+                s.push_str(&v.text().unwrap_or_default());
+                s.push(' ');
+            }
+            s
+        }
+        v if v.is_text() => {
+            if let Value::Num(m) = v {
+                if m.dims[0] > 1 {
+                    return rt(BAD);
+                }
+            }
+            v.text().unwrap_or_default()
+        }
+        _ => return rt(BAD),
+    };
+    if !gen_text.chars().all(|c| c.is_ascii_alphabetic() || c.is_whitespace() || c == '-') {
+        return rt(BAD);
+    }
+    let mut maxint_v: Option<Value> = None;
+    let mut names_v: Option<Value> = None;
+    let rest = &a[1..];
+    if rest.len() % 2 != 0 {
+        return rt("Wrong number of arguments.");
+    }
+    for pair in rest.chunks(2) {
+        let key = pair[0].text().unwrap_or_default().to_lowercase();
+        if !key.is_empty() && "maxint".starts_with(&key) {
+            maxint_v = Some(pair[1].clone());
+        } else if !key.is_empty() && "factornames".starts_with(&key) {
+            names_v = Some(pair[1].clone());
+        } else {
+            return rt(format!("Invalid parameter name: {}.", pair[0].text().unwrap_or_default()));
+        }
+    }
+    let trimmed = gen_text.trim();
+    if trimmed.is_empty() {
+        return rt("First input can not be empty. Expected a non-empty character vector or a valid file-id.");
+    }
+    let mut words: Vec<String> = trimmed.split_whitespace().map(|s| s.to_string()).collect();
+    if !trimmed.chars().any(|c| c.is_ascii_lowercase()) {
+        for w in words.iter_mut() {
+            *w = w.to_lowercase();
+        }
+    }
+    let seq: Vec<char> = ('a'..='z').chain('A'..='Z').collect();
+    let letters: Vec<char> = seq.into_iter().filter(|c| words.iter().any(|w| w.contains(*c))).collect();
+    let k = letters.len();
+    if k == 0 {
+        return rt(BAD);
+    }
+    let mut alpha: Vec<char> = vec!['-'];
+    alpha.extend(letters.iter().copied());
+    let n = 1usize << k;
+    let p = words.len();
+    let full = |row: usize, col: usize| -> f64 {
+        if col == 0 {
+            -1.0
+        } else {
+            let bit = (row >> (k - col)) & 1;
+            -1.0 + 2.0 * bit as f64
+        }
+    };
+    let mut x = vec![0.0; n * p];
+    let mut bitmat = vec![vec![false; k + 1]; p];
+    for (j, w) in words.iter().enumerate() {
+        let mut cols: Vec<usize> = w.chars().filter_map(|c| alpha.iter().position(|&a| a == c)).collect();
+        cols.sort();
+        for r in 0..n {
+            x[j * n + r] = cols.iter().map(|&c| full(r, c)).product();
+        }
+        for &c in &cols {
+            bitmat[j][c] = !bitmat[j][c];
+        }
+    }
+    let mut out = vec![Value::Num(Matrix::from_dims(vec![n, p], x))];
+    if nargout > 1 {
+        let maxint = match &maxint_v {
+            None => 2.0,
+            Some(Value::Num(m)) if m.kind != Kind::Char && m.data.len() == 1 && m.data[0] > 0.0 && m.data[0] == m.data[0].floor() => m.data[0],
+            Some(_) => return rt("MaxInt parameter must be a positive integer."),
+        } as usize;
+        let names: Vec<String> = match &names_v {
+            None => (1..=p).map(|i| format!("X{i}")).collect(),
+            Some(Value::Cell(c)) if c.data.len() == p && c.data.iter().all(|v| v.is_text()) => c.data.iter().map(|v| v.text().unwrap_or_default()).collect(),
+            Some(_) => return rt("FactorNames value must be a cell array with one name for each factor."),
+        };
+        let klen = alpha.len();
+        let gen_of = |mask: &[bool]| -> String {
+            let s: String = (0..klen).filter(|&i| mask[i]).map(|i| alpha[i]).collect();
+            if s.is_empty() { "1".to_string() } else { s }
+        };
+        let mut rows: Vec<(String, String, Option<String>)> = vec![("Term".into(), "Generator".into(), Some("Confounding".into()))];
+        for j in 0..p {
+            rows.push((names[j].clone(), gen_of(&bitmat[j]), None));
+        }
+        for j in 2..=maxint.min(klen) {
+            if p == 1 {
+                return rt("K must be an integer between 0 and N.");
+            }
+            for g in combinations(p, j) {
+                let name = g.iter().map(|&i| rows[i].0.clone()).collect::<Vec<_>>().join("*");
+                let mask: Vec<bool> = (0..=k).map(|c| g.iter().map(|&i| bitmat[i - 1][c]).filter(|&b| b).count() % 2 == 1).collect();
+                rows.push((name, gen_of(&mask), None));
+            }
+        }
+        for j in 1..rows.len() {
+            if rows[j].2.is_some() {
+                continue;
+            }
+            let gen = rows[j].1.clone();
+            let other: String = if gen.is_empty() {
+                "- -".to_string()
+            } else if gen.starts_with('-') {
+                gen[1..].to_string()
+            } else {
+                format!("-{gen}")
+            };
+            let mut sel: Vec<usize> = (0..rows.len()).filter(|&i| rows[i].1 == gen || rows[i].1 == other).collect();
+            sel.sort();
+            let rows1: Vec<usize> = (0..rows.len()).filter(|&i| rows[i].1 == gen).collect();
+            let mut t = rows[sel[0]].0.clone();
+            if rows[sel[0]].1 != gen {
+                t = format!("-{t}");
+            }
+            for &i in &sel[1..] {
+                if rows[i].1 == gen {
+                    t = format!("{t} + {}", rows[i].0);
+                } else {
+                    t = format!("{t} - {}", rows[i].0);
+                }
+            }
+            for i in rows1 {
+                rows[i].2 = Some(t.clone());
+            }
+        }
+        let nr = rows.len();
+        let mut cells: Vec<Value> = Vec::with_capacity(nr * 3);
+        cells.extend(rows.iter().map(|r| Value::chars(&r.0)));
+        cells.extend(rows.iter().map(|r| Value::chars(&r.1)));
+        cells.extend(rows.iter().map(|r| Value::chars(r.2.as_deref().unwrap_or(""))));
+        out.push(Value::Cell(CellArray::from_dims(vec![nr, 3], cells)));
+    }
+    Ok(Some(out))
 }

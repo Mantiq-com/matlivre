@@ -164,6 +164,20 @@ for c in ["controlrules('foo',xr,0,1)", "controlrules('w',xr,0,1)", "controlrule
     L8.append(PRE8 + cr.replace("{c}", c))
 L += L8
 
+ff = "[x_,c_] = {c}; r = {x_, strjoin(c_(:,1)',';'), strjoin(c_(:,2)',';'), strjoin(c_(:,3)',';')};"
+ff1 = "x_ = {c}; r = x_;"
+L9 = []
+for c in ["fracfact('a b ab')", "fracfact('a b c abc')", "fracfact('a b c d abcd')", "fracfact('a b c ab ac')", "fracfact('a b c d abc')", "fracfact('a b c d e abcde')", "fracfact('a b c d e abc bcd')", "fracfact('a b -ab')",
+          "fracfact('a b c -abc')", "fracfact('A B AB')", "fracfact('a B aB')", "fracfact('a b c abc','maxint',3)", "fracfact('a b c d abcd','maxint',3)", "fracfact('a b c abc','maxint',1)", "fracfact('a b c abc','maxint',9)",
+          "fracfact('a b ab','factornames',{'p','q','r'})", "fracfact('a b c ab','FactorNames',{'temp','time','pres','tt'})", "fracfact({'a','b','ab'})", "fracfact('a   b    ab')", "fracfact('  a b ab ')", "fracfact('a')", "fracfact('a b','maxint',2)",
+          "fracfact('a b c d ab bc cd')", "fracfact('b c bc')", "fracfact('a c ac')", "fracfact('ab')", "fracfact('a-b')", "fracfact('a a')", "fracfact('a b abab')", "fracfact('a b c d e f abcdef','maxint',3)"]:
+    L9.append(ff.replace("{c}", c))
+    L9.append(ff1.replace("{c}", c))
+for c in ["fracfact(3)", "fracfact('a b 1')", "fracfact('')", "fracfact('   ')", "fracfact(['a b';'c d'])", "fracfact('a b','maxint',0)", "fracfact('a b','maxint',1.5)", "fracfact('a b','factornames',{'x'})", "fracfact('a b','bogus',1)",
+          "fracfact('a b','factornames','abc')", "fracfact('a b ab','maxint')", "fracfact()", "fracfact('a b ab','maxint','x')", "fracfact('a b ab','factornames',{1,2,3})", "fracfact({1,2})"]:
+    L9.append(ff.replace("{c}", c))
+L += L9
+
 with open(os.path.join(here, "cases_u1.txt"), "w", encoding="utf-8", newline="\n") as f:
     f.write("\n".join(L) + "\n")
 print(len(L) - 1)
