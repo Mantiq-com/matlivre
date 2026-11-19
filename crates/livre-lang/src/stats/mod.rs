@@ -14,7 +14,9 @@ pub mod kmeans;
 pub mod ks;
 pub mod linmodel;
 pub mod lifefit;
+pub mod generic;
 pub mod misc;
+pub mod noncentral;
 pub mod tests2;
 pub mod htest;
 pub mod nonpar;
@@ -76,6 +78,9 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
     if glmodel::NAMES.contains(&name) {
         return glmodel::call(it, name, a, nargout);
     }
+    if generic::NAMES.contains(&name) {
+        return generic::call(it, name, a, nargout);
+    }
     if lifefit::NAMES.contains(&name) {
         return lifefit::call(it, name, a, nargout);
     }
@@ -96,5 +101,5 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
 
 /// Every name the stats modules provide.
 pub fn names() -> Vec<&'static str> {
-    [descr::NAMES, corr::NAMES, dist::NAMES, rnd::NAMES, htest::NAMES, dist_matrix::NAMES, hier::NAMES, pca::NAMES, regress::NAMES, kmeans::NAMES, sampling::NAMES, nonpar::NAMES, anova::NAMES, fitters::NAMES, ks::NAMES, linmodel::NAMES, glmodel::NAMES, misc::NAMES, tests2::NAMES, lifefit::NAMES].concat()
+    [descr::NAMES, corr::NAMES, dist::NAMES, rnd::NAMES, htest::NAMES, dist_matrix::NAMES, hier::NAMES, pca::NAMES, regress::NAMES, kmeans::NAMES, sampling::NAMES, nonpar::NAMES, anova::NAMES, fitters::NAMES, ks::NAMES, linmodel::NAMES, glmodel::NAMES, misc::NAMES, tests2::NAMES, lifefit::NAMES, generic::NAMES].concat()
 }

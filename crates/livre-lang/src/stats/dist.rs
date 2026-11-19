@@ -30,7 +30,7 @@ pub struct Family {
 }
 
 pub const FAMILY_NAMES: &[&str] = &[
-    "norm", "logn", "exp", "unif", "gam", "beta", "chi2", "t", "f", "wbl", "rayl", "ev", "gev", "gp", "bino", "poiss", "geo", "nbin", "hyge", "unid",
+    "norm", "logn", "exp", "unif", "gam", "beta", "chi2", "t", "f", "wbl", "rayl", "ev", "gev", "gp", "bino", "poiss", "geo", "nbin", "hyge", "unid", "ncx2", "nct", "ncf",
 ];
 
 pub const NAMES: &[&str] = &[
@@ -44,6 +44,7 @@ pub const NAMES: &[&str] = &[
     "binopdf", "binocdf", "binoinv", "binostat", "poisspdf", "poisscdf", "poissinv", "geopdf",
     "geocdf", "geoinv", "geostat", "nbinpdf", "nbincdf", "nbininv", "nbinstat", "hygepdf",
     "hygecdf", "hygeinv", "hygestat", "unidpdf", "unidcdf", "unidinv", "unidstat",
+    "ncx2pdf", "ncx2cdf", "ncx2inv", "ncx2stat", "nctpdf", "nctcdf", "nctinv", "nctstat", "ncfpdf", "ncfcdf", "ncfinv", "ncfstat",
 ];
 
 // ---- helpers ----------------------------------------------------------------------------------
@@ -233,6 +234,9 @@ fn t_pdf(x: f64, p: P) -> f64 {
 fn t_cdf(x: f64, p: P, upper: bool) -> f64 {
     let x = if upper { -x } else { x };
     super::corr::t_cdf(x, p[0])
+}
+pub(crate) fn t_inv_pub(q: f64, nu: f64) -> f64 {
+    t_inv(q, &[nu])
 }
 fn t_inv(q: f64, p: P) -> f64 {
     let v = p[0];
@@ -862,6 +866,9 @@ fn st_unid(p: P) -> (f64, f64) {
 }
 
 pub const FAMILIES: &[Family] = &[
+    Family { name: "ncx2", np: 2, defaults: &[None, None], valid: super::noncentral::v_ncx2, pdf: super::noncentral::ncx2_pdf, cdf: super::noncentral::ncx2_cdf, inv: super::noncentral::ncx2_inv, stat: super::noncentral::st_ncx2 },
+    Family { name: "nct", np: 2, defaults: &[None, None], valid: super::noncentral::v_nct, pdf: super::noncentral::nct_pdf, cdf: super::noncentral::nct_cdf, inv: super::noncentral::nct_inv, stat: super::noncentral::st_nct },
+    Family { name: "ncf", np: 3, defaults: &[None, None, None], valid: super::noncentral::v_ncf, pdf: super::noncentral::ncf_pdf, cdf: super::noncentral::ncf_cdf, inv: super::noncentral::ncf_inv, stat: super::noncentral::st_ncf },
     Family { name: "norm", np: 2, defaults: &[Some(0.0), Some(1.0)], valid: v_norm, pdf: norm_pdf, cdf: norm_cdf_f, inv: |q, p| p[1] * norm_inv(q) + p[0], stat: st_norm },
     Family { name: "logn", np: 2, defaults: &[Some(0.0), Some(1.0)], valid: v_logn, pdf: logn_pdf, cdf: logn_cdf, inv: |q, p| norm_inv(q).mul_add(p[1], p[0]).exp(), stat: st_logn },
     Family { name: "exp", np: 1, defaults: &[Some(1.0)], valid: v_pos1, pdf: exp_pdf, cdf: exp_cdf, inv: exp_inv, stat: st_exp },
@@ -936,6 +943,7 @@ pub fn call(_it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> R
     if !is_stat && mats[0].kind == Kind::Char && kind == "pdf" {
         match fam.name {
             "beta" | "f" => return rt("Undefined function 'log' for input arguments of type 'char'."),
+            "ncx2" => return rt("Undefined function 'sqrt' for input arguments of type 'char'."),
             "logn" => return rt("Non-scalar arguments must match in size."),
             _ => {}
         }
@@ -974,7 +982,7 @@ pub fn call(_it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> R
             continue;
         }
         let x = at(&mats[0], i);
-        out.push(if let Some(v) = override_invalid(fam.name, kind, x, &p, ok) {
+        out.push(if let Some(v) = override_invalid(fam.name, kind, x, &p, ok, upper) {
             v
         } else if !ok || x.is_nan() {
             f64::NAN
@@ -997,11 +1005,15 @@ pub fn call(_it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> R
 }
 
 /// Results MATLAB gives even for parameters it calls invalid.
-fn override_invalid(fam: &str, kind: &str, x: f64, p: P, ok: bool) -> Option<f64> {
+fn override_invalid(fam: &str, kind: &str, x: f64, p: P, ok: bool, upper: bool) -> Option<f64> {
     if ok {
         return if fam == "unid" && kind == "pdf" && x.is_nan() { Some(0.0) } else { None };
     }
     match (fam, kind) {
+        ("norm", "cdf") if p[1] == 0.0 && !p[0].is_nan() && !x.is_nan() => {
+            let lower = if x >= p[0] { 1.0 } else { 0.0 };
+            Some(if upper { 1.0 - lower } else { lower })
+        }
         ("gam", "pdf") if x == 0.0 && p[0] < 1.0 && p[1] > 0.0 => Some(f64::INFINITY),
         ("chi2", "pdf") if x == 0.0 && p[0] / 2.0 < 1.0 => Some(f64::INFINITY),
         ("rayl", "inv") if x == 1.0 => Some(f64::INFINITY),

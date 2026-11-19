@@ -28,3 +28,7 @@ xp=abs(x(1:40))+0.1; xb=(x(1:30)+2)/4; cn=double(xp>1.2); fq=[2 ones(1,38) 3]; [
 xp=abs(x(1:40))+0.1; xb=(x(1:30)+2)/4; cn=double(xp>1.2); fq=[2 ones(1,38) 3]; [a_,b_] = gamfit(xp,[],cn); r = {a_,b_};	censored gamma fits (a bound-constrained minimisation) are not implemented
 xp=abs(x(1:40))+0.1; xb=(x(1:30)+2)/4; cn=double(xp>1.2); fq=[2 ones(1,38) 3]; [a_,b_] = gamfit(xp,[],cn,fq); r = {a_,b_};	censored gamma fits (a bound-constrained minimisation) are not implemented
 xp=abs(x(1:40))+0.1; xb=(x(1:30)+2)/4; cn=double(xp>1.2); fq=[2 ones(1,38) 3]; [a_,b_] = gamfit(single(xp)); r = {a_,b_};	single precision: MATLAB iterates in single, MatLivre in double (1e-6 relative)
+r = ncx2inv(single([0 0.01 0.2 0.5 0.75 0.99 1]),4,2);	single precision: MATLAB iterates its Newton solver in single (1e-6 relative)
+r = pdf('Half Normal',1,0,1);	the half-normal distribution needs makedist (not implemented)
+r = icdf('Half Normal',0.5,0,1);	the half-normal distribution needs makedist (not implemented)
+rng(7); r = random('Poisson',3,4,1);	poissrnd is not implemented
