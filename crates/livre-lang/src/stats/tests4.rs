@@ -7,7 +7,7 @@ use crate::error::rt;
 use crate::interp::Interpreter;
 use crate::value::*;
 
-pub const NAMES: &[&str] = &["capability", "hist3", "controlrules", "fracfact"];
+pub const NAMES: &[&str] = &["capability", "hist3", "controlrules", "fracfact", "ccdesign"];
 
 fn is_empty_val(v: &Value) -> bool {
     matches!(v, Value::Num(m) if m.is_empty())
@@ -322,6 +322,7 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
         "capability" => capability(a),
         "controlrules" => controlrules(a),
         "fracfact" => fracfact(a, nargout),
+        "ccdesign" => ccdesign(it, a, nargout),
         _ => hist3(it, a, nargout),
     }
 }
@@ -678,6 +679,288 @@ fn fracfact(a: &[Value], nargout: usize) -> Ret {
         cells.extend(rows.iter().map(|r| Value::chars(&r.1)));
         cells.extend(rows.iter().map(|r| Value::chars(r.2.as_deref().unwrap_or(""))));
         out.push(Value::Cell(CellArray::from_dims(vec![nr, 3], cells)));
+    }
+    Ok(Some(out))
+}
+
+// ---------------------------------------------------------------------------------------------
+// ccdesign
+
+/// The generator words for the cube portion (and the block generators) of a central composite design.
+fn cc_getgen(nfactors: usize, frac: Option<usize>, blocked: bool) -> (String, usize, String) {
+    let frac = frac.unwrap_or_else(|| {
+        let best = [0usize, 0, 0, 0, 1, 1, 1, 2, 2, 3, 4];
+        if nfactors <= best.len() { best[nfactors - 1] } else { 1 }
+    });
+    let mut g = String::new();
+    let mut blk = String::new();
+    let nletters = nfactors.saturating_sub(frac);
+    let alf: Vec<char> = (0..nletters).map(|i| (b'a' + i as u8) as char).collect();
+    match nfactors {
+        3 => blk = "abc".into(),
+        4 => blk = "abcd".into(),
+        5 => {
+            if frac == 0 {
+                blk = "abc bcde".into();
+            } else if frac == 1 {
+                g = "abcd".into();
+            }
+        }
+        6 => {
+            if frac == 0 {
+                blk = "abcd cdef".into();
+            } else if frac == 1 {
+                g = "abcde".into();
+                blk = "abc".into();
+            }
+        }
+        7 => {
+            if frac == 1 {
+                g = "abcdef".into();
+                blk = "abcd abef bdf".into();
+            }
+        }
+        8 => {
+            if frac == 1 {
+                g = "abcdefg".into();
+            } else if frac == 2 {
+                g = "abcd abef".into();
+                blk = "ace bdf".into();
+            }
+        }
+        9 => {
+            if frac == 1 {
+                g = "abcdefgh".into();
+            } else if frac == 2 {
+                g = "abcde cdefg".into();
+            }
+        }
+        10 => {
+            if frac == 1 {
+                g = "abcdefghi".into();
+            } else if frac == 2 {
+                g = "abcde defgh".into();
+            } else if frac == 3 {
+                g = "abcd bceg acfg".into();
+            }
+        }
+        11 => {
+            if frac == 1 {
+                g = "abcdefghij".into();
+            } else if frac == 2 {
+                g = "abcdef defghi".into();
+            } else if frac == 3 {
+                g = "abcde bcdgh acefg".into();
+            } else if frac == 4 {
+                g = "abcd bceg acfg abcdefg".into();
+            }
+        }
+        _ => {}
+    }
+    if nfactors > 11 && frac == 1 {
+        g = alf.iter().collect();
+    }
+    if frac == 0 || !g.is_empty() {
+        let prefix: String = alf.iter().map(|c| format!("{c} ")).collect();
+        g = format!("{prefix}{g}");
+    }
+    if !blocked {
+        blk.clear();
+    }
+    (g, frac, blk)
+}
+
+fn cc_ncenter_uniform(k: usize, frac: usize) -> Option<f64> {
+    if (2..=8).contains(&k) && frac == 0 {
+        Some([f64::NAN, 5.0, 6.0, 7.0, 10.0, 15.0, 21.0, 28.0][k - 1])
+    } else if (5..=8).contains(&k) && frac == 1 {
+        Some([f64::NAN, f64::NAN, f64::NAN, f64::NAN, 6.0, 9.0, 14.0, 20.0][k - 1])
+    } else if k == 8 && frac == 2 {
+        Some(13.0)
+    } else {
+        None
+    }
+}
+
+fn cc_ctrblks(ncenter: f64, blocksize: f64, nb: usize, cblocksize: f64, sblocksize: f64) -> Vec<f64> {
+    let nbf = nb as f64;
+    let nper = (ncenter / nbf).ceil();
+    let maxncs = blocksize - sblocksize;
+    let maxncc = blocksize - cblocksize;
+    let (ncs, ncc);
+    if sblocksize + nper > blocksize {
+        ncs = blocksize - sblocksize;
+        ncc = (maxncc.min((ncenter - ncs) / (nbf - 1.0))).ceil();
+    } else if cblocksize + nper > blocksize {
+        ncc = blocksize - cblocksize;
+        ncs = maxncs.min(ncenter - ncc * (nbf - 1.0));
+    } else {
+        ncs = nper;
+        ncc = nper;
+    }
+    let ncenter = ncenter.min(ncs + (nbf - 1.0) * ncc);
+    let mut base: Vec<f64> = Vec::new();
+    for _ in 0..(ncc.max(0.0) as usize) {
+        base.extend((1..nb).map(|v| v as f64));
+    }
+    let take = (ncenter - ncs).max(0.0) as usize;
+    let mut out: Vec<f64> = base.into_iter().take(take).collect();
+    out.extend(std::iter::repeat(nbf).take(ncs.max(0.0) as usize));
+    out
+}
+
+fn ccdesign(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
+    let nf = match a.first() {
+        Some(Value::Num(m)) if m.kind != Kind::Char && m.data.len() == 1 && m.data[0] >= 2.0 && m.data[0] <= 26.0 && m.data[0] == m.data[0].round() => m.data[0] as usize,
+        Some(_) => return rt("Number of factors must be an integer between 2 and 26."),
+        None => return rt("Not enough input arguments."),
+    };
+    let rest = &a[1..];
+    if rest.len() % 2 != 0 {
+        return rt("Wrong number of arguments.");
+    }
+    let mut center_v: Option<Value> = None;
+    let mut frac_v: Option<Value> = None;
+    let mut type_v: Option<Value> = None;
+    let mut blocksize_v: Option<Value> = None;
+    for pair in rest.chunks(2) {
+        let key = pair[0].text().unwrap_or_default().to_lowercase();
+        let names = ["center", "fraction", "type", "blocksize"];
+        let hits: Vec<usize> = names.iter().enumerate().filter(|(_, n)| !key.is_empty() && n.starts_with(&key)).map(|(i, _)| i).collect();
+        if hits.len() != 1 {
+            return rt(format!("Invalid parameter name: {}.", pair[0].text().unwrap_or_default()));
+        }
+        let v = Some(pair[1].clone());
+        match hits[0] {
+            0 => center_v = v,
+            1 => frac_v = v,
+            2 => type_v = v,
+            _ => blocksize_v = v,
+        }
+    }
+    let oktypes = ["circumscribed", "inscribed", "faced"];
+    let startype = match &type_v {
+        None => "circumscribed",
+        Some(v) if v.is_text() && !v.text().unwrap_or_default().is_empty() => {
+            let t = v.text().unwrap_or_default().to_lowercase();
+            match oktypes.iter().find(|o| o.starts_with(&t)) {
+                Some(o) => o,
+                None => return rt("Valid types are 'inscribed', 'circumscribed', and 'faced'."),
+            }
+        }
+        _ => return rt("Valid types are 'inscribed', 'circumscribed', and 'faced'."),
+    };
+    let blocksize = match &blocksize_v {
+        None => f64::INFINITY,
+        Some(Value::Num(m)) if m.kind != Kind::Char && m.data.len() == 1 && (m.data[0].is_infinite() && m.data[0] > 0.0 || (m.data[0] >= 1.0 && m.data[0] == m.data[0].floor())) => m.data[0],
+        Some(_) => return rt("Value of 'blocksize' parameter must be a positive integer."),
+    };
+    let blocked = nargout >= 2 || blocksize.is_finite();
+    let frac_opt: Option<usize> = match &frac_v {
+        Some(Value::Num(m)) if !m.is_empty() && m.data.len() == 1 && m.data[0] >= 0.0 => Some(m.data[0] as usize),
+        _ => None,
+    };
+    let (g, frac, bg) = cc_getgen(nf, frac_opt, blocked);
+    if g.is_empty() {
+        return rt(format!("Cannot find design for {nf} factors with a 1/2^{frac} fractional cube."));
+    }
+    let nc = 1usize << (nf - frac);
+    let ns = 2 * nf;
+    let alpha = if startype == "faced" { 1.0 } else { (nc as f64).powf(0.25) };
+    let mut useorth = false;
+    let mut ncenter_default = false;
+    let mut ncenter: f64 = 0.0;
+    match &center_v {
+        None => ncenter_default = true,
+        Some(v) if is_empty_val(v) => ncenter_default = true,
+        Some(v) if v.is_text() => {
+            let t = v.text().unwrap_or_default().to_lowercase();
+            if !t.is_empty() && "uniform".starts_with(&t) {
+                match cc_ncenter_uniform(nf, frac) {
+                    Some(n0) => ncenter = n0,
+                    None => {
+                        useorth = true;
+                        it.emit_warning("Number of center points for uniform precision unknown for\nthis design, using center points for orthogonality instead.".into(), "stats:ccdesign:NoUniformPrecision".into());
+                    }
+                }
+            } else if !t.is_empty() && "orthogonal".starts_with(&t) {
+                ncenter_default = true;
+            } else {
+                return rt("Bad value for 'center' parameter.");
+            }
+        }
+        Some(Value::Num(m)) if m.data.len() == 1 && m.data[0] >= 0.0 && m.data[0] == m.data[0].floor() => ncenter = m.data[0],
+        Some(_) => return rt("Bad value for 'center' parameter."),
+    }
+    if ncenter_default || useorth {
+        ncenter = (4.0 * (nc as f64).sqrt() + 4.0 - 2.0 * nf as f64).ceil().max(1.0);
+    }
+    let full = it.call_function("fracfact", vec![Value::chars(&format!("{g} {bg}"))], 1)?;
+    let Value::Num(dcm) = &full[0] else { return rt("fracfact") };
+    let ncols = dcm.dims[1];
+    let mut dc: Vec<Vec<f64>> = (0..nc).map(|r| (0..nf).map(|c| dcm.data[c * nc + r]).collect()).collect();
+    let mut blk: Vec<f64> = vec![];
+    let mut nblocks = 0usize;
+    let mut ctrblks: Vec<f64> = vec![];
+    if blocked {
+        blk = vec![1.0; nc];
+        let numblkgen = if !bg.is_empty() { ncols - nf } else { 0 };
+        let blkcols: Vec<Vec<f64>> = (0..nc).map(|r| (nf..ncols).map(|c| dcm.data[c * nc + r]).collect()).collect();
+        let minblk = 1.0 + (ns as f64).max(nc as f64 / 2f64.powi(numblkgen as i32));
+        if minblk > blocksize {
+            it.emit_warning(format!("Block size must be at least {} for this design.", minblk), "stats:ccdesign:BlockSizeExceeded".into());
+        }
+        let mut cblocksize = nc as f64;
+        if numblkgen > 0 {
+            let b = (nc as f64 / (blocksize - 1.0)).max(1.0).log2().ceil();
+            if b > 0.0 {
+                let b = b as usize;
+                let used: Vec<Vec<f64>> = blkcols.iter().map(|r| r[..b.min(r.len())].to_vec()).collect();
+                let mut uniq = used.clone();
+                uniq.sort_by(|x, y| x.partial_cmp(y).unwrap());
+                uniq.dedup();
+                blk = used.iter().map(|r| (uniq.iter().position(|u| u == r).unwrap() + 1) as f64).collect();
+                cblocksize = blk.iter().filter(|&&v| v == 1.0).count() as f64;
+            }
+        }
+        nblocks = blk.iter().cloned().fold(0.0, f64::max) as usize + 1;
+        ctrblks = cc_ctrblks(ncenter, blocksize, nblocks, cblocksize, ns as f64);
+        if ncenter > ctrblks.len() as f64 {
+            it.emit_warning(format!("Block size limit allows only {} center points.", ctrblks.len()), "stats:ccdesign:CenterPointLimit".into());
+            ncenter = ctrblks.len() as f64;
+        } else if ncenter < nblocks as f64 {
+            it.emit_warning(format!("Number of center points ({}) less than number of blocks ({}).", ncenter, nblocks), "stats:ccdesign:CenterPointDeficit".into());
+        }
+    }
+    let ncen = ncenter as usize;
+    let nruns = ns + nc + ncen;
+    let mut d = vec![0.0; nruns * nf];
+    for r in 0..nc {
+        for c in 0..nf {
+            d[c * nruns + r] = dc[r][c];
+        }
+    }
+    for i in 0..nf {
+        d[i * nruns + nc + 2 * i] = -alpha;
+        d[i * nruns + nc + 2 * i + 1] = alpha;
+    }
+    dc.clear();
+    if startype == "inscribed" {
+        for v in d.iter_mut() {
+            *v /= alpha;
+        }
+    }
+    let mut out = vec![Value::Num(Matrix::from_dims(vec![nruns, nf], d))];
+    if nargout > 1 {
+        let mut bv = vec![0.0; nruns];
+        bv[..nc].copy_from_slice(&blk[..nc]);
+        for k in nc..nc + ns {
+            bv[k] = nblocks as f64;
+        }
+        for k in 0..ncen {
+            bv[nc + ns + k] = ctrblks[k];
+        }
+        out.push(Value::Num(Matrix::from_dims(vec![nruns, 1], bv)));
     }
     Ok(Some(out))
 }

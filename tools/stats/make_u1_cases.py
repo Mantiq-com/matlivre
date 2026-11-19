@@ -178,6 +178,22 @@ for c in ["fracfact(3)", "fracfact('a b 1')", "fracfact('')", "fracfact('   ')",
     L9.append(ff.replace("{c}", c))
 L += L9
 
+cc = "lastwarn(''); [d_,b_] = {c}; r = {d_,b_,lastwarn};"
+cc1 = "lastwarn(''); d_ = {c}; r = {d_,lastwarn};"
+L10 = []
+for c in ["ccdesign(2)", "ccdesign(3)", "ccdesign(4)", "ccdesign(5)", "ccdesign(6)", "ccdesign(7)", "ccdesign(8)", "ccdesign(3,'type','inscribed')", "ccdesign(3,'type','faced')", "ccdesign(3,'type','f')", "ccdesign(4,'type','ins')",
+          "ccdesign(3,'center',0)", "ccdesign(3,'center',5)", "ccdesign(3,'center','uniform')", "ccdesign(4,'center','uniform')", "ccdesign(5,'center','uniform','fraction',1)", "ccdesign(9,'center','uniform')", "ccdesign(3,'center','orthogonal')",
+          "ccdesign(3,'center','o')", "ccdesign(3,'center','u')", "ccdesign(3,'center',[])", "ccdesign(5,'fraction',0)", "ccdesign(4,'fraction',1)", "ccdesign(6,'fraction',0)", "ccdesign(6,'fraction',2)", "ccdesign(3,'blocksize',5)",
+          "ccdesign(3,'blocksize',10)", "ccdesign(3,'blocksize',30)", "ccdesign(3,'center',0,'blocksize',30)", "ccdesign(4,'blocksize',12)", "ccdesign(4,'blocksize',20)", "ccdesign(5,'blocksize',16)", "ccdesign(5,'fraction',1,'blocksize',20)",
+          "ccdesign(6,'blocksize',20)", "ccdesign(3,'blocksize',Inf)", "ccdesign(3,'blocksize',100)", "ccdesign(2,'blocksize',10)", "ccdesign(2,'blocksize',20)", "ccdesign(3,'fraction',[])", "ccdesign(10)", "ccdesign(3,'Type','faced','Center',2)",
+          "ccdesign(3,'ty','faced','ce',2)", "ccdesign(7,'fraction',0)", "ccdesign(5,'blocksize',50)", "ccdesign(4,'center',3,'blocksize',24)"]:
+    L10.append(cc.replace("{c}", c))
+    L10.append(cc1.replace("{c}", c))
+for c in ["ccdesign(1)", "ccdesign(27)", "ccdesign(2.5)", "ccdesign([2 3])", "ccdesign(3,'type','foo')", "ccdesign(3,'type',3)", "ccdesign(3,'blocksize',0)", "ccdesign(3,'blocksize',2.5)", "ccdesign(3,'fraction',2)",
+          "ccdesign(3,'center','foo')", "ccdesign(3,'center',-1)", "ccdesign(3,'center',1.5)", "ccdesign(3,'bogus',1)", "ccdesign(3,'center')", "ccdesign()", "ccdesign('a')", "ccdesign(3,'type','')", "ccdesign(8,'fraction',3)"]:
+    L10.append(cc.replace("{c}", c))
+L += L10
+
 with open(os.path.join(here, "cases_u1.txt"), "w", encoding="utf-8", newline="\n") as f:
     f.write("\n".join(L) + "\n")
 print(len(L) - 1)
