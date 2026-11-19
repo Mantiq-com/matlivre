@@ -417,7 +417,7 @@ fn leverage(it: &mut Interpreter, a: &[Value]) -> Ret {
     Ok(Some(vec![Value::Num(finish(Matrix::from_dims(vec![n, 1], out), single))]))
 }
 
-fn lstsq(a: &[Vec<f64>], b: &[f64], p: usize) -> Vec<f64> {
+pub(crate) fn lstsq(a: &[Vec<f64>], b: &[f64], p: usize) -> Vec<f64> {
     let n = a.len();
     let (q, r, perm) = super::regress::qr_pivot(&a.to_vec(), n, p);
     let rq: Vec<Vec<f64>> = r.iter().take(p).map(|row| row[..p].to_vec()).collect();
