@@ -90,6 +90,23 @@ for c in ["ansaribradley(ax)", "ansaribradley(ax,ay,'foo')", "ansaribradley(ax,a
     L4.append(PRE4 + ab.replace("{c}", c))
 L += L4
 
+PRE5 = "xl=x(1:25)'; xm=x(1:60)'; xs4=x(1:4)'; xs10=x(1:10)'; xe=-log(1-0.9*abs(x(1:30)'))+0.01; xv=log(abs(x(1:20)')+0.1); xt=round(x(1:30)'*4); "
+li = "lastwarn(''); [h_,p_,k_,c_] = {c}; r = {h_,p_,k_,c_,lastwarn};"
+L5 = []
+for c in ["lillietest(xl)", "lillietest(xm)", "lillietest(xs4)", "lillietest(xs10)", "lillietest(x(1:20)')", "lillietest(x(1:21)')", "lillietest(x(1:100)')", "lillietest(xl,0.01)", "lillietest(xl,0.2)", "lillietest(xl,0.001)", "lillietest(xl,0.5)",
+          "lillietest(xl,0.05,'normal')", "lillietest(xl,0.05,'exponential')", "lillietest(xe,0.05,'exponential')", "lillietest(xe,0.1,'exp')", "lillietest(xl,0.05,'ev')", "lillietest(xv,0.05,'ev')", "lillietest(xv,0.05,'extreme value')",
+          "lillietest(xv,'Distribution','ev','Alpha',0.1)", "lillietest(xm,'Distribution','exponential')", "lillietest(xm,'Distribution','ev')", "lillietest(xm,'Distribution','n')", "lillietest(xs10,'Distribution','exponential')", "lillietest(xs10,'Distribution','ev')",
+          "lillietest(xs4,'Distribution','ev')", "lillietest(xs4,'Distribution','exponential')", "lillietest(xl,[],[])", "lillietest(xl,[],'ev')", "lillietest(xl,'Distribution',[])", "lillietest(xl,'alpha',0.02)",
+          "lillietest(exp(5*xl))", "lillietest(xl*0+1+0.001*(1:25)')", "lillietest(xt)", "lillietest(xt,0.1,'ev')", "lillietest([xl;NaN])", "lillietest(xl,0.05,'normal',[])", "lillietest(xl,0.05,'n',[],5)",
+          "lillietest(single(xl))", "lillietest(single(xm),0.1)", "lillietest(single(xe),0.1,'exp')", "lillietest([-1;xl],0.05,'exponential')", "lillietest(xe,0.037)", "lillietest(xm,0.0123,'ev')", "lillietest(xl,'MCTol',[])", "lillietest(xl,'d','ev')",
+          "lillietest(xl,'Distribution','extreme')", "lillietest(ones(10,1)+(1:10)'/100)", "lillietest(xl(1:21))", "lillietest(xl(1:22),0.05,'ev')"]:
+    L5.append(PRE5 + li.replace("{c}", c))
+for c in ["lillietest(ones(2,2))", "lillietest([1 2 3])", "lillietest(xl,2)", "lillietest(xl,0.05,'foo')", "lillietest(xl,0.05,'e',-1)", "lillietest(xl,'Distribution','bar')", "lillietest(xl,0.0001)", "lillietest(xl,0.6)",
+          "lillietest(xl,'MCTol',[1 2])", "lillietest(xl,'bogus',1)", "lillietest(xl,0.05,3)", "lillietest(xl,'Alpha')", "lillietest(xl,'Distribution',3)", "lillietest(xl,'d','e')", "lillietest(xl,'Distribution','ex')",
+          "lillietest(1:5,0.05,'e')", "lillietest(xl,0.05,'n',-1)", "lillietest(xl,0.05,'n',0)", "lillietest()", "lillietest([])", "lillietest('abc')", "lillietest(xl,[1 2])", "lillietest(xl,0)"]:
+    L5.append(PRE5 + li.replace("{c}", c))
+L += L5
+
 with open(os.path.join(here, "cases_u1.txt"), "w", encoding="utf-8", newline="\n") as f:
     f.write("\n".join(L) + "\n")
 print(len(L) - 1)

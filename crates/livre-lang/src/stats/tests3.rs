@@ -6,7 +6,7 @@ use crate::error::rt;
 use crate::interp::Interpreter;
 use crate::value::*;
 
-pub const NAMES: &[&str] = &["jbtest", "dwtest", "chi2gof", "vartestn", "ansaribradley"];
+pub const NAMES: &[&str] = &["jbtest", "dwtest", "chi2gof", "vartestn", "ansaribradley", "lillietest"];
 
 const JB_ALPHAS: [f64; 17] = [0.001, 0.0016681, 0.0027826, 0.0046416, 0.0077426, 0.01, 0.012915, 0.021544, 0.025, 0.035938, 0.05, 0.059948, 0.1, 0.15, 0.2, 0.25, 0.50];
 const JB_SIZES: [f64; 32] = [
@@ -45,6 +45,79 @@ const JB_TABLE: [[f64; 17]; 32] = [
     [17.1305, 15.3029, 13.5883, 11.9883, 10.5059, 9.8072, 9.1333, 7.8611, 7.5089, 6.6789, 5.9546, 5.5677, 4.5105, 3.6997, 3.1345, 2.6996, 1.3564],
     [16.8158, 15.06, 13.4102, 11.8682, 10.4296, 9.7478, 9.0911, 7.8446, 7.4979, 6.6777, 5.96, 5.5755, 4.5214, 3.7101, 3.1433, 2.7072, 1.3595],
     [16.5585, 14.8633, 13.2657, 11.7666, 10.3636, 9.6981, 9.0549, 7.8296, 7.4872, 6.6763, 5.9635, 5.5806, 4.5289, 3.7173, 3.1499, 2.7129, 1.3619],
+];
+
+const LILLIE_Q1: [[f64; 12]; 17] = [
+    [0.4328, 0.4308, 0.4292, 0.4217, 0.4131, 0.4065, 0.4008, 0.3754, 0.3453, 0.3213, 0.3028, 0.2581, ],
+    [0.4386, 0.4335, 0.4291, 0.4128, 0.3966, 0.3851, 0.3756, 0.3431, 0.3189, 0.3026, 0.2893, 0.2332, ],
+    [0.4225, 0.4152, 0.4091, 0.3878, 0.3703, 0.3599, 0.3521, 0.3236, 0.2973, 0.281, 0.2688, 0.2187, ],
+    [0.4006, 0.3931, 0.3873, 0.3677, 0.3506, 0.3397, 0.3317, 0.3041, 0.2802, 0.2643, 0.2523, 0.2062, ],
+    [0.3828, 0.3749, 0.3692, 0.3494, 0.3326, 0.3223, 0.3146, 0.288, 0.2651, 0.2502, 0.2387, 0.1947, ],
+    [0.3656, 0.3582, 0.3524, 0.3332, 0.3171, 0.3071, 0.2997, 0.274, 0.252, 0.2379, 0.2271, 0.1851, ],
+    [0.3509, 0.3428, 0.3377, 0.3185, 0.3034, 0.2938, 0.2866, 0.262, 0.241, 0.2274, 0.2171, 0.1767, ],
+    [0.3374, 0.3305, 0.3252, 0.3067, 0.2915, 0.2823, 0.2754, 0.2515, 0.2312, 0.2181, 0.2082, 0.1695, ],
+    [0.3253, 0.3184, 0.3131, 0.2955, 0.2808, 0.2714, 0.2647, 0.2418, 0.2224, 0.2098, 0.2002, 0.1631, ],
+    [0.3147, 0.3074, 0.3021, 0.2849, 0.2706, 0.2618, 0.2553, 0.2333, 0.2145, 0.2025, 0.1932, 0.1574, ],
+    [0.3033, 0.297, 0.2923, 0.2756, 0.2619, 0.2536, 0.2473, 0.2257, 0.2075, 0.1958, 0.1868, 0.1522, ],
+    [0.296, 0.2893, 0.2844, 0.2673, 0.2539, 0.2457, 0.2398, 0.2189, 0.2012, 0.1898, 0.1811, 0.1475, ],
+    [0.2884, 0.2821, 0.2772, 0.2604, 0.2472, 0.239, 0.2331, 0.2126, 0.1953, 0.1843, 0.1759, 0.1433, ],
+    [0.28, 0.2736, 0.2688, 0.2532, 0.2403, 0.2324, 0.2266, 0.2068, 0.19, 0.1792, 0.1711, 0.1393, ],
+    [0.2732, 0.2667, 0.2621, 0.2465, 0.2341, 0.2265, 0.2208, 0.2013, 0.185, 0.1746, 0.1666, 0.1358, ],
+    [0.266, 0.2602, 0.2556, 0.2408, 0.2285, 0.2209, 0.2155, 0.1965, 0.1806, 0.1703, 0.1625, 0.1324, ],
+    [0.2603, 0.2545, 0.2503, 0.2352, 0.2232, 0.2159, 0.2105, 0.192, 0.1763, 0.1663, 0.1587, 0.1294, ],
+];
+const LILLIE_C1: [[f64; 12]; 3] = [
+    [1.239, 1.21, 1.189, 1.115, 1.058, 1.023, 0.9964, 0.9092, 0.8358, 0.7893, 0.7539, 0.6183, ],
+    [0.1725, 0.1909, 0.1978, 0.158, 0.1582, 0.1639, 0.154, 0.1652, 0.1626, 0.1654, 0.1678, 0.1671, ],
+    [0.7237, 0.5838, 0.518, 0.5654, 0.4871, 0.414, 0.418, 0.2731, 0.2215, 0.1729, 0.1323, 0.04738, ],
+];
+const LILLIE_Q2: [[f64; 12]; 17] = [
+    [0.6212, 0.6096, 0.6019, 0.5788, 0.5575, 0.543, 0.5314, 0.4843, 0.4444, 0.42, 0.4009, 0.3165, ],
+    [0.5802, 0.5705, 0.5629, 0.5369, 0.5129, 0.4966, 0.4845, 0.4422, 0.4046, 0.3795, 0.3605, 0.2877, ],
+    [0.5507, 0.5392, 0.5312, 0.5008, 0.4757, 0.4599, 0.4484, 0.4085, 0.3732, 0.35, 0.332, 0.2645, ],
+    [0.519, 0.5068, 0.4988, 0.4702, 0.4466, 0.4317, 0.4202, 0.3813, 0.3485, 0.3266, 0.3099, 0.2458, ],
+    [0.4909, 0.4798, 0.4712, 0.4437, 0.4206, 0.4065, 0.3961, 0.3589, 0.3274, 0.307, 0.2913, 0.2309, ],
+    [0.468, 0.4563, 0.448, 0.4216, 0.3997, 0.3861, 0.3757, 0.3405, 0.3102, 0.2907, 0.2759, 0.2186, ],
+    [0.4475, 0.4368, 0.4289, 0.4025, 0.3805, 0.3673, 0.3577, 0.3242, 0.2955, 0.2768, 0.2626, 0.2082, ],
+    [0.4307, 0.4199, 0.4123, 0.3865, 0.3655, 0.3528, 0.3431, 0.3103, 0.2826, 0.2646, 0.251, 0.1991, ],
+    [0.4138, 0.4032, 0.3963, 0.3716, 0.3513, 0.3391, 0.3298, 0.2984, 0.2716, 0.2544, 0.2412, 0.1913, ],
+    [0.3977, 0.388, 0.3813, 0.3579, 0.3388, 0.3267, 0.3177, 0.287, 0.2614, 0.2449, 0.2323, 0.1842, ],
+    [0.3864, 0.3765, 0.3699, 0.3467, 0.3276, 0.3158, 0.3072, 0.2777, 0.2526, 0.2365, 0.2243, 0.1778, ],
+    [0.3738, 0.3641, 0.3574, 0.3351, 0.3172, 0.3058, 0.2974, 0.269, 0.2445, 0.229, 0.2172, 0.1721, ],
+    [0.3628, 0.354, 0.347, 0.3251, 0.3071, 0.2962, 0.2881, 0.2604, 0.237, 0.2219, 0.2104, 0.1668, ],
+    [0.3524, 0.3439, 0.3375, 0.3166, 0.2993, 0.2883, 0.2803, 0.2532, 0.2303, 0.2157, 0.2046, 0.1622, ],
+    [0.3441, 0.3357, 0.3295, 0.3079, 0.2911, 0.2806, 0.2729, 0.2466, 0.2243, 0.2101, 0.1991, 0.1577, ],
+    [0.3364, 0.3278, 0.3215, 0.3006, 0.284, 0.2738, 0.2661, 0.2404, 0.2186, 0.2046, 0.194, 0.1538, ],
+    [0.3288, 0.3197, 0.3138, 0.2938, 0.2774, 0.2672, 0.2597, 0.2344, 0.2132, 0.1997, 0.1893, 0.1501, ],
+];
+const LILLIE_C2: [[f64; 12]; 3] = [
+    [1.544, 1.5, 1.472, 1.377, 1.299, 1.249, 1.214, 1.094, 0.9954, 0.9322, 0.8843, 0.7056, ],
+    [0.3558, 0.3058, 0.3233, 0.3535, 0.3127, 0.2727, 0.2549, 0.201, 0.1871, 0.1713, 0.1592, 0.1517, ],
+    [-0.112, 0.03913, -0.0726, -0.327, -0.2395, -0.1372, -0.09488, 0.006818, -0.002656, 0.01954, 0.04151, 0.009159, ],
+];
+const LILLIE_Q3: [[f64; 12]; 17] = [
+    [0.4668, 0.4628, 0.4594, 0.4439, 0.4309, 0.4221, 0.415, 0.3847, 0.3502, 0.333, 0.3232, 0.2758, ],
+    [0.4497, 0.4418, 0.4363, 0.4153, 0.3961, 0.3844, 0.3765, 0.3512, 0.3273, 0.31, 0.2957, 0.246, ],
+    [0.4207, 0.4122, 0.4066, 0.3876, 0.3715, 0.3611, 0.3532, 0.3244, 0.3015, 0.2865, 0.2746, 0.2248, ],
+    [0.3984, 0.3913, 0.3851, 0.3648, 0.3483, 0.3384, 0.331, 0.3051, 0.2818, 0.267, 0.2558, 0.2103, ],
+    [0.3784, 0.3707, 0.3648, 0.3459, 0.33, 0.32, 0.3127, 0.2875, 0.266, 0.2517, 0.2408, 0.1982, ],
+    [0.3625, 0.3548, 0.3487, 0.3296, 0.3142, 0.3045, 0.2974, 0.273, 0.2523, 0.2388, 0.2283, 0.1876, ],
+    [0.3473, 0.3398, 0.334, 0.3151, 0.3004, 0.2911, 0.2842, 0.2606, 0.2405, 0.2276, 0.2176, 0.1787, ],
+    [0.3312, 0.3244, 0.3192, 0.3021, 0.2875, 0.2786, 0.2721, 0.2496, 0.2303, 0.2178, 0.2083, 0.171, ],
+    [0.3193, 0.3127, 0.3079, 0.291, 0.2772, 0.2686, 0.2622, 0.2401, 0.2215, 0.2094, 0.2002, 0.1642, ],
+    [0.3102, 0.3034, 0.298, 0.2813, 0.2673, 0.2589, 0.2527, 0.2317, 0.2136, 0.2019, 0.193, 0.1582, ],
+    [0.2981, 0.292, 0.2875, 0.2713, 0.258, 0.2501, 0.2442, 0.2237, 0.2063, 0.195, 0.1864, 0.1528, ],
+    [0.2896, 0.2835, 0.2789, 0.2634, 0.2506, 0.2426, 0.2367, 0.2167, 0.1998, 0.1888, 0.1804, 0.1479, ],
+    [0.2825, 0.2761, 0.271, 0.256, 0.2434, 0.2357, 0.23, 0.2103, 0.1939, 0.1833, 0.1752, 0.1436, ],
+    [0.2758, 0.2694, 0.2647, 0.2493, 0.2367, 0.2293, 0.2238, 0.2048, 0.1886, 0.1782, 0.1702, 0.1396, ],
+    [0.2683, 0.262, 0.2575, 0.2426, 0.2304, 0.2231, 0.2177, 0.1993, 0.1836, 0.1735, 0.1658, 0.1358, ],
+    [0.2609, 0.2553, 0.2511, 0.2365, 0.2248, 0.2177, 0.2125, 0.1944, 0.1791, 0.1693, 0.1617, 0.1324, ],
+    [0.2552, 0.2498, 0.2458, 0.2314, 0.2198, 0.2127, 0.2075, 0.1897, 0.1747, 0.1651, 0.1578, 0.1293, ],
+];
+const LILLIE_C3: [[f64; 12]; 3] = [
+    [1.214, 1.186, 1.166, 1.096, 1.039, 1.005, 0.9796, 0.895, 0.8242, 0.7794, 0.7453, 0.6131, ],
+    [0.1899, 0.2157, 0.2329, 0.2218, 0.1974, 0.1833, 0.1812, 0.1686, 0.1612, 0.163, 0.1645, 0.1596, ],
+    [0.6016, 0.4132, 0.3075, 0.2306, 0.2498, 0.2481, 0.2217, 0.1801, 0.1341, 0.09096, 0.05882, -0.01397, ],
 ];
 
 /// Shape-preserving cubic interpolation (the slopes of Fritsch and Carlson that MATLAB's `pchip`
@@ -473,6 +546,7 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
         "chi2gof" => chi2gof(it, a, nargout),
         "vartestn" => vartestn(it, a, nargout),
         "ansaribradley" => ansaribradley(it, a, nargout),
+        "lillietest" => lillietest(it, a, nargout),
         _ => dwtest(it, a, nargout),
     }
 }
@@ -756,20 +830,26 @@ fn chi2gof(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
 // ---------------------------------------------------------------------------------------------
 // vartestn
 
-/// MATLAB's matching of a value against a list of names: exact (any case) first, then a unique prefix.
-fn param_val(v: &Value, choices: &[&str], what: &str) -> Res<usize> {
+/// MATLAB's matching of a value against a list of names: exact (any case) first, then a unique
+/// prefix. `what` is used as in "the {what} argument"; with `list` the valid values are named.
+fn param_val(v: &Value, choices: &[&str], what: &str, list: bool) -> Res<usize> {
     if !v.is_text() {
-        return rt(format!("Invalid '{what}' data type. Argument must be a character vector or string scalar."));
+        return rt(format!("Invalid '{}' data type. Argument must be a character vector or string scalar.", what.trim_matches('\'')));
     }
-    let t = v.text().unwrap_or_default().to_lowercase();
+    let given = v.text().unwrap_or_default();
+    let t = given.to_lowercase();
     if let Some(i) = choices.iter().position(|c| c.to_lowercase() == t) {
         return Ok(i);
     }
     let hits: Vec<usize> = choices.iter().enumerate().filter(|(_, c)| !t.is_empty() && c.to_lowercase().starts_with(&t)).map(|(i, _)| i).collect();
     match hits.len() {
         1 => Ok(hits[0]),
-        0 => rt(format!("'{}' is not a valid value for the '{what}' argument.", v.text().unwrap_or_default())),
-        _ => rt(format!("The value '{}' is a partial match for more than one valid value for the '{what}' argument.", v.text().unwrap_or_default())),
+        0 if list => {
+            let names: Vec<String> = choices.iter().map(|c| format!("'{c}'")).collect();
+            rt(format!("'{given}' is not a valid value for the {what} argument.  Valid values are: {}.", names.join(", ")))
+        }
+        0 => rt(format!("'{given}' is not a valid value for the {what} argument.")),
+        _ => rt(format!("The value '{given}' is a partial match for more than one valid value for the {what} argument.")),
     }
 }
 
@@ -830,7 +910,7 @@ fn vartestn(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
     let dorobust: usize = match &testtype {
         Some(t) if !is_empty_val(t) => {
             let ttypes = ["robust", "classical", "LeveneAbsolute", "OBrien", "BrownForsythe", "LeveneQuadratic", "Bartlett"];
-            param_val(t, &ttypes, "testtype")? + 1
+            param_val(t, &ttypes, "'testtype'", false)? + 1
         }
         _ => 0,
     };
@@ -1218,4 +1298,220 @@ fn ansaribradley(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
         out.push(Value::Struct(st));
     }
     Ok(Some(out))
+}
+
+// ---------------------------------------------------------------------------------------------
+// lillietest
+
+const LILLIE_ALPHAS: [f64; 12] = [0.001, 0.0015, 0.002, 0.005, 0.01, 0.015, 0.02, 0.05, 0.10, 0.15, 0.20, 0.50];
+
+fn lilliefors_cvs(distr: usize, n: usize) -> Vec<f64> {
+    let (q, c) = match distr {
+        0 => (&LILLIE_Q1, &LILLIE_C1),
+        1 => (&LILLIE_Q2, &LILLIE_C2),
+        _ => (&LILLIE_Q3, &LILLIE_C3),
+    };
+    if n <= 20 {
+        q[n - 4].to_vec()
+    } else {
+        let nf = n as f64;
+        (0..12).map(|j| c[0][j] / nf.sqrt() - c[1][j] / nf - c[2][j] / nf.powf(1.5)).collect()
+    }
+}
+
+/// The Kolmogorov-Smirnov distance between the sample and the distribution fitted to it by
+/// maximum likelihood (0 normal, 1 exponential, 2 extreme value).
+fn lillie_stat(it: &mut Interpreter, x: &[f64], distr: usize) -> Res<f64> {
+    let n = x.len() as f64;
+    let mut s = x.to_vec();
+    s.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    let mut u: Vec<f64> = Vec::new();
+    let mut cum: Vec<f64> = Vec::new();
+    for (i, v) in s.iter().enumerate() {
+        if u.last() == Some(v) {
+            *cum.last_mut().unwrap() = (i + 1) as f64 / n;
+        } else {
+            u.push(*v);
+            cum.push((i + 1) as f64 / n);
+        }
+    }
+    let mean = x.iter().sum::<f64>() / n;
+    let uv = Value::Num(Matrix::from_dims(vec![u.len(), 1], u.clone()));
+    let null = match distr {
+        0 => {
+            let sd = (x.iter().map(|v| (v - mean) * (v - mean)).sum::<f64>() / (n - 1.0)).sqrt();
+            it.call_function("normcdf", vec![uv, Value::num(mean), Value::num(sd)], 1)?
+        }
+        1 => it.call_function("expcdf", vec![uv, Value::num(mean)], 1)?,
+        _ => {
+            let ph = it.call_function("evfit", vec![Value::Num(Matrix::from_dims(vec![x.len(), 1], x.to_vec()))], 1)?;
+            let Value::Num(pm) = &ph[0] else { return rt("evfit") };
+            it.call_function("evcdf", vec![uv, Value::num(pm.data[0]), Value::num(pm.data[1])], 1)?
+        }
+    };
+    let Value::Num(nm) = &null[0] else { return rt("cdf") };
+    if nm.data.iter().any(|v| v.is_nan()) {
+        return Ok(f64::NAN);
+    }
+    let mut ks = f64::NEG_INFINITY;
+    for i in 0..u.len() {
+        let lo = if i == 0 { 0.0 } else { cum[i - 1] };
+        ks = ks.max((lo - nm.data[i]).abs()).max((cum[i] - nm.data[i]).abs());
+    }
+    Ok(ks)
+}
+
+fn lillie_mc(it: &mut Interpreter, ks: f64, n: usize, alpha: f64, distr: usize, tol: f64) -> Res<(f64, f64)> {
+    let vartol = tol * tol;
+    let (mut crit, mut p, mut tot) = (0.0, 0.0, 0.0f64);
+    let mut reps_min = 1000.0f64;
+    loop {
+        let old = tot;
+        let reps = (reps_min - old).ceil().max(1.0) as usize;
+        let mut stats = Vec::with_capacity(reps);
+        for _ in 0..reps {
+            let gen = if distr == 0 { "randn" } else { "rand" };
+            let r = it.call_function(gen, vec![Value::num(n as f64), Value::num(1.0)], 1)?;
+            let Value::Num(m) = &r[0] else { return rt("rand") };
+            let sample: Vec<f64> = match distr {
+                0 => m.data.clone(),
+                1 => m.data.iter().map(|u| -(1.0 - u).ln()).collect(),
+                _ => m.data.iter().map(|u| (-(1.0 - u).ln()).ln()).collect(),
+            };
+            stats.push(lillie_stat(it, &sample, distr)?);
+        }
+        let q = it.call_function("prctile", vec![Value::Num(Matrix::from_dims(vec![reps, 1], stats.clone())), Value::num(100.0 * (1.0 - alpha))], 1)?;
+        let crit_mc = q[0].scalar()?;
+        let p_mc = stats.iter().filter(|&&s| s > ks).count() as f64 / reps as f64;
+        tot = old + reps as f64;
+        crit = (old * crit + reps as f64 * crit_mc) / tot;
+        p = (old * p + reps as f64 * p_mc) / tot;
+        let sepsq = (p * (1.0 - p) / tot).max(1.0 / (tot * tot));
+        if sepsq < vartol {
+            break;
+        }
+        reps_min = 1.2 * (tot * sepsq) / vartol;
+    }
+    if ks.is_nan() {
+        p = 0.0;
+    }
+    Ok((crit, p))
+}
+
+fn lillietest(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
+    if a.is_empty() {
+        return rt("Not enough input arguments.");
+    }
+    let Some(Value::Num(xm)) = a.first() else { return rt("Input sample X must be a vector of real values.") };
+    if !is_vector_dims(&xm.dims) || xm.is_complex() {
+        return rt("Input sample X must be a vector of real values.");
+    }
+    let x: Vec<f64> = xm.data.iter().copied().filter(|v| !v.is_nan()).collect();
+    if x.len() < 4 {
+        return rt("Sample vector X must have at least 4 valid observations.");
+    }
+    let mut alpha_v: Option<Value> = None;
+    let mut distr_v: Option<Value> = None;
+    let mut mctol_v: Option<Value> = None;
+    if a.len() > 1 {
+        let first = &a[1];
+        if (matches!(first, Value::Num(_)) && !first.is_text()) || is_empty_val(first) {
+            alpha_v = Some(first.clone());
+            if a.len() >= 3 {
+                distr_v = Some(a[2].clone());
+                if a.len() == 4 {
+                    mctol_v = Some(a[3].clone());
+                }
+            }
+        } else {
+            if (a.len() - 1) % 2 != 0 {
+                return rt("Wrong number of arguments.");
+            }
+            for pair in a[1..].chunks(2) {
+                let key = text_of(&pair[0]).to_lowercase();
+                let names = ["distribution", "alpha", "mctol"];
+                let hits: Vec<usize> = names.iter().enumerate().filter(|(_, n)| !key.is_empty() && n.starts_with(&key)).map(|(i, _)| i).collect();
+                if hits.len() != 1 {
+                    return rt(format!("Invalid parameter name: {}.", text_of(&pair[0])));
+                }
+                let v = Some(pair[1].clone());
+                match hits[0] {
+                    0 => distr_v = v,
+                    1 => alpha_v = v,
+                    _ => mctol_v = v,
+                }
+            }
+        }
+    }
+    let alpha = match &alpha_v {
+        None => 0.05,
+        Some(v) if is_empty_val(v) => 0.05,
+        Some(Value::Num(m)) if m.data.len() == 1 && 0.0 < m.data[0] && m.data[0] < 1.0 => m.data[0],
+        _ => return rt("Significance level ALPHA must be a scalar between 0 and 1."),
+    };
+    let names = ["normal", "exponential", "ev", "extreme value"];
+    let distr: usize = match &distr_v {
+        None => 0,
+        Some(v) if is_empty_val(v) => 0,
+        Some(v) if v.is_text() => {
+            let k = param_val(v, &names, "distribution name", true)?;
+            if k == 3 { 2 } else { k }
+        }
+        _ => return rt("DISTR must be 'norm', 'exp', or 'ev'."),
+    };
+    let mctol = match &mctol_v {
+        None => None,
+        Some(v) if is_empty_val(v) => None,
+        Some(Value::Num(m)) if m.data.len() == 1 && m.data[0] > 0.0 => Some(m.data[0]),
+        _ => return rt("Monte-Carlo standard error tolerance MCTOL must be a positive scalar value."),
+    };
+    let n = x.len();
+    let ks = lillie_stat(it, &x, distr)?;
+    let (cv, p);
+    let mut from_root = false;
+    if let Some(tol) = mctol {
+        let (c, pp) = lillie_mc(it, ks, n, alpha, distr, tol)?;
+        cv = c;
+        p = pp;
+    } else {
+        if alpha < LILLIE_ALPHAS[0] || LILLIE_ALPHAS[11] < alpha {
+            return rt("Significance level ALPHA is outside the range of the tabulated values.\nUse a value in the interval [0.001, 0.5], or use the MCTOL input argument.");
+        }
+        let cvs = lilliefors_cvs(distr, n);
+        cv = pchip_at(&LILLIE_ALPHAS, &cvs, alpha);
+        let mut pv = f64::NAN;
+        if nargout > 1 {
+            if ks < cvs[11] {
+                it.emit_warning("P is greater than the largest tabulated value, returning 0.5.".into(), "stats:lillietest:OutOfRangePHigh".into());
+                pv = LILLIE_ALPHAS[11];
+            } else if cvs[0] < ks {
+                it.emit_warning("P is less than the smallest tabulated value, returning 0.001.".into(), "stats:lillietest:OutOfRangePLow".into());
+                pv = LILLIE_ALPHAS[0];
+            } else if ks == cvs[0] {
+                pv = LILLIE_ALPHAS[0];
+            } else if ks.is_nan() {
+                pv = 0.0;
+            } else {
+                let i = cvs.iter().position(|&c| ks > c).unwrap();
+                let (mut lo, mut hi) = (LILLIE_ALPHAS[i - 1], LILLIE_ALPHAS[i]);
+                let f = |t: f64| pchip_at(&LILLIE_ALPHAS, &cvs, t) - ks;
+                let flo = f(lo);
+                for _ in 0..200 {
+                    let mid = 0.5 * (lo + hi);
+                    if (f(mid) > 0.0) == (flo > 0.0) {
+                        lo = mid;
+                    } else {
+                        hi = mid;
+                    }
+                }
+                pv = 0.5 * (lo + hi);
+                from_root = true;
+            }
+        }
+        p = pv;
+    }
+    let h = if ks > cv { 1.0 } else { 0.0 } + if ks.is_nan() { 1.0 } else { 0.0 };
+    let single = is_single(xm);
+    let sv = |v: f64| Value::Num(finish(Matrix::scalar(v), single));
+    Ok(Some(vec![Value::num(h), if from_root { sv(p) } else { Value::num(p) }, sv(ks), Value::num(cv)]))
 }
