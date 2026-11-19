@@ -6,7 +6,7 @@ use crate::error::rt;
 use crate::interp::Interpreter;
 use crate::value::*;
 
-pub const NAMES: &[&str] = &["jbtest", "dwtest", "chi2gof", "vartestn"];
+pub const NAMES: &[&str] = &["jbtest", "dwtest", "chi2gof", "vartestn", "ansaribradley"];
 
 const JB_ALPHAS: [f64; 17] = [0.001, 0.0016681, 0.0027826, 0.0046416, 0.0077426, 0.01, 0.012915, 0.021544, 0.025, 0.035938, 0.05, 0.059948, 0.1, 0.15, 0.2, 0.25, 0.50];
 const JB_SIZES: [f64; 32] = [
@@ -472,6 +472,7 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
         "jbtest" => jbtest(it, a, nargout),
         "chi2gof" => chi2gof(it, a, nargout),
         "vartestn" => vartestn(it, a, nargout),
+        "ansaribradley" => ansaribradley(it, a, nargout),
         _ => dwtest(it, a, nargout),
     }
 }
@@ -974,6 +975,246 @@ fn vartestn(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
         let mut st = StructArray::scalar();
         st.set(statname, to_single(bstat));
         st.set("df", bdf);
+        out.push(Value::Struct(st));
+    }
+    Ok(Some(out))
+}
+
+// ---------------------------------------------------------------------------------------------
+// ansaribradley
+
+/// Probabilities (below, equal, above) of the permutation distribution of the weighted count of
+/// group 1 over the distinct values, against the observed statistic `tstar`.
+fn ab_exact(n1: &[f64], n2: &[f64], wts: &[f64], tstar: f64) -> [f64; 3] {
+    let m: usize = n1.iter().sum::<f64>() as usize;
+    let seps = f64::EPSILON.sqrt();
+    let mut states: std::collections::HashMap<(usize, i64), (f64, f64)> = std::collections::HashMap::new();
+    states.insert((0, 0), (1.0, 0.0));
+    for j in 0..wts.len() {
+        let nj = n1[j] + n2[j];
+        let mut next: std::collections::HashMap<(usize, i64), (f64, f64)> = std::collections::HashMap::new();
+        for (&(c, _), &(pr, st)) in states.iter() {
+            let maxx = (nj as usize).min(m - c);
+            for xj in 0..=maxx {
+                let pj = (crate::builtins_specfun::gammaln(nj + 1.0) - crate::builtins_specfun::gammaln(xj as f64 + 1.0) - crate::builtins_specfun::gammaln(nj - xj as f64 + 1.0)).exp();
+                let ns = st + wts[j] * xj as f64;
+                let key = ((c + xj), (ns / 1e-9).round() as i64);
+                let e = next.entry(key).or_insert((0.0, ns));
+                e.0 += pr * pj;
+            }
+        }
+        states = next;
+    }
+    let mut p = [0.0; 3];
+    let mut total = 0.0;
+    for (&(c, _), &(pr, st)) in states.iter() {
+        if c != m {
+            continue;
+        }
+        total += pr;
+        if st < tstar - seps {
+            p[0] += pr;
+        } else if st > tstar + seps {
+            p[2] += pr;
+        } else {
+            p[1] += pr;
+        }
+    }
+    [p[0] / total, p[1] / total, p[2] / total]
+}
+
+fn ansaribradley(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
+    if a.len() < 2 {
+        return rt("Requires at least two input arguments");
+    }
+    let (Value::Num(xm), Value::Num(ym)) = (&a[0], &a[1]) else { return rt("Not enough input arguments.") };
+    let mut alpha_v: Option<Value> = None;
+    let mut tail_v: Option<Value> = None;
+    let mut method_v: Option<Value> = None;
+    let mut dim_v: Option<Value> = None;
+    if a.len() >= 3 {
+        if matches!(a[2], Value::Num(_)) && !a[2].is_text() {
+            alpha_v = Some(a[2].clone());
+            if a.len() >= 4 {
+                tail_v = Some(a[3].clone());
+                if a.len() >= 5 {
+                    method_v = Some(a[4].clone());
+                    if a.len() >= 6 {
+                        dim_v = Some(a[5].clone());
+                    }
+                }
+            }
+        } else if a.len() == 3 {
+            return rt("Alpha must be a scalar between 0 and 1.");
+        } else {
+            let rest = &a[2..];
+            if rest.len() % 2 != 0 {
+                return rt("Wrong number of arguments.");
+            }
+            for pair in rest.chunks(2) {
+                let key = text_of(&pair[0]).to_lowercase();
+                let names = ["alpha", "tail", "method", "dim"];
+                let hits: Vec<usize> = names.iter().enumerate().filter(|(_, n)| !key.is_empty() && n.starts_with(&key)).map(|(i, _)| i).collect();
+                if hits.len() != 1 {
+                    return rt(format!("Invalid parameter name: {}.", text_of(&pair[0])));
+                }
+                let v = Some(pair[1].clone());
+                match hits[0] {
+                    0 => alpha_v = v,
+                    1 => tail_v = v,
+                    2 => method_v = v,
+                    _ => dim_v = v,
+                }
+            }
+        }
+    }
+    let alpha = match &alpha_v {
+        None => 0.05,
+        Some(v) if is_empty_val(v) => 0.05,
+        Some(Value::Num(m)) if m.data.len() == 1 && m.data[0] > 0.0 && m.data[0] < 1.0 => m.data[0],
+        _ => return rt("Alpha must be a scalar between 0 and 1."),
+    };
+    let bad_tail = || rt::<()>("Tail must be one of the character vectors or string scalars 'both', 'right', or 'left'.");
+    let tail: f64 = match &tail_v {
+        None => 0.0,
+        Some(v) if is_empty_val(v) => 0.0,
+        Some(v) if v.is_text() => {
+            let t = v.text().unwrap_or_default().to_lowercase();
+            let names = ["left", "both", "right"];
+            match names.iter().position(|n| n.starts_with(&t)) {
+                Some(i) if !t.is_empty() => i as f64 - 1.0,
+                _ => return bad_tail().map(|_| None),
+            }
+        }
+        Some(Value::Num(m)) if m.data.len() == 1 => m.data[0],
+        _ => return bad_tail().map(|_| None),
+    };
+    let doexact: Option<bool> = match &method_v {
+        None => None,
+        Some(v) if is_empty_val(v) => None,
+        Some(v) => {
+            let hits: Vec<usize> = if v.is_text() {
+                let t = v.text().unwrap_or_default().to_lowercase();
+                ["on", "exact", "off", "approximate"].iter().enumerate().filter(|(_, n)| n.starts_with(&t)).map(|(i, _)| i + 1).collect()
+            } else {
+                vec![]
+            };
+            if hits.len() != 1 {
+                return rt("The 'method' value must be either 'exact' or 'approximate'.");
+            }
+            Some(hits[0] == 1 || hits[0] == 2)
+        }
+    };
+    let x_is_vec = is_vector_dims(&xm.dims);
+    let y_is_vec = is_vector_dims(&ym.dims);
+    let dim: usize = match &dim_v {
+        Some(v) if !is_empty_val(v) => match v {
+            Value::Num(m) if m.data.len() == 1 && (m.data[0] == 1.0 || m.data[0] == 2.0) => m.data[0] as usize,
+            _ => return rt("Dimension must be an integer between 1 and 2."),
+        },
+        _ => xm.dims.iter().position(|&d| d != 1).map(|p| p + 1).unwrap_or(1),
+    };
+    // Columns of the samples along `dim`.
+    let cols = |m: &Matrix, d: usize| -> Vec<Vec<f64>> {
+        let (r, c) = (m.dims[0], m.dims[1]);
+        if d == 1 {
+            (0..c).map(|j| m.data[j * r..(j + 1) * r].to_vec()).collect()
+        } else {
+            (0..r).map(|i| (0..c).map(|j| m.data[j * r + i]).collect()).collect()
+        }
+    };
+    let (xc, yc);
+    if dim_v.as_ref().map(|v| is_empty_val(v)).unwrap_or(true) && x_is_vec && y_is_vec {
+        // The vector y follows the orientation of x.
+        xc = vec![xm.data.clone()];
+        yc = vec![ym.data.clone()];
+    } else {
+        xc = cols(xm, dim);
+        yc = cols(ym, dim);
+        let (sx, sy) = (xm.dims.clone(), ym.dims.clone());
+        let other = |d: &Vec<usize>| d[2 - dim];
+        if other(&sx) != other(&sy) {
+            return rt("The sizes of X and Y must be commensurate.");
+        }
+    }
+    let nsamples = xc.len();
+    let single = is_single(xm) || is_single(ym);
+    let (mut ws, mut wstars, mut ps) = (vec![], vec![], vec![]);
+    for j in 0..nsamples {
+        let xv: Vec<f64> = xc[j].iter().copied().filter(|v| !v.is_nan()).collect();
+        let yv: Vec<f64> = yc[j].iter().copied().filter(|v| !v.is_nan()).collect();
+        let mut zs: Vec<(f64, u8)> = xv.iter().map(|&v| (v, 1u8)).chain(yv.iter().map(|&v| (v, 2u8))).collect();
+        zs.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+        let nn = zs.len();
+        let sorted = Value::Num(Matrix::from_dims(vec![nn, 1], zs.iter().map(|z| z.0).collect()));
+        let r = if nn == 0 {
+            vec![]
+        } else {
+            let rr = it.call_function("tiedrank", vec![sorted, Value::num(0.0), Value::num(1.0)], 1)?;
+            let Value::Num(rm) = &rr[0] else { return rt("tiedrank") };
+            rm.data.clone()
+        };
+        let w: f64 = zs.iter().zip(&r).filter(|(z, _)| z.1 == 1).map(|(_, r)| *r).sum();
+        let m = xv.len() as f64;
+        let n = nn as f64 - m;
+        let nf = nn as f64;
+        let sumsq: f64 = r.iter().map(|v| v * v).sum();
+        let (mean_w, std_w) = if nn % 2 == 0 {
+            (m * (nf + 2.0) / 4.0, (m * n * (16.0 * sumsq - nf * (nf + 2.0).powi(2)) / (16.0 * nf * (nf - 1.0))).sqrt())
+        } else {
+            (m * (nf + 1.0).powi(2) / (4.0 * nf), (m * n * (16.0 * nf * sumsq - (nf + 1.0).powi(4)) / (16.0 * nf * nf * (nf - 1.0))).sqrt())
+        };
+        let wstar = if std_w > 0.0 {
+            (w - mean_w) / std_w
+        } else if w == mean_w {
+            f64::NAN
+        } else {
+            (w - mean_w).signum() * f64::INFINITY
+        };
+        let exact = doexact.unwrap_or(xv.len() + yv.len() <= 25);
+        let pvals: [f64; 3] = if m == 0.0 || n == 0.0 {
+            [f64::NAN; 3]
+        } else if exact {
+            let mut u: Vec<f64> = zs.iter().map(|z| z.0).collect();
+            u.dedup();
+            let mut n1 = vec![0.0; u.len()];
+            let mut n2 = vec![0.0; u.len()];
+            let mut wts = vec![0.0; u.len()];
+            for (z, rk) in zs.iter().zip(&r) {
+                let k = u.partition_point(|&v| v < z.0);
+                if z.1 == 1 {
+                    n1[k] += 1.0;
+                } else {
+                    n2[k] += 1.0;
+                }
+                wts[k] = *rk;
+            }
+            ab_exact(&n1, &n2, &wts, w)
+        } else {
+            let pp = it.call_function("normcdf", vec![Value::num(-wstar.abs())], 1)?[0].scalar()?;
+            if wstar < 0.0 { [pp, 0.0, 1.0 - pp] } else { [1.0 - pp, 0.0, pp] }
+        };
+        let p = if tail == 0.0 {
+            (2.0 * (pvals[1] + pvals[0].min(pvals[2]))).min(1.0)
+        } else if tail == 1.0 {
+            pvals[1] + pvals[0]
+        } else if tail == -1.0 {
+            pvals[1] + pvals[2]
+        } else {
+            0.0
+        };
+        ws.push(w);
+        wstars.push(wstar);
+        ps.push(p);
+    }
+    let shape = if dim == 1 { vec![1, nsamples] } else { vec![nsamples, 1] };
+    let mk = |v: Vec<f64>| Value::Num(finish(Matrix::from_dims(shape.clone(), v), single));
+    let h: Vec<f64> = ps.iter().map(|&p| if p.is_nan() { f64::NAN } else if p <= alpha { 1.0 } else { 0.0 }).collect();
+    let mut out = vec![mk(h), mk(ps)];
+    if nargout > 2 {
+        let mut st = StructArray::scalar();
+        st.set("W", mk(ws));
+        st.set("Wstar", mk(wstars));
         out.push(Value::Struct(st));
     }
     Ok(Some(out))

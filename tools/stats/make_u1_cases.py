@@ -71,6 +71,25 @@ for c in ["vartestn(A,[],'off','foo')", "vartestn(A,[],'foo')", "vartestn([],[],
     L3.append(PRE3 + vt.replace("{c}", c))
 L += L3
 
+PRE4 = "ax=x(1:12)'; ay=2*y(1:9)'; axb=[x(1:20)' x(21:40)'*1.5]; ayb=[y(1:30)' y(31:60)'*0.7]; axt=round(x(1:14)'*3); ayt=round(y(1:13)'*4); "
+ab = "[h_,p_,s_] = {c}; r = {h_,p_,s_.W,s_.Wstar};"
+L4 = []
+for c in ["ansaribradley(ax,ay)", "ansaribradley(ax',ay')", "ansaribradley(ax,ay')", "ansaribradley(ax(1:5),ay(1:4))", "ansaribradley(ax,ay,0.2)", "ansaribradley(ax,ay,0.05,'right')", "ansaribradley(ax,ay,0.05,'left')",
+          "ansaribradley(ax,ay,0.05,'both')", "ansaribradley(ax,ay,0.05,1)", "ansaribradley(ax,ay,0.05,-1)", "ansaribradley(ax,ay,0.05,0)", "ansaribradley(ax,ay,0.05,3)",
+          "ansaribradley(ax,ay,'tail','left')", "ansaribradley(ax,ay,'tail','r','alpha',0.1)", "ansaribradley(ax,ay,0.05,'both','approximate')", "ansaribradley(ax,ay,0.05,'both','exact')",
+          "ansaribradley(ax,ay,'method','approximate')", "ansaribradley(ax,ay,'method','on')", "ansaribradley(ax,ay,'method','off')", "ansaribradley(ax,ay,'method','e')", "ansaribradley(ax,ay,'method','a')",
+          "ansaribradley(axb,ayb)", "ansaribradley(axb,ayb,0.05,'both','approximate')", "ansaribradley(axb,ayb,0.05,'both','exact')", "ansaribradley(axb',ayb',0.05,'both','',2)",
+          "ansaribradley(axb',ayb','dim',2,'method','approximate')", "ansaribradley(axt,ayt)", "ansaribradley(axt,ayt,'method','approximate')", "ansaribradley(axt,ayt,'method','exact')",
+          "ansaribradley([ax NaN],[NaN ay])", "ansaribradley(x(1:40),y(1:30)*3)", "ansaribradley(x(1:40),y(1:30)*3,'method','exact')", "ansaribradley(single(ax),ay)", "ansaribradley(ax,single(ay))",
+          "ansaribradley(ax,ax)", "ansaribradley(ax,ax+0.1)", "ansaribradley(ax,[])", "ansaribradley([],ay)", "ansaribradley(1:3,4:7)", "ansaribradley(ones(1,5),ones(1,5))", "ansaribradley(ax,ay,[])",
+          "ansaribradley(ax,ay,0.05,[])", "ansaribradley(ax,ay,0.05,'')", "ansaribradley(ax,ay,0.05,'both',[])", "ansaribradley(ax,ay,0.05,'both','exact',[])", "ansaribradley(ax,ay,0.05,'both','exact',1)"]:
+    L4.append(PRE4 + ab.replace("{c}", c))
+for c in ["ansaribradley(ax)", "ansaribradley(ax,ay,'foo')", "ansaribradley(ax,ay,2)", "ansaribradley(ax,ay,0.05,'foo')", "ansaribradley(ax,ay,0.05,[1 2])", "ansaribradley(ax,ay,0.05,0,'foo')",
+          "ansaribradley(ax,ay,0.05,0,'x')", "ansaribradley(ax,ay,0.05,0,'on',3)", "ansaribradley(ax,ay,0.05,0,'on',0)", "ansaribradley(ax,ay,'alpha',2)", "ansaribradley(axb,[ayb ayb(:,1)],'dim',1)",
+          "ansaribradley(ax,ay,'bogus',2)", "ansaribradley(ax,ay,0.05,'o')", "ansaribradley(ax,ay,'method','o')", "ansaribradley(axb,ayb(:,1)')", "ansaribradley(ax,ay,'alpha')", "ansaribradley(ax,ay,0)"]:
+    L4.append(PRE4 + ab.replace("{c}", c))
+L += L4
+
 with open(os.path.join(here, "cases_u1.txt"), "w", encoding="utf-8", newline="\n") as f:
     f.write("\n".join(L) + "\n")
 print(len(L) - 1)
