@@ -908,7 +908,7 @@ fn ccdesign(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
         let blkcols: Vec<Vec<f64>> = (0..nc).map(|r| (nf..ncols).map(|c| dcm.data[c * nc + r]).collect()).collect();
         let minblk = 1.0 + (ns as f64).max(nc as f64 / 2f64.powi(numblkgen as i32));
         if minblk > blocksize {
-            it.emit_warning(format!("Block size must be at least {} for this design.", minblk), "stats:ccdesign:BlockSizeExceeded".into());
+            it.emit_warning(format!("Cannot find a design with fewer than {} runs per block.", minblk), "stats:ccdesign:BlockSizeExceeded".into());
         }
         let mut cblocksize = nc as f64;
         if numblkgen > 0 {
