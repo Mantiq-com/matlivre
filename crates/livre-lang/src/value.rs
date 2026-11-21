@@ -682,6 +682,10 @@ impl Value {
                 None => vec![1, 1],
             },
             Value::Object(o) if crate::containers::is_container(&o.class.name) => crate::containers::dims(o),
+            Value::Object(o) if o.class.name == crate::class::ON_OFF_CLASS => match o.props.borrow().get(1) {
+                Some(Value::Num(m)) => m.dims.clone(),
+                _ => vec![1, 1],
+            },
             Value::Func(_) | Value::Object(_) => vec![1, 1],
         }
     }
@@ -759,6 +763,7 @@ impl Value {
         match self {
             Value::Num(m) => Ok(!m.is_empty() && (0..m.numel()).all(|i| (m.data[i] != 0.0 && !m.data[i].is_nan()) || m.im_at(i) != 0.0)),
             Value::Sym(s) => s.truth(),
+            Value::Object(_) if crate::class::is_on_off(self) => Ok(crate::class::on_off_state(self) == Some(true)),
             _ => rt(format!("Conversion to logical from {} is not possible.", self.class_name())),
         }
     }

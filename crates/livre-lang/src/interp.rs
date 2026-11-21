@@ -12,7 +12,7 @@ use crate::ast::*;
 use crate::clock::Instant;
 use crate::class::{ClassDef, Object};
 use crate::display::{display_value, summary, NumFormat};
-use crate::error::{rt, LangError};
+use crate::error::{rt, rt_id, LangError};
 use crate::graphics::{ExportFormat, Figure};
 use crate::indexing::{self, to_index_arg};
 use crate::nd::{self, Dims, IndexArg};
@@ -77,6 +77,7 @@ struct CodeSource {
     lines: Rc<Vec<String>>,
 }
 
+#[derive(Clone)]
 enum Resolved {
     Paren(Vec<IndexArg>),
     Brace(Vec<IndexArg>),
@@ -978,12 +979,28 @@ impl Interpreter {
                 self.call_method(&f, &o.class.clone(), vec![v.clone()], 0)?;
                 return Ok(());
             }
+            if crate::class::is_on_off(v) && crate::class::on_off_text(o).is_none() {
+                if let Some(text) = crate::class::on_off_matrix(v).and_then(|m| crate::class::on_off_display(name, &m, self.command_window)) {
+                    self.emit(OutputKind::Value { name: name.to_string(), text });
+                    return Ok(());
+                }
+            }
             if let Some(m) = crate::class::enum_name(o) {
                 let short = o.class.name.rsplit('.').next().unwrap_or(&o.class.name);
-                let text = format!("{name} = 
+                let text = if self.command_window {
+                    format!("
+{name} =
+
   {short} enumeration
 
-    {m}");
+    {m}
+")
+                } else {
+                    format!("{name} = 
+  {short} enumeration
+
+    {m}")
+                };
                 self.emit(OutputKind::Value { name: name.to_string(), text });
                 return Ok(());
             }
@@ -1034,21 +1051,23 @@ impl Interpreter {
                     self.set_var("ans", v);
                 }
             }
-            StmtKind::Assign { lhs, rhs, print } => {
+            StmtKind::Assign { lhs, rhs, print, list } => {
                 if lhs.len() == 1 && self.try_append_in_place(&lhs[0], rhs)? {
                     // x = [x ...] grew x without copying it.
-                } else if lhs.len() == 1 {
-                    let v = self.eval(rhs)?;
-                    self.assign(&lhs[0], v)?;
+                } else if let [LValue::Target { name, chain }] = lhs.as_slice() {
+                    if *list && is_cs_target(&lhs[0]) {
+                        self.assign_outputs(lhs, rhs)?;
+                    } else if matches!(chain.last(), Some(Accessor::Brace(_))) {
+                        // c{k} = v evaluates its subscripts before the right side.
+                        let resolved = self.resolve_simple(name, chain)?;
+                        let v = self.eval(rhs)?;
+                        self.assign_resolved(name, &resolved, v)?;
+                    } else {
+                        let v = self.eval(rhs)?;
+                        self.assign(&lhs[0], v)?;
+                    }
                 } else {
-                    let vals = self.eval_multi(rhs, lhs.len())?;
-                    let needed = lhs.iter().rposition(|l| !matches!(l, LValue::Tilde)).map_or(0, |i| i + 1);
-                    if vals.len() < needed {
-                        return rt("Too many output arguments.");
-                    }
-                    for (l, v) in lhs.iter().zip(vals) {
-                        self.assign(l, v)?;
-                    }
+                    self.assign_outputs(lhs, rhs)?;
                 }
                 if *print {
                     for l in lhs {
@@ -1242,7 +1261,32 @@ impl Interpreter {
                 return Ok(());
             }
         }
-        // Pass 1: evaluate subscripts against the current sub-value (for `end`).
+        let resolved = self.resolve_simple(name, chain)?;
+        self.assign_resolved(name, &resolved, rhs)
+    }
+
+    /// The subscripts of the target of a simple assignment (no brackets), which names one
+    /// element.
+    fn resolve_simple(&mut self, name: &str, chain: &[Accessor]) -> R<Vec<Resolved>> {
+        let resolved = self.resolve_chain(name, chain)?;
+        // c{1:2} = v outside brackets: a simple assignment takes one element only.
+        if let Some((Resolved::Brace(idx), prefix)) = resolved.split_last() {
+            // (A value that is not a cell reports that first.)
+            let cell = !matches!(self.sub_ref(name, prefix), Some(v) if !matches!(v, Value::Cell(_)) && !matches!(v, Value::Num(m) if m.is_empty()));
+            let n = self.cs_count(name, prefix, idx);
+            if n != 1 && cell {
+                return rt_id(
+                    "MATLAB:index:expected_one_output_for_assignment",
+                    format!("Assigning to {n} elements using a simple assignment statement is not supported. Consider using comma-separated list assignment."),
+                );
+            }
+        }
+        Ok(resolved)
+    }
+
+    /// Evaluates the subscripts of an assignment target, each against the current sub-value
+    /// it indexes (for `end`).
+    fn resolve_chain(&mut self, name: &str, chain: &[Accessor]) -> R<Vec<Resolved>> {
         let mut resolved = Vec::with_capacity(chain.len());
         for (k, acc) in chain.iter().enumerate() {
             let r = match acc {
@@ -1262,16 +1306,162 @@ impl Interpreter {
             };
             resolved.push(r);
         }
+        Ok(resolved)
+    }
+
+    /// `[a, c{1:2}, s.f] = rhs`: one output per target, where a comma-separated-list target
+    /// (`c{1:2}`, `s.f` on a struct array, `s(2:3).f`) takes one output per element, in
+    /// column-major order. Those targets' subscripts are evaluated before the call, which needs
+    /// their element count as its number of outputs.
+    fn assign_outputs(&mut self, lhs: &[LValue], rhs: &Expr) -> R<()> {
+        enum Slot<'a> {
+            Skip,
+            Plain(&'a LValue),
+            Elem(&'a str, Vec<Resolved>),
+        }
+        let mut slots = Vec::with_capacity(lhs.len());
+        for l in lhs {
+            match l {
+                LValue::Tilde => slots.push(Slot::Skip),
+                LValue::Target { name, chain } if is_cs_target(l) => {
+                    let resolved = self.resolve_chain(name, chain)?;
+                    slots.extend(self.cs_elements(name, resolved)?.into_iter().map(|r| Slot::Elem(name, r)));
+                }
+                l => slots.push(Slot::Plain(l)),
+            }
+        }
+        let vals = self.eval_multi(rhs, slots.len())?;
+        let needed = slots.iter().rposition(|s| !matches!(s, Slot::Skip)).map_or(0, |i| i + 1);
+        if vals.len() < needed {
+            // A value (not a call) leaving list elements unassigned: `[c{1:2}] = 5`.
+            return if !self.may_call(rhs) && slots[vals.len()..].iter().any(|s| matches!(s, Slot::Elem(..))) {
+                rt_id("MATLAB:needMoreRhsOutputs", "Insufficient number of outputs from right hand side of equal sign to satisfy assignment.")
+            } else {
+                rt_id("MATLAB:maxlhs", "Too many output arguments.")
+            };
+        }
+        for (s, v) in slots.into_iter().zip(vals) {
+            match s {
+                Slot::Skip => {}
+                Slot::Plain(l) => self.assign(l, v)?,
+                Slot::Elem(name, r) => self.assign_resolved(name, &r, v)?,
+            }
+        }
+        Ok(())
+    }
+
+    /// Whether evaluating `e` may call a function (which reports missing outputs itself), as
+    /// opposed to yielding a value (`[a, b] = 5` or `[a, b] = x`).
+    fn may_call(&self, e: &Expr) -> bool {
+        let mut root = e;
+        while let Expr::Index(b, _) | Expr::CellIndex(b, _) | Expr::Field(b, _) | Expr::DynField(b, _) = root {
+            root = b;
+        }
+        match root {
+            Expr::Ident(n) => !matches!(self.get_var(n), Some(v) if !matches!(v, Value::Func(_) | Value::Object(_))),
+            Expr::SuperRef { .. } => true,
+            _ => false,
+        }
+    }
+
+    /// The number of elements `c{idx}` names in the cell reached by `prefix`.
+    fn cs_count(&self, name: &str, prefix: &[Resolved], idx: &[IndexArg]) -> usize {
+        let (dims, _) = self.sub_info(name, prefix);
+        subscript_lists(idx, &dims).iter().map(Vec::len).product()
+    }
+
+    /// The single-element targets a resolved target stands for: one per element of a
+    /// comma-separated list (`c{1:2}`, `s.f` on a struct array, `s(2:3).f`), in column-major
+    /// order, else the target itself.
+    fn cs_elements(&self, name: &str, resolved: Vec<Resolved>) -> R<Vec<Vec<Resolved>>> {
+        let n = resolved.len();
+        // A field of a struct array inside the target (`[s.f.g]`) is rejected before the call.
+        for i in 0..n.saturating_sub(1) {
+            if matches!(resolved[i], Resolved::Field(_)) && self.sub_struct_numel(name, &resolved[..i]).is_some_and(|k| k != 1) {
+                return rt_id("MATLAB:scalarStrucRequired", "Scalar structure required for this assignment.");
+            }
+        }
+        // The position of the subscripts that make the list, their lists of positions, and
+        // whether they are braces.
+        let (at, lists, brace) = match resolved.last() {
+            Some(Resolved::Brace(idx)) => {
+                let (dims, _) = self.sub_info(name, &resolved[..n - 1]);
+                (n - 1, subscript_lists(idx, &dims), true)
+            }
+            Some(Resolved::Field(_)) if n >= 2 && matches!(resolved[n - 2], Resolved::Paren(_)) => {
+                let Resolved::Paren(idx) = &resolved[n - 2] else { unreachable!() };
+                let (dims, _) = self.sub_info(name, &resolved[..n - 2]);
+                (n - 2, subscript_lists(idx, &dims), false)
+            }
+            // s.f on a struct array: s(k).f for each element.
+            Some(Resolved::Field(_)) => match self.sub_struct_numel(name, &resolved[..n - 1]) {
+                Some(k) if k != 1 => {
+                    let mut r = resolved;
+                    r.insert(n - 1, Resolved::Paren(Vec::new()));
+                    return Ok((0..k).map(|i| with_subs(&r, n - 1, &[i], false)).collect());
+                }
+                _ => return Ok(vec![resolved]),
+            },
+            _ => return Ok(vec![resolved]),
+        };
+        let count: usize = lists.iter().map(Vec::len).product();
+        if count == 1 {
+            return Ok(vec![resolved]);
+        }
+        let mut out = Vec::with_capacity(count);
+        let mut pos = vec![0usize; lists.len()];
+        for _ in 0..count {
+            let subs: Vec<usize> = pos.iter().zip(&lists).map(|(&p, l)| l[p]).collect();
+            out.push(with_subs(&resolved, at, &subs, brace));
+            // Column-major: the first subscript varies fastest.
+            for (p, l) in pos.iter_mut().zip(&lists) {
+                *p += 1;
+                if *p < l.len() {
+                    break;
+                }
+                *p = 0;
+            }
+        }
+        Ok(out)
+    }
+
+    /// The number of elements of the struct array reached by `path`, if it is a struct.
+    fn sub_struct_numel(&self, name: &str, path: &[Resolved]) -> Option<usize> {
+        match self.sub_ref(name, path)? {
+            Value::Struct(s) => Some(s.elems.len()),
+            _ => None,
+        }
+    }
+
+    /// The sub-value reached by `path` from variable `name`, through scalar-struct fields and
+    /// single cell elements (None when it does not exist or is behind anything else).
+    fn sub_ref(&self, name: &str, path: &[Resolved]) -> Option<&Value> {
+        let mut v = self.get_var(name)?;
+        for p in path {
+            v = match (p, v) {
+                (Resolved::Field(f), Value::Struct(s)) if s.elems.len() == 1 => s.get(f)?,
+                (Resolved::Brace(idx), Value::Cell(c)) => match nd::index_plan(&c.dims, idx) {
+                    Ok((pos, _)) if pos.len() == 1 => &c.data[pos[0]],
+                    _ => return None,
+                },
+                _ => return None,
+            };
+        }
+        Some(v)
+    }
+
+    /// Assigns `rhs` to the target `name` reached through the subscripts `resolved`.
+    fn assign_resolved(&mut self, name: &str, resolved: &[Resolved], rhs: Value) -> R<()> {
         // Hot paths mutate the variable in place (no copy of large arrays per assignment).
-        let rhs = if self.frame().globals.contains(name.as_str()) {
+        let rhs = if self.frame().globals.contains(name) {
             rhs
         } else {
-            match self.frame_mut().vars.get_mut(name.as_str()) {
+            match self.frame_mut().vars.get_mut(name) {
                 Some(target) => match {
                     if let Value::Num(m) = target {
                         m.csc.clear();
                     }
-                    assign_in_place(target, &resolved, rhs)?
+                    assign_in_place(target, resolved, rhs)?
                 } {
                     None => return Ok(()),
                     Some(rhs) => rhs,
@@ -1282,7 +1472,7 @@ impl Interpreter {
         // General path: on error the variable is restored from this snapshot.
         let cur = self.take_var(name);
         let snapshot = cur.clone();
-        match self.apply_assign(cur, &resolved, rhs) {
+        match self.apply_assign(cur, resolved, rhs) {
             Ok(v) => {
                 self.set_var(name, v);
                 Ok(())
@@ -1376,6 +1566,12 @@ impl Interpreter {
                     if !o.has_prop(f) {
                         return rt(format!("Unrecognized property '{f}' for class '{}'.", o.class.name));
                     }
+                    if o.class.name == "GeneralizedLinearModel" {
+                        return rt(format!("The {f} property for class GeneralizedLinearModel is read-only."));
+                    }
+                    if o.class.name == "LinearModel" {
+                        return rt(format!("The {f} property for class LinearModel is read-only."));
+                    }
                     if o.class.name == "digitalFilter" {
                         return rt("You cannot change the specifications of a digital filter.
 If you want to design a new filter with different specifications, use the designfilt function with your new inputs, or call designfilt(D), where D is the digital filter of interest, to edit the filter using the Filter Design Assistant.");
@@ -1424,7 +1620,7 @@ If you want to design a new filter with different specifications, use the design
                     None => Value::Cell(CellArray::from_dims(vec![0, 0], Vec::new())),
                     Some(Value::Num(m)) if m.is_empty() => Value::Cell(CellArray::from_dims(vec![0, 0], Vec::new())),
                     Some(c @ Value::Cell(_)) => c,
-                    Some(other) => return rt(format!("Brace indexing is not supported for variables of this type ({}).", other.class_name())),
+                    Some(_) => return rt_id("MATLAB:cellAssToNonCell", "Unable to perform assignment because brace indexing is not supported for variables of this type."),
                 };
                 let new = if rest.is_empty() {
                     rhs
@@ -1556,6 +1752,13 @@ If you want to design a new filter with different specifications, use the design
             }
             Expr::Unary(op, x) => {
                 let v = self.eval(x)?;
+                // r' keeps the class: the states transposed.
+                if matches!(op, UnOp::Transpose | UnOp::CTranspose) && crate::class::is_on_off(&v) {
+                    if let Value::Num(m) = ops::unary(*op, &Value::Num(crate::class::on_off_matrix(&v).unwrap_or_else(crate::class::empty_states)))? {
+                        return Ok(crate::class::on_off_from_matrix(m));
+                    }
+                }
+                let v = crate::class::on_off_as_logical(v);
                 if let Value::Object(o) = &v {
                     let name = match op {
                         UnOp::Neg => "uminus",
@@ -1687,6 +1890,12 @@ If you want to design a new filter with different specifications, use the design
     }
 
     pub(crate) fn binary(&mut self, op: BinOp, l: Value, r: Value) -> R<Value> {
+        if crate::class::is_on_off(&l) || crate::class::is_on_off(&r) {
+            if let Some(v) = crate::class::on_off_text_compare(op, &l, &r) {
+                return Ok(v);
+            }
+            return self.binary(op, crate::class::on_off_as_logical(l), crate::class::on_off_as_logical(r));
+        }
         if matches!(l, Value::Object(_)) || matches!(r, Value::Object(_)) {
             let name = match op {
                 BinOp::Add => "plus",
@@ -1961,6 +2170,14 @@ If you want to design a new filter with different specifications, use the design
             Value::Table(t) => {
                 let vals = self.eval_raw_args(args, &bv.dims())?;
                 Ok(vec![Value::Table(Box::new(t.paren(&vals)?))])
+            }
+            Value::Object(o) if o.class.name == crate::class::ON_OFF_CLASS => {
+                let idx = self.eval_index_args(args, &bv.dims())?;
+                let states = Value::Num(crate::class::on_off_matrix(&bv).unwrap_or_else(crate::class::empty_states));
+                Ok(vec![match indexing::index(&states, &idx)? {
+                    Value::Num(m) => crate::class::on_off_from_matrix(m),
+                    other => other,
+                }])
             }
             Value::Object(o) if crate::gfx::is_gfx_class(&o.class.name) => {
                 let idx = self.eval_index_args(args, &bv.dims())?;
@@ -2342,7 +2559,7 @@ If you want to design a new filter with different specifications, use the design
                 }
                 let file = self.cur_file();
                 self.frames.push(Frame { vars, globals: HashSet::new(), func: None, file, line: 0 });
-                let r = self.eval_multi(&f.body, nargout.max(1));
+                let r = self.eval_multi(&f.body, nargout);
                 self.frames.pop();
                 self.depth -= 1;
                 r
@@ -2589,6 +2806,31 @@ If you want to design a new filter with different specifications, use the design
 /// arrays, `c{i} = v`, `s.f = v` on scalar structs, and nested paths through them. Returns
 /// the right-hand side back (`Some`) when the form is not handled here. Every case validates
 /// before writing, so an error leaves `target` unchanged.
+/// Whether a target can stand for a comma-separated list (`c{...}`, `s.f`, `s(k).f`).
+fn is_cs_target(l: &LValue) -> bool {
+    matches!(l, LValue::Target { chain, .. } if matches!(chain.last(), Some(Accessor::Brace(_) | Accessor::Field(_) | Accessor::DynField(_))))
+}
+
+/// The zero-based positions each subscript of `idx` selects in an array of size `dims`.
+fn subscript_lists(idx: &[IndexArg], dims: &[usize]) -> Vec<Vec<usize>> {
+    let ed = nd::effective_dims(dims, idx.len());
+    idx.iter()
+        .zip(&ed)
+        .map(|(a, &d)| match a {
+            IndexArg::All => (0..d).collect(),
+            IndexArg::List { ix, .. } => ix.clone(),
+        })
+        .collect()
+}
+
+/// `resolved` with the subscripts at `at` replaced by the single element `subs`.
+fn with_subs(resolved: &[Resolved], at: usize, subs: &[usize], brace: bool) -> Vec<Resolved> {
+    let mut r = resolved.to_vec();
+    let idx = subs.iter().map(|&i| IndexArg::scalar(i)).collect();
+    r[at] = if brace { Resolved::Brace(idx) } else { Resolved::Paren(idx) };
+    r
+}
+
 fn assign_in_place(target: &mut Value, chain: &[Resolved], rhs: Value) -> R<Option<Value>> {
     let Some((first, rest)) = chain.split_first() else {
         return Ok(Some(rhs));
@@ -3098,11 +3340,20 @@ fn scalar_truth(v: &Value, op: &str) -> R<bool> {
     match v {
         Value::Num(m) if m.numel() == 1 => Ok(m.data[0] != 0.0 || m.im_at(0) != 0.0),
         Value::Sym(_) if v.numel() == 1 => v.is_true(),
+        _ if crate::class::is_on_off(v) => v.is_true(),
         _ => rt(format!("Operands to the {op} operator must be convertible to logical scalar values.")),
     }
 }
 
 fn switch_match(subject: &Value, case: &Value) -> bool {
+    if crate::class::is_on_off(subject) || crate::class::is_on_off(case) {
+        let (s, c) = if subject.is_text() || case.is_text() {
+            (crate::class::on_off_as_text(subject.clone()), crate::class::on_off_as_text(case.clone()))
+        } else {
+            (crate::class::on_off_as_logical(subject.clone()), crate::class::on_off_as_logical(case.clone()))
+        };
+        return switch_match(&s, &c);
+    }
     if subject.is_text() && case.is_text() {
         return subject.text().ok() == case.text().ok();
     }

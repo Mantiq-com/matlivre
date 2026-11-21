@@ -1,0 +1,20 @@
+{
+  "header": {
+    "release": "2023b",
+    "version": "23.2.0.2409890 (R2023b) Update 3",
+    "computer": "PCWIN64",
+    "recorded": "2026-11-17"
+  },
+  "log": "            SampleRate: 2\n           FilterOrder: 4\n          Coefficients: [2x6 double]\n          DesignMethod: 'butter'\n       ImpulseResponse: 'iir'\n     FrequencyResponse: 'lowpass'\n    HalfPowerFrequency: 0.3000\n   Specifications:\n Use designfilt to edit filter\n Use filter to filter data\n Use fvtool to visualize filter\ndigitalFilter with properties:\ndigitalFilter 2 6\n             SampleRate: 2\n           Coefficients: [2x6 double]\n           DesignMethod: 'ellip'\n         PassbandRipple: 1\n        ImpulseResponse: 'iir'\n      FrequencyResponse: 'highpass'\n      PassbandFrequency: 0.3000\n      StopbandFrequency: 0.2000\n    StopbandAttenuation: 40\n   Specifications:\n Use designfilt to edit filter\n Use filter to filter data\n Use fvtool to visualize filter\ndigitalFilter with properties:\ndigitalFilter 2 6\n            SampleRate: 2\n           FilterOrder: 6\n          Coefficients: [3x6 double]\n          DesignMethod: 'cheby1'\n        PassbandRipple: 1\n       ImpulseResponse: 'iir'\n     FrequencyResponse: 'bandpass'\n    PassbandFrequency1: 0.2000\n    PassbandFrequency2: 0.5000\n   Specifications:\n Use designfilt to edit filter\n Use filter to filter data\n Use fvtool to visualize filter\ndigitalFilter with properties:\ndigitalFilter 3 6\n",
+  "error": {
+    "identifier": "",
+    "message": ""
+  },
+  "lastwarn": {
+    "message": "",
+    "identifier": ""
+  },
+  "variables": {},
+  "figures": [],
+  "nfigures": 0
+}

@@ -37,7 +37,7 @@ fn numeric(a: &[Value], i: usize, label: &str, name: &str) -> R<Matrix> {
     }
 }
 
-fn setup(wp: &[f64], ws: &[f64], digital: bool) -> R<Setup> {
+fn setup(wp: &[f64], ws: &[f64], digital: bool, stop_edges: bool) -> R<Setup> {
     let pre = |v: &[f64]| -> Vec<f64> { v.iter().map(|&w| if digital { (PI * w / 2.0).tan() } else { w }).collect() };
     let (p, s) = (pre(wp), pre(ws));
     if wp.len() == 1 {
@@ -53,6 +53,13 @@ fn setup(wp: &[f64], ws: &[f64], digital: bool) -> R<Setup> {
     let (mut p, mut s) = (p, s);
     if pass {
         if p[0] * p[1] > s[0] * s[1] {
+            s[0] = p[0] * p[1] / s[1];
+        } else {
+            s[1] = p[0] * p[1] / s[0];
+        }
+    } else if stop_edges {
+        // ellipord moves a stopband edge (the others move the passband edge).
+        if s[0] * s[1] > p[0] * p[1] {
             s[0] = p[0] * p[1] / s[1];
         } else {
             s[1] = p[0] * p[1] / s[0];
@@ -140,7 +147,7 @@ pub fn call(_it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> R
     if wp.len() > 2 {
         return rt("The frequency vectors must both be the same length.");
     }
-    let st = setup(&wp, &ws, digital)?;
+    let st = setup(&wp, &ws, digital, name == "ellipord")?;
     let ratio = (10f64.powf(0.1 * rs) - 1.0) / (10f64.powf(0.1 * rp) - 1.0);
     let nat = st.nat;
     let mut n_im = 0.0;

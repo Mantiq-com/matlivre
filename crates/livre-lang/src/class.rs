@@ -9,7 +9,7 @@ use crate::ast::{Expr, Function};
 use crate::display::NumFormat;
 use crate::error::LangError;
 use crate::lexer::{tokenize, Kw, Tok};
-use crate::value::{StructArray, Value};
+use crate::value::{CellArray, Kind, Matrix, StructArray, Value};
 
 type R<T> = Result<T, LangError>;
 
@@ -169,6 +169,280 @@ impl PartialEq for Object {
     }
 }
 
+/// Class of the values graphics properties such as `Visible` and `Box` hold.
+pub const ON_OFF_CLASS: &str = "matlab.lang.OnOffSwitchState";
+
+thread_local! {
+    static ON_OFF: Rc<ClassDef> = Rc::new(ClassDef {
+        name: ON_OFF_CLASS.to_string(),
+        supers: Vec::new(),
+        ancestors: Vec::new(),
+        is_handle: false,
+        props: vec![PropDef { name: ENUM_PROP.into(), default: None, constant: false, dependent: false, hidden: true }],
+        methods: HashMap::new(),
+        statics: HashSet::new(),
+        ctor: None,
+        events: Vec::new(),
+        enums: vec![("on".to_string(), None), ("off".to_string(), None)],
+    });
+}
+
+/// `matlab.lang.OnOffSwitchState.on` or `.off`.
+pub fn on_off_switch(on: bool) -> Value {
+    ON_OFF.with(|c| Value::Object(Object { class: c.clone(), props: Rc::new(RefCell::new(vec![Value::chars(if on { "on" } else { "off" })])) }))
+}
+
+/// An `OnOffSwitchState` value from logical states: a scalar for one element, else an array.
+/// An array keeps the states of all its elements in a second hidden property (the first
+/// holds the text of its first element, which is all the generic enumeration code reads).
+pub fn on_off_from_matrix(m: Matrix) -> Value {
+    if m.numel() == 1 {
+        return on_off_switch(m.data[0] != 0.0);
+    }
+    let first = m.data.first().is_some_and(|&x| x != 0.0);
+    let states = Matrix::from_dims(m.dims.clone(), m.data.iter().map(|&x| (x != 0.0) as u8 as f64).collect()).with_kind(Kind::Logical);
+    ON_OFF.with(|c| {
+        Value::Object(Object { class: c.clone(), props: Rc::new(RefCell::new(vec![Value::chars(if first { "on" } else { "off" }), Value::Num(states)])) })
+    })
+}
+
+/// The states of an `OnOffSwitchState` value (scalar or array) as a logical matrix.
+pub fn on_off_matrix(v: &Value) -> Option<Matrix> {
+    let Value::Object(o) = v else { return None };
+    if o.class.name != ON_OFF_CLASS {
+        return None;
+    }
+    let props = o.props.borrow();
+    match props.get(1) {
+        Some(Value::Num(m)) => Some(m.clone()),
+        _ => Some(Matrix::scalar(if enum_name(o).as_deref() == Some("on") { 1.0 } else { 0.0 }).with_kind(Kind::Logical)),
+    }
+}
+
+/// `matlab.lang.OnOffSwitchState(x)`: from logical or numeric values, `on`/`off` text, or a
+/// cell or string array of text.
+pub fn on_off_construct(v: &Value) -> Option<Value> {
+    let from_each = |dims: &Vec<usize>, items: Vec<Option<bool>>| -> Option<Value> {
+        let data: Option<Vec<f64>> = items.into_iter().map(|b| b.map(|x| x as u8 as f64)).collect();
+        Some(on_off_from_matrix(Matrix::from_dims(dims.clone(), data?).with_kind(Kind::Logical)))
+    };
+    match v {
+        Value::Cell(c) => from_each(&c.dims, c.data.iter().map(|e| on_off_states_of(e).filter(|m| m.numel() == 1).map(|m| m.data[0] != 0.0)).collect()),
+        Value::Str(s) => from_each(
+            &s.dims,
+            s.data.iter().map(|t| match t.as_deref() {
+                Some("on") => Some(true),
+                Some("off") => Some(false),
+                _ => None,
+            }).collect(),
+        ),
+        _ => on_off_states_of(v).map(on_off_from_matrix),
+    }
+}
+
+/// No states.
+pub fn empty_states() -> Matrix {
+    Matrix::new(0, 0, Vec::new()).with_kind(Kind::Logical)
+}
+
+/// The text of a scalar `OnOffSwitchState` value (`on` / `off`); `None` for an array.
+pub fn on_off_text(o: &Object) -> Option<String> {
+    if o.class.name == ON_OFF_CLASS && o.props.borrow().len() == 1 { enum_name(o) } else { None }
+}
+
+/// The state of a scalar `OnOffSwitchState` value (`true` for `on`); `None` for any other value.
+pub fn on_off_state(v: &Value) -> Option<bool> {
+    match v {
+        Value::Object(o) => on_off_text(o).map(|t| t == "on"),
+        _ => None,
+    }
+}
+
+/// Whether `v` is an `OnOffSwitchState` value, a scalar or an array.
+pub fn is_on_off(v: &Value) -> bool {
+    matches!(v, Value::Object(o) if o.class.name == ON_OFF_CLASS)
+}
+
+/// Whether `v` is an `OnOffSwitchState` value or a cell holding one (at any depth).
+pub fn holds_on_off(v: &Value) -> bool {
+    match v {
+        Value::Cell(c) => c.data.iter().any(holds_on_off),
+        _ => is_on_off(v),
+    }
+}
+
+/// `v` with `f` applied to each `OnOffSwitchState` value in it, also inside cells.
+fn map_on_off(v: Value, f: fn(Value) -> Value) -> Value {
+    match v {
+        Value::Cell(c) if holds_on_off(&Value::Cell(c.clone())) => {
+            Value::Cell(CellArray::from_dims(c.dims.clone(), c.data.iter().cloned().map(|x| map_on_off(x, f)).collect()))
+        }
+        other => f(other),
+    }
+}
+
+/// An `OnOffSwitchState` value as the text `on` / `off` (an array as a cell of them);
+/// other values unchanged.
+pub fn on_off_as_text(v: Value) -> Value {
+    match on_off_matrix(&v) {
+        Some(m) if m.numel() == 1 => Value::chars(if m.data[0] != 0.0 { "on" } else { "off" }),
+        Some(m) => Value::Cell(CellArray::from_dims(m.dims.clone(), m.data.iter().map(|&x| Value::chars(if x != 0.0 { "on" } else { "off" })).collect())),
+        None => v,
+    }
+}
+
+/// An `OnOffSwitchState` value as a logical scalar or array; other values unchanged.
+pub fn on_off_as_logical(v: Value) -> Value {
+    match on_off_matrix(&v) {
+        Some(m) if m.numel() == 1 => Value::bool(m.data[0] != 0.0),
+        Some(m) => Value::Num(m),
+        None => v,
+    }
+}
+
+/// The states a value stands for when it is assigned into or joined with an
+/// `OnOffSwitchState` array: states, `on`/`off` text, or any number (nonzero is on).
+pub fn on_off_states_of(v: &Value) -> Option<Matrix> {
+    if let Some(m) = on_off_matrix(v) {
+        return Some(m);
+    }
+    match v {
+        Value::Num(m) if m.kind == Kind::Char => match v.text().ok()?.as_str() {
+            "on" => Some(Matrix::scalar(1.0).with_kind(Kind::Logical)),
+            "off" => Some(Matrix::scalar(0.0).with_kind(Kind::Logical)),
+            _ => None,
+        },
+        Value::Num(m) => Some(Matrix::from_dims(m.dims.clone(), m.data.iter().map(|&x| (x != 0.0) as u8 as f64).collect()).with_kind(Kind::Logical)),
+        _ => None,
+    }
+}
+
+/// The element rows of a 2-D `OnOffSwitchState` array as MATLAB lays them out: each element
+/// left-justified to three characters, four spaces before each.
+fn on_off_rows(m: &Matrix) -> Vec<String> {
+    let (r, c) = (m.rows(), m.cols());
+    (0..r)
+        .map(|i| (0..c).map(|j| format!("    {:<3}", if m.data[i + j * r] != 0.0 { "on" } else { "off" })).collect::<String>())
+        .collect()
+}
+
+/// `disp` of an `OnOffSwitchState` array: its rows and a blank line.
+pub fn on_off_disp(m: &Matrix) -> String {
+    format!("{}\n\n", on_off_rows(m).join("\n"))
+}
+
+/// The display of an `OnOffSwitchState` array variable (2-D only).
+pub fn on_off_display(name: &str, m: &Matrix, command_window: bool) -> Option<String> {
+    if m.dims.len() != 2 {
+        return None;
+    }
+    let rows = on_off_rows(m).join("\n");
+    Some(if command_window {
+        format!("\n{name} =\n\n  {}x{} OnOffSwitchState enumeration array\n\n{rows}\n", m.rows(), m.cols())
+    } else {
+        format!("{name} = \n  {}\u{d7}{} OnOffSwitchState enumeration array\n\n{rows}", m.rows(), m.cols())
+    })
+}
+
+/// `==` and `~=` between an `OnOffSwitchState` value and text compare the states with the
+/// text (`ax.Visible == 'on'` is one logical value, not a character-wise comparison).
+pub fn on_off_text_compare(op: crate::ast::BinOp, l: &Value, r: &Value) -> Option<Value> {
+    use crate::ast::BinOp;
+    if !matches!(op, BinOp::Eq | BinOp::Ne) {
+        return None;
+    }
+    let (states, other) = match (on_off_matrix(l), on_off_matrix(r)) {
+        (Some(s), None) if r.is_text() => (s, r),
+        (None, Some(s)) if l.is_text() => (s, l),
+        _ => return None,
+    };
+    let text = other.text().ok()?;
+    let data: Vec<f64> = states.data.iter().map(|&x| ((text == if x != 0.0 { "on" } else { "off" }) == (op == BinOp::Eq)) as u8 as f64).collect();
+    Some(Value::Num(Matrix::from_dims(states.dims.clone(), data).with_kind(Kind::Logical)))
+}
+
+/// Builtins that read an `OnOffSwitchState` argument as the text `on` / `off`.
+const READ_AS_TEXT: &[&str] = &["strcmp", "strcmpi", "strncmp", "strncmpi", "string", "cellstr"];
+/// Builtins that read it as a logical value (`double(ax.Box)`, `any(ax.Box)`, ...).
+const READ_AS_LOGICAL: &[&str] = &[
+    "double", "single", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "logical", "num2str", "islogical",
+    "any", "all", "xor", "not", "and", "or", "sum", "find", "nnz", "plus", "minus", "times", "eq", "ne", "lt", "le", "gt", "ge",
+];
+/// Builtins that rearrange elements: they work on the states and the result is an
+/// `OnOffSwitchState` array again.
+pub const ON_OFF_SHAPING: &[&str] =
+    &["reshape", "repmat", "fliplr", "flipud", "flip", "transpose", "ctranspose", "permute", "squeeze", "circshift", "rot90", "unique"];
+/// Builtins that compare it with their other arguments: as text if one of them is text.
+const READ_BY_PEER: &[&str] = &["isequal", "ismember"];
+
+/// The arguments of builtin `name` with its `OnOffSwitchState` values replaced by what the
+/// builtin reads them as, or `None` when the builtin takes them as they are.
+pub fn on_off_args(name: &str, args: &[Value]) -> Option<Vec<Value>> {
+    if !args.iter().any(holds_on_off) {
+        return None;
+    }
+    let as_text = if READ_AS_TEXT.contains(&name) {
+        true
+    } else if READ_BY_PEER.contains(&name) {
+        args.iter().any(|a| !is_on_off(a) && (a.is_text() || matches!(a, Value::Cell(_))))
+    } else if READ_AS_LOGICAL.contains(&name) {
+        false
+    } else if matches!(name, "sprintf" | "fprintf") {
+        return Some(on_off_format_args(args));
+    } else {
+        return None;
+    };
+    // `ismember` takes only top-level values; the others also look inside cells.
+    let conv: fn(Value) -> Value = if as_text { on_off_as_text } else { on_off_as_logical };
+    Some(args.iter().cloned().map(|a| if name == "ismember" { conv(a) } else { map_on_off(a, conv) }).collect())
+}
+
+/// `sprintf` / `fprintf`: an `OnOffSwitchState` argument prints as text under `%s` and `%c`
+/// and as its logical value under the other conversions.
+fn on_off_format_args(args: &[Value]) -> Vec<Value> {
+    // An array stands for its elements, one argument each.
+    let expanded: Vec<Value> = args
+        .iter()
+        .flat_map(|a| match on_off_matrix(a) {
+            Some(m) if m.numel() != 1 => m.data.iter().map(|&x| on_off_switch(x != 0.0)).collect::<Vec<_>>(),
+            _ => vec![a.clone()],
+        })
+        .collect();
+    let args = &expanded[..];
+    let Some(fmt_at) = args.iter().position(|a| a.is_text()) else {
+        return args.iter().cloned().map(on_off_as_logical).collect();
+    };
+    let fmt = args[fmt_at].text().unwrap_or_default();
+    let mut convs = Vec::new();
+    let mut chars = fmt.chars().peekable();
+    while let Some(c) = chars.next() {
+        if c != '%' {
+            continue;
+        }
+        if chars.peek() == Some(&'%') {
+            chars.next();
+            continue;
+        }
+        while let Some(&d) = chars.peek() {
+            chars.next();
+            if d.is_ascii_alphabetic() {
+                convs.push(d);
+                break;
+            }
+        }
+    }
+    args.iter()
+        .enumerate()
+        .map(|(i, a)| {
+            if i <= fmt_at {
+                return a.clone();
+            }
+            let conv = if convs.is_empty() { 's' } else { convs[(i - fmt_at - 1) % convs.len()] };
+            if matches!(conv, 's' | 'c') { on_off_as_text(a.clone()) } else { on_off_as_logical(a.clone()) }
+        })
+        .collect()
+}
+
 /// The member name of an enumeration value.
 pub fn enum_name(o: &Object) -> Option<String> {
     if o.class.enums.is_empty() {
@@ -239,6 +513,26 @@ impl Object {
 /// Default display: `obj = \n  Foo with properties:\n\n    Name: 'x'`. `values` may carry
 /// computed Dependent values (otherwise the stored ones are shown).
 pub fn format_object(name: &str, o: &Object, values: &[Value], f: NumFormat) -> String {
+    if matches!(o.class.name.as_str(), "ClassificationKNN" | "ClassificationNaiveBayes" | "ClassificationDiscriminant") {
+        if let Some(t) = crate::stats::learners::object_text(o) {
+            return format!("
+{name} = 
+
+{t}
+
+");
+        }
+    }
+    if o.class.name == "GeneralizedLinearModel" {
+        if let Some(t) = crate::stats::glmodel::object_text(o) {
+            return format!("\n{name} = \n\n\n{t}");
+        }
+    }
+    if o.class.name == "LinearModel" {
+        if let Some(t) = crate::stats::linmodel::object_text(o) {
+            return format!("\n{name} = \n\n\n{t}");
+        }
+    }
     let visible: Vec<usize> = (0..o.class.props.len()).filter(|&i| !o.class.props[i].hidden && !o.class.props[i].constant).collect();
     let w = visible.iter().map(|&i| o.class.props[i].name.len()).max().unwrap_or(0);
     // Classes in packages show their short name, as in MATLAB.

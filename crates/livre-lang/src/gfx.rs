@@ -552,6 +552,11 @@ fn to_u8(c: [f64; 3]) -> [u8; 3] {
 }
 
 fn on_off(v: &Value) -> R<bool> {
+    if let Value::Object(o) = v {
+        if let Some(t) = crate::class::on_off_text(o) {
+            return Ok(t == "on");
+        }
+    }
     if v.is_text() || matches!(v, Value::Str(_)) {
         return match v.text()?.to_lowercase().as_str() {
             "on" => Ok(true),
@@ -657,10 +662,15 @@ fn z_limits(ax: &graphics::Axes) -> (f64, f64) {
 }
 
 pub(crate) fn tick_values(ticks: &graphics::Ticks, lo: f64, hi: f64) -> Vec<f64> {
+    tick_values_for(ticks, lo, hi, 5.0)
+}
+
+/// Tick values aiming at `target` intervals.
+fn tick_values_for(ticks: &graphics::Ticks, lo: f64, hi: f64, target: f64) -> Vec<f64> {
     if let Some(v) = &ticks.values {
         return v.clone();
     }
-    let step = graphics::nice_step(hi - lo, 5.0);
+    let step = graphics::nice_step(hi - lo, target);
     let a = (lo / step - 1e-9).ceil() * step;
     let n = ((hi - a) / step + 1e-9).floor().max(0.0) as usize;
     (0..=n.min(40)).map(|k| {
@@ -690,8 +700,33 @@ pub fn format_tick(format: Option<&str>, v: f64) -> String {
     }
 }
 
+/// The graphics properties MATLAB holds as `matlab.lang.OnOffSwitchState` (the others that show
+/// `on`/`off`, such as `HandleVisibility`, are text).
+const ON_OFF_PROPS: &[&str] = &[
+    "AffectAutoLimits", "AlignVertexCenters", "AutoUpdate", "BeingDeleted", "Box", "Clipping", "DockControls", "Editing",
+    "FitBoxToText", "FontSmoothing", "GraphicsSmoothing", "HitTest", "Horizontal", "IntegerHandle", "Interruptible",
+    "InvertHardcopy", "NumberTitle", "Resize", "Scrollable", "Selected", "SelectionHighlight", "ShowBaseLine", "Visible",
+    "XGrid", "XMinorGrid", "XMinorTick", "YGrid", "YMinorGrid", "YMinorTick", "ZGrid", "ZMinorGrid", "ZMinorTick",
+];
+
 /// Property `name` (MATLAB's spelling) of handle `id`.
 pub(crate) fn get_prop(it: &mut Interpreter, id: u64, name: &str) -> R<Value> {
+    let v = get_prop_raw(it, id, name)?;
+    if ON_OFF_PROPS.contains(&name) {
+        if let Value::Num(m) = &v {
+            if m.kind == crate::value::Kind::Char {
+                match m.to_string_lossy().as_str() {
+                    "on" => return Ok(crate::class::on_off_switch(true)),
+                    "off" => return Ok(crate::class::on_off_switch(false)),
+                    _ => {}
+                }
+            }
+        }
+    }
+    Ok(v)
+}
+
+pub(crate) fn get_prop_raw(it: &mut Interpreter, id: u64, name: &str) -> R<Value> {
     let t = resolve(it, id).ok_or_else(|| LangError::new("Invalid or deleted object.", 0))?;
     let class = class_of(it, t);
     // Charts keep their own properties; their drawn parts are rebuilt from them.
@@ -744,10 +779,13 @@ fn computed(it: &mut Interpreter, id: u64, t: Target, name: &str) -> R<Option<Va
             "Number" => Value::num(it.figures[f].id as f64),
             "Colormap" => colormap_value(it.figures[f].colormap.clone().unwrap_or_else(|| graphics::colormap("parula", 256).unwrap_or_default())),
             "Children" => {
-                let n = it.figures[f].axes.len();
-                let ids: Vec<u64> = (0..n).rev().map(|a| axes_id(it, f, a)).collect();
+                // The axes that are not in a tiled layout, in front, then the layout.
+                let order: Vec<usize> = it.figures[f].stacking().into_iter().filter(|&a| it.figures[f].axes[a].tile.is_none()).collect();
+                let mut ids: Vec<u64> = order.into_iter().rev().map(|a| axes_id(it, f, a)).collect();
+                ids.extend(it.figures[f].objects.iter().filter(|o| o.kind == graphics::FigObjKind::Layout).map(|o| o.id));
                 handles(it, &ids)
             }
+            "CurrentAxes" if !it.figures[f].has_axes() => handles(it, &[]),
             "CurrentAxes" => {
                 let a = it.figures[f].current_axes;
                 let id = axes_id(it, f, a);
@@ -796,7 +834,9 @@ fn computed(it: &mut Interpreter, id: u64, t: Target, name: &str) -> R<Option<Va
                 }
                 "ZTick" if stored(it, id, name).is_none() => {
                     let (z0, z1) = z_limits(ax);
-                    row(&tick_values(&graphics::Ticks::default(), z0, z1))
+                    // In a 2-D view the z axis is collapsed: MATLAB keeps about two intervals.
+                    let target = if ax.is_3d() { 5.0 } else { 2.0 };
+                    row(&tick_values_for(&graphics::Ticks::default(), z0, z1, target))
                 }
                 // Labels read back as a column, however they were set.
                 "ZTickLabel" if matches!(stored(it, id, name), Some(Value::Cell(_))) => {
@@ -837,7 +877,7 @@ fn computed(it: &mut Interpreter, id: u64, t: Target, name: &str) -> R<Option<Va
                     let (az, el) = ax.view.unwrap_or((0.0, 90.0));
                     row(&[az, el])
                 }
-                "Position" | "InnerPosition" if stored(it, id, name).is_none() => row(&[0.13, 0.11, 0.775, 0.815]),
+                "Position" | "InnerPosition" => row(&it.figures[f].effective_position(a)),
                 "OuterPosition" if stored(it, id, name).is_none() => row(&[0.0, 0.0, 1.0, 1.0]),
                 "YAxisLocation" if ax.yy.is_some() => Value::chars(if ax.yy.as_ref().unwrap().right_active { "right" } else { "left" }),
                 "YAxis" if ax.yy.is_some() => {
@@ -1065,8 +1105,8 @@ fn computed(it: &mut Interpreter, id: u64, t: Target, name: &str) -> R<Option<Va
                 }
                 "TileArrangement" if o.kind == graphics::FigObjKind::Layout => Value::chars(if it.figures[f].flow { "flow" } else { "fixed" }),
                 "Children" if o.kind == graphics::FigObjKind::Layout => {
-                    let n = it.figures[f].axes.len();
-                    let ids: Vec<u64> = (0..n).rev().map(|a| axes_id(it, f, a)).collect();
+                    let order: Vec<usize> = it.figures[f].stacking().into_iter().filter(|&a| it.figures[f].axes[a].tile.is_some()).collect();
+                    let ids: Vec<u64> = order.into_iter().rev().map(|a| axes_id(it, f, a)).collect();
                     handles(it, &ids)
                 }
                 "Parent" => handle(it, it.figures[f].id as u64),
@@ -1154,6 +1194,20 @@ pub(crate) fn set_prop(it: &mut Interpreter, id: u64, name: &str, v: Value) -> R
                 "XLim" => ax.xlim = limits_arg(&v)?,
                 "YLim" => ax.ylim = limits_arg(&v)?,
                 "ZLim" => ax.zlim = limits_arg(&v)?,
+                // Where the axes sit in the figure: the box they are drawn in follows.
+                "Position" | "InnerPosition" | "OuterPosition" => {
+                    let m = v.to_matrix().ok().filter(|m| m.numel() == 4 && !m.is_complex());
+                    let Some(m) = m else { return rt(format!("Value must be a 1-by-4 numeric vector for the {name} property.")) };
+                    let p = [m.data[0], m.data[1], m.data[2], m.data[3]];
+                    if name == "OuterPosition" {
+                        ax.layout = Some(p).filter(|p| p[2] > 0.0 && p[3] > 0.0);
+                        ax.position = ax.layout.map(graphics::position_of_outer);
+                    } else {
+                        ax.layout = graphics::outer_of_position(p);
+                        ax.position = Some(p);
+                    }
+                    keep = false;
+                }
                 "XLimMode" if auto => ax.xlim = None,
                 "YLimMode" if auto => ax.ylim = None,
                 "XScale" => ax.xlog = v.text()?.eq_ignore_ascii_case("log"),
@@ -1420,7 +1474,7 @@ pub(crate) fn set_prop(it: &mut Interpreter, id: u64, name: &str, v: Value) -> R
                     fig.flow = false;
                     if fig.grid != (r, c) {
                         fig.grid = (r, c);
-                        fig.axes.resize(r * c, Axes::default());
+                        fig.relayout_tiles();
                     }
                 }
                 "Children" | "Parent" | "Type" => {}
@@ -1652,7 +1706,7 @@ fn get_all(it: &mut Interpreter, id: u64) -> R<Value> {
     Ok(Value::Struct(s))
 }
 
-fn set_builtin(it: &mut Interpreter, a: &[Value]) -> Ret {
+pub(crate) fn set_builtin(it: &mut Interpreter, a: &[Value]) -> Ret {
     let ids = target_ids(it, arg(a, 0, "set")?)?;
     let mut pairs: Vec<(String, Value)> = Vec::new();
     let mut i = 1;
@@ -1737,7 +1791,8 @@ pub(crate) fn descendants(it: &mut Interpreter, id: u64, out: &mut Vec<u64>) {
             }
         }
         Some(Target::Figure(f)) => {
-            for a in 0..it.figures[f].axes.len() {
+            let order = if it.figures[f].has_axes() { it.figures[f].stacking() } else { Vec::new() };
+            for a in order {
                 let ax = axes_id(it, f, a);
                 out.push(ax);
                 descendants(it, ax, out);
@@ -1807,11 +1862,7 @@ fn delete_handles(it: &mut Interpreter, ids: &[u64]) -> R<()> {
                 it.figures[f].axes[a].series.remove(s);
                 mark(it, f);
             }
-            Some(Target::Axes(f, a)) => {
-                let ax = &mut it.figures[f].axes[a];
-                *ax = Axes { id: 0, ..Axes::default() };
-                mark(it, f);
-            }
+            Some(Target::Axes(f, a)) => remove_axes(it, f, a),
             Some(Target::Figure(f)) => {
                 it.figures.remove(f);
                 it.current_figure = if it.figures.is_empty() { None } else { Some(it.figures.len() - 1) };
@@ -1874,6 +1925,25 @@ fn axes_copy(it: &mut Interpreter, f: usize, a: usize) -> Axes {
     c.overlay_of = 0;
     c.series = series;
     c
+}
+
+/// Takes axes `a` out of figure `f` for good, with the objects on them.
+pub(crate) fn remove_axes(it: &mut Interpreter, f: usize, a: usize) {
+    let ax = it.figures[f].axes.remove(a);
+    for s in &ax.series {
+        it.gfx_store.remove(&s.id);
+    }
+    if ax.id != 0 {
+        for k in 0..SLOTS {
+            it.gfx_store.remove(&(ax.id + k));
+        }
+    }
+    let fig = &mut it.figures[f];
+    fig.current_axes = match fig.current_axes {
+        c if c > a => c - 1,
+        c => c.min(fig.axes.len().saturating_sub(1)),
+    };
+    mark(it, f);
 }
 
 /// `copyobj(h, parent)`: copies of objects into new parents, one per child-parent pair.
@@ -1977,7 +2047,7 @@ pub fn delete(it: &mut Interpreter, a: &[Value]) -> Option<Ret> {
     Some(delete_handles(it, &ids).and_then(|_| none()))
 }
 
-pub fn call(it: &mut Interpreter, name: &str, a: &[Value], _nargout: usize) -> Ret {
+pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Ret {
     match name {
         "set" => set_builtin(it, a),
         // Figures are never off screen here, so there is none to bring back.
@@ -2078,19 +2148,30 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], _nargout: usize) -> R
             one(handles(it, &[]))
         }
         "axes" => {
+            // `axes(...)` shows nothing and leaves no ans when its result is not asked for.
+            let give = |it: &Interpreter, id: u64| if nargout > 0 { one(handle(it, id)) } else { none() };
             if let Some(ids) = a.first().and_then(ids_of) {
                 if let Some(Target::Axes(f, ax)) = ids.first().and_then(|&id| resolve(it, id)) {
                     it.current_figure = Some(f);
                     it.figures[f].current_axes = ax;
-                    return one(handle(it, ids[0]));
+                    it.figures[f].raise(ax);
+                    return give(it, ids[0]);
                 }
-                // axes(fig, ...): the figure's current axes.
+                // axes(fig, ...): new axes in that figure.
                 if let Some(Target::Figure(f)) = ids.first().and_then(|&id| resolve(it, id)) {
                     it.current_figure = Some(f);
                 }
             }
             let f = it.current_figure_index();
-            let ax = it.figures[f].current_axes;
+            // New axes go over the others, covering the whole figure until they get a Position.
+            let ax = {
+                let fig = &mut it.figures[f];
+                fig.axes.push(Axes { position: Some(graphics::DEFAULT_POSITION), layout: Some([0.0, 0.0, 1.0, 1.0]), ..Axes::default() });
+                fig.current_axes = fig.axes.len() - 1;
+                let last = fig.current_axes;
+                fig.raise(last);
+                last
+            };
             let id = axes_id(it, f, ax);
             let start = if a.first().is_some_and(is_gfx) { 1 } else { 0 };
             let mut rest = vec![handle(it, id)];
@@ -2098,7 +2179,7 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], _nargout: usize) -> R
             if rest.len() > 1 {
                 set_builtin(it, &rest)?;
             }
-            one(handle(it, id))
+            give(it, id)
         }
         "cla" => {
             let target = match a.first().and_then(ids_of) {
@@ -2108,6 +2189,7 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], _nargout: usize) -> R
                 },
                 None => {
                     let f = it.current_figure_index();
+                    it.figures[f].ensure_axes();
                     (f, it.figures[f].current_axes)
                 }
             };
@@ -2116,7 +2198,7 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], _nargout: usize) -> R
             let axes = &mut it.figures[f].axes[ax];
             let removed: Vec<u64> = axes.series.iter().map(|s| s.id).collect();
             if reset {
-                *axes = Axes { id: axes.id, overlay_of: axes.overlay_of, ..Axes::default() };
+                *axes = Axes { id: axes.id, overlay_of: axes.overlay_of, layout: axes.layout, position: axes.position, raised: axes.raised, tile: axes.tile, ..Axes::default() };
             } else {
                 axes.series.clear();
                 axes.legend = None;

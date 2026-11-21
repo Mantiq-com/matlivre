@@ -1385,6 +1385,37 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> R<
             let m = input.to_matrix()?;
             one(Value::Num(Matrix::from_dims(m.dims.clone(), m.data.iter().map(|&x| lambertw_f64(x)).collect())))
         }
+        "sinc" if a.len() == 1 && matches!(&a[0], Value::Num(_)) => {
+            let m = a[0].to_matrix()?;
+            if m.kind.is_int() {
+                return rt(format!("Undefined function 'sin' for input arguments of type '{}'.", m.kind.name()));
+            }
+            let kind = if m.kind == Kind::Single { Kind::Single } else { Kind::Double };
+            let n = m.numel();
+            let (mut re, mut im) = (Vec::with_capacity(n), Vec::with_capacity(n));
+            let cplx = m.im.as_ref().is_some_and(|v| v.iter().any(|z| *z != 0.0));
+            for i in 0..n {
+                let (xr, xi) = (m.data[i], m.im_at(i));
+                if xr == 0.0 && xi == 0.0 {
+                    re.push(1.0);
+                    im.push(0.0);
+                } else if !cplx {
+                    re.push((std::f64::consts::PI * xr).sin() / (std::f64::consts::PI * xr));
+                    im.push(0.0);
+                } else {
+                    let (pr, pi) = (std::f64::consts::PI * xr, std::f64::consts::PI * xi);
+                    // sin(a+bi) = sin a cosh b + i cos a sinh b, divided by a+bi.
+                    let (sr, si) = (pr.sin() * pi.cosh(), pr.cos() * pi.sinh());
+                    let d = pr * pr + pi * pi;
+                    re.push((sr * pr + si * pi) / d);
+                    im.push((si * pr - sr * pi) / d);
+                }
+            }
+            let r = if cplx { Matrix::complex(m.dims.clone(), re, im) } else { Matrix::from_dims(m.dims.clone(), re) };
+            one(Value::Num(r.cast_to(kind)))
+        }
+        "sinc" if a.len() > 1 && matches!(&a[0], Value::Num(_)) => rt("Too many input arguments."),
+        "sinc" if a.len() == 1 && matches!(&a[0], Value::Cell(_)) => rt("Undefined function 'eq' for input arguments of type 'cell'."),
         "sinc" => {
             let s = sym_arg(a, 0)?;
             one(Value::Sym(s.map(|e| {

@@ -21,7 +21,7 @@ pub const NAMES: &[&str] = &[
     "mustBeInteger", "mustBeLessThan", "mustBeLessThanOrEqual", "mustBeMember", "mustBeNegative", "mustBeNonempty", "mustBeNonmissing", "mustBeNonNan",
     "mustBeNonnegative", "mustBeNonpositive", "mustBeNonsparse", "mustBeNonzero", "mustBeNonzeroLengthText", "mustBeNumeric", "mustBeNumericOrLogical",
     "mustBePositive", "mustBeReal", "mustBeScalarOrEmpty", "mustBeSparse", "mustBeText", "mustBeTextScalar", "mustBeUnderlyingType",
-    "mustBeValidVariableName", "mustBeVector", "lasterr", "lasterror", "lastwarn", "rethrow", "matlab.lang.makeValidName",
+    "mustBeValidVariableName", "mustBeVector", "lasterr", "lasterror", "lastwarn", "rethrow", "matlab.lang.makeValidName", "matlab.lang.OnOffSwitchState",
     "matlab.lang.makeUniqueStrings", "matlab.lang.correction.AppendArgumentsCorrection", "matlab.lang.correction.ReplaceIdentifierCorrection", "matlab.lang.correction.ConvertToFunctionNotationCorrection", "namedargs2cell", "onCleanup", "validatecolor", "mlock", "munlock", "mislocked", "inputParser",
     "matlivre_inputparser_method", "MException", "MException.last", "throw", "throwAsCaller", "getReport", "addCause", "addCorrection",
     "matlivre_mexception_method",
@@ -71,6 +71,7 @@ pub fn builtin_identifier(message: &str) -> &'static str {
         ("Too many input arguments", "MATLAB:TooManyInputs"),
         ("Too many output arguments", "MATLAB:TooManyOutputs"),
         ("Unrecognized field name", "MATLAB:nonExistentField"),
+        ("Scalar structure required for this assignment", "MATLAB:scalarStrucRequired"),
         ("Dimensions of arrays being concatenated are not consistent", "MATLAB:catenate:dimensionMismatch"),
         ("Unable to perform assignment because the left and right sides have a different number of elements", "MATLAB:matrix:singleSubscriptNumelMismatch"),
     ];
@@ -937,6 +938,10 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
             }))
         }
         "matlivre_mexception_method" => me_method(it, a),
+        "matlab.lang.OnOffSwitchState" => match crate::class::on_off_construct(arg(a, 0, name)?) {
+            Some(r) => one(r),
+            None => rt("Input must be 'on', 'off', a logical or numeric value, or a cell or string array of those."),
+        },
         "matlab.lang.makeValidName" => {
             let v = arg(a, 0, name)?;
             let (mut style, mut prefix) = ("underscore".to_string(), "x".to_string());

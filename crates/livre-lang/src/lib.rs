@@ -71,6 +71,7 @@ pub mod patterns;
 pub mod polyfun_classes;
 pub mod polyshape;
 pub mod signal;
+pub mod stats;
 pub mod sym;
 pub mod sysobj;
 pub mod table;

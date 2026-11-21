@@ -874,6 +874,23 @@ fn draw_axes_3d(c: &mut dyn Canvas, t: &Tokens, ax: &Axes, cs: &ColorScale, cell
     }
 }
 
+/// The box axes `i` are drawn in: their own `layout` (a fraction of the figure, from the bottom
+/// left), else the cell of the subplot grid. Axes beyond the grid (copyobj into a figure) are
+/// drawn over the cell at their position.
+fn axes_rect(ax: &Axes, i: usize, (gr, gc): (usize, usize), size: Vec2, top: f32) -> Rect {
+    if let Some([l, b, w, h]) = ax.layout {
+        let height = size.y - top;
+        return Rect::from_min_size(
+            pos2(l as f32 * size.x, top + (1.0 - (b + h) as f32) * height),
+            vec2(w as f32 * size.x, h as f32 * height),
+        );
+    }
+    let cell = vec2(size.x / gc as f32, (size.y - top) / gr as f32);
+    let i = i % (gr * gc);
+    let (r, col) = (i / gc, i % gc);
+    Rect::from_min_size(pos2(col as f32 * cell.x, top + r as f32 * cell.y), cell)
+}
+
 fn draw_figure(c: &mut dyn Canvas, skin: &Skin, fig: &Figure, size: Vec2, hover: Option<Pos2>) {
     let mut t = Tokens::new(skin);
     if let Some(order) = fig.color_order.as_ref().filter(|o| !o.is_empty()) {
@@ -887,16 +904,13 @@ fn draw_figure(c: &mut dyn Canvas, skin: &Skin, fig: &Figure, size: Vec2, hover:
     if let Some(h) = heading {
         c.text(pos2(size.x / 2.0, 6.0 + TITLE.mid()), Align::Center, h, TITLE, t.fg, 0.0);
     }
-    let cell = vec2(size.x / gc as f32, (size.y - top) / gr as f32);
-    for (i, ax) in fig.axes.iter().enumerate() {
+    for i in fig.stacking() {
+        let ax = &fig.axes[i];
         // plotyy's right axes are drawn with the axes they overlay.
         if ax.overlay_of != 0 {
             continue;
         }
-        // Axes beyond the grid (copyobj into a figure) are drawn over the cell at their position.
-        let i = i % (gr * gc);
-        let (r, col) = (i / gc, i % gc);
-        let rect = Rect::from_min_size(pos2(col as f32 * cell.x, top + r as f32 * cell.y), cell);
+        let rect = axes_rect(ax, i, (gr, gc), size, top);
         if let Some(over) = fig.axes.iter().find(|o| ax.id != 0 && o.overlay_of == ax.id) {
             let merged = merge_overlay(ax, over);
             draw_axes_yy(c, &t, &merged, fig.colormap.as_deref(), rect, gr * gc > 1, hover);
@@ -1938,6 +1952,52 @@ mod tests {
         assert!(svg.contains(r#"stroke-dasharray="7 5""#));
         let tree = usvg::Tree::from_str(&svg, &usvg::Options::default()).expect("valid SVG");
         assert_eq!((tree.size().width(), tree.size().height()), (560.0, 300.0));
+    }
+
+    /// The x of the text element holding `label` in an SVG.
+    fn text_x(svg: &str, label: &str) -> f32 {
+        let end = svg.find(&format!(">{label}</text>")).expect("label in the SVG");
+        let start = svg[..end].rfind("<text").unwrap();
+        let tag = &svg[start..end];
+        let at = tag.find(" x=\"").unwrap() + 4;
+        tag[at..at + tag[at..].find('"').unwrap()].parse().unwrap()
+    }
+
+    #[test]
+    fn layout_of_a_grid_cell_draws_what_the_grid_draws() {
+        let ctx = ctx();
+        let mut grid = line_figure();
+        grid.grid = (1, 2);
+        grid.axes.push(bar_figure().axes.remove(0));
+        let mut placed = grid.clone();
+        placed.axes[0].layout = Some([0.0, 0.0, 0.5, 1.0]);
+        placed.axes[1].layout = Some([0.5, 0.0, 0.5, 1.0]);
+        let size = vec2(560.0, 300.0);
+        assert_eq!(to_svg(&ctx, &Skin::light(), &grid, size), to_svg(&ctx, &Skin::light(), &placed, size));
+    }
+
+    #[test]
+    fn layout_places_axes_in_the_figure() {
+        let ctx = ctx();
+        let size = vec2(560.0, 300.0);
+        let plain = to_svg(&ctx, &Skin::light(), &line_figure(), size);
+        let mut right = line_figure();
+        right.axes[0].layout = Some([0.5, 0.0, 0.5, 1.0]);
+        let moved = to_svg(&ctx, &Skin::light(), &right, size);
+        assert!(text_x(&plain, "Damped wave") < 300.0, "{}", text_x(&plain, "Damped wave"));
+        assert!(text_x(&moved, "Damped wave") > 380.0, "{}", text_x(&moved, "Damped wave"));
+        // Measured from the bottom: a box in the lower half moves the title down.
+        let mut low = line_figure();
+        low.axes[0].layout = Some([0.0, 0.0, 1.0, 0.5]);
+        let (up, down) = (title_y(&plain), title_y(&to_svg(&ctx, &Skin::light(), &low, size)));
+        assert!(down > up + 100.0, "{up} {down}");
+    }
+
+    fn title_y(svg: &str) -> f32 {
+        let end = svg.find(">Damped wave</text>").unwrap();
+        let tag = &svg[svg[..end].rfind("<text").unwrap()..end];
+        let at = tag.find(" y=\"").unwrap() + 4;
+        tag[at..at + tag[at..].find('"').unwrap()].parse().unwrap()
     }
 
     #[test]

@@ -253,6 +253,7 @@ fn anchor(class: &'static str) -> Series {
 fn new_chart(it: &mut Interpreter, class: &'static str, own_figure: bool) -> u64 {
     let f = it.current_figure_index();
     let fig = &mut it.figures[f];
+    fig.ensure_axes();
     let mut old: Vec<u64> = Vec::new();
     if own_figure {
         let keep = fig.current_axes;
@@ -269,7 +270,7 @@ fn new_chart(it: &mut Interpreter, class: &'static str, own_figure: bool) -> u64
     let a = fig.current_axes;
     let ax = &mut fig.axes[a];
     old.extend(ax.series.iter().map(|s| s.id));
-    *ax = Axes { id: ax.id, overlay_of: ax.overlay_of, ..Axes::default() };
+    *ax = Axes { id: ax.id, overlay_of: ax.overlay_of, layout: ax.layout, position: ax.position, raised: ax.raised, tile: ax.tile, ..Axes::default() };
     for id in old {
         it.gfx_store.remove(&id);
     }
@@ -292,7 +293,7 @@ fn put(it: &mut Interpreter, id: u64, props: Vec<(&str, Value)>) {
 }
 
 fn get(it: &mut Interpreter, id: u64, name: &str) -> Value {
-    gfx::get_prop(it, id, name).unwrap_or_else(|_| Value::empty())
+    gfx::get_prop_raw(it, id, name).unwrap_or_else(|_| Value::empty())
 }
 
 fn prop_texts(it: &mut Interpreter, id: u64, name: &str) -> R<Vec<String>> {
@@ -977,6 +978,7 @@ fn refresh_bubbles(it: &mut Interpreter, f: usize, a: usize) {
 fn bubble_setting(it: &mut Interpreter, a: &[Value], nargout: usize, size: bool) -> Ret {
     let a = select_axes(it, a)?;
     let f = it.current_figure_index();
+    it.figures[f].ensure_axes();
     let ai = it.figures[f].current_axes;
     let ax_id = gfx::axes_id(it, f, ai);
     let key = if size { BUBBLE_SIZE } else { BUBBLE_LIM };
@@ -1922,6 +1924,7 @@ fn plotyy(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
         Ok(out.into_iter().next().unwrap_or_else(Value::empty))
     };
     let f = it.current_figure_index();
+    it.figures[f].ensure_axes();
     let base = it.figures[f].current_axes;
     let base_id = gfx::axes_id(it, f, base);
     // A new plotyy replaces the right axes of an earlier one.

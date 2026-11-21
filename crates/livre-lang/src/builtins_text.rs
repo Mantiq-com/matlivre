@@ -343,6 +343,12 @@ pub fn call(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) ->
                 let items: Vec<String> = (0..t.data.len()).map(|i| t.format_elem(i)).collect();
                 one(char_matrix(&items))
             }
+            Value::Object(o) if crate::class::on_off_text(o).is_some() => one(crate::class::on_off_as_text(args[0].clone())),
+            // MATLAB's char of an OnOffSwitchState array is its summary text, `1x2 OnOffSwitchState`.
+            v @ Value::Object(_) if crate::class::is_on_off(v) => {
+                let size: Vec<String> = v.dims().iter().map(|d| d.to_string()).collect();
+                one(Value::chars(&format!("{} OnOffSwitchState", size.join("x"))))
+            }
             _ => rt("Conversion to char is not possible."),
         },
         "cellstr" => {

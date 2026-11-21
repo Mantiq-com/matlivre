@@ -9,8 +9,16 @@ Notes for coding agents (and people) working in this repository.
   (`"C:\Program Files\MATLAB\R2023b\bin\matlab" -batch script`) and test against it. If MATLAB is
   not installed on this machine, run it on a remote machine over SSH with
   `tools/matlab-remote.sh script.m`; `AGENTS.local.md` (untracked) describes this machine's setup.
-- **Clean room.** Learn behavior from MATLAB's documentation and observable output only. Never
-  read or copy MathWorks source code (`.m` files under the MATLAB installation included).
+- **Use MathWorks source for understanding only, never copy it.** The code is protected; the
+  mathematics and algorithms behind it are not. Under Brazilian law, computer programs are
+  protected as literary works (Lei 9.609/1998, Art. 2), while ideas, systems, methods and
+  mathematical concepts as such are not protected (Lei 9.610/1998, Art. 8, I), and a program's
+  similarity to an existing one that comes from its functional characteristics is not
+  infringement (Lei 9.609/1998, Art. 6, III). You may read MathWorks source (`.m` files
+  under the MATLAB installation included) to understand an algorithm, then write MatLivre's
+  implementation yourself from that understanding: no copied or translated code, comments,
+  variable names or line-by-line structure. Prefer the documentation, published papers and
+  MATLAB's observable output where they suffice, and always test against recorded output.
 - **Do not modify the user's `.mlx` files.** Work on copies.
 - **Run heavy work one at a time** (builds, test runs, MATLAB sessions, benchmarks): the
   machine is shared and benchmark numbers are only valid on an idle CPU.

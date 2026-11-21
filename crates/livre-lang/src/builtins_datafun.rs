@@ -182,7 +182,7 @@ impl Opts {
                 let hits: Vec<&&str> = names.iter().filter(|n| n.to_lowercase().starts_with(&t)).collect();
                 let exact = names.iter().find(|n| n.to_lowercase() == t);
                 if let Some(n) = exact.or(if hits.len() == 1 && !t.is_empty() && t.len() >= 3 { Some(hits[0]) } else { None }) {
-                    let Some(v) = a.get(i + 1) else { return rt(format!("Expected a value after the name '{n}'.")) };
+                    let Some(v) = a.get(i + 1) else { let _ = n; return rt("Incorrect number of input arguments. Each parameter name must be followed by a corresponding value.") };
                     o.nv.push((n.to_string(), v.clone()));
                     i += 2;
                     continue;
@@ -739,7 +739,7 @@ fn fft_nd(name: &str, a: &[Value]) -> R<Matrix> {
         let m = fft_len(a.get(1), x.dims[0])?;
         let n = fft_len(a.get(2), x.dims[1])?;
         if a.len() == 2 {
-            return rt(format!("Not enough input arguments for '{name}'."));
+            return rt("Not enough input arguments.");
         }
         vec![(1, m), (2, n)]
     } else {
@@ -1230,10 +1230,57 @@ fn lstsq(a: &[f64], rows: usize, cols: usize, b: &[f64]) -> Vec<f64> {
 }
 
 fn detrend(a: &[Value]) -> R<Matrix> {
+    if a.is_empty() {
+        return rt("Not enough input arguments.");
+    }
+    if !matches!(&a[0], Value::Num(m) if m.kind.is_float()) {
+        return rt("Invalid data type. First argument must be of type double, single, table, or timetable.");
+    }
+    if let Value::Num(m) = &a[0] {
+        if m.im.is_some() {
+            // The fit is linear: real and imaginary parts are detrended separately.
+            let mut re = m.clone();
+            re.im = None;
+            let mut im = Matrix::from_dims(m.dims.clone(), m.im.clone().unwrap());
+            im.kind = m.kind;
+            let mut a1: Vec<Value> = a.to_vec();
+            let mut a2: Vec<Value> = a.to_vec();
+            a1[0] = Value::Num(re);
+            a2[0] = Value::Num(im);
+            let (r1, r2) = (detrend(&a1)?, detrend(&a2)?);
+            let mut out = Matrix::complex(r1.dims.clone(), r1.data.clone(), r2.data.clone());
+            out.kind = r1.kind;
+            return Ok(out);
+        }
+    }
+    {
+        // Options: NaN flags, then Name,Value pairs (after the degree and the breakpoints).
+        let start = a.iter().enumerate().skip(1).find(|(i, v)| v.is_text() && !(*i == 1 && matches!(lower(v).as_deref(), Some("constant" | "linear")))).map(|(i, _)| i);
+        if let Some(mut i) = start {
+            while i < a.len() {
+                let low = a[i].text().unwrap_or_default().to_lowercase();
+                if NANFLAGS.contains(&low.as_str()) {
+                    i += 1;
+                    continue;
+                }
+                if ["continuous", "samplepoints", "datavariables", "replacevalues"].contains(&low.as_str()) {
+                    if i + 1 >= a.len() {
+                        return rt("Incorrect number of input arguments. Each parameter name must be followed by a corresponding value.");
+                    }
+                    i += 2;
+                    continue;
+                }
+                if i + 1 >= a.len() {
+                    return rt("Incorrect number of input arguments. Each parameter name must be followed by a corresponding value.");
+                }
+                return rt("Parameter name must be 'Continuous', 'SamplePoints', 'DataVariables' or 'ReplaceValues'.");
+            }
+        }
+    }
     let o = Opts::parse(a, NANFLAGS, &["SamplePoints", "Continuous"])?;
     let x = num_arg(&o.pos, 0, "detrend")?;
     if !x.kind.is_float() {
-        return rt("Input data must be of type single or double.");
+        return rt("Invalid data type. First argument must be of type double, single, table, or timetable.");
     }
     let degree = match o.pos.get(1) {
         None => 1,
@@ -1243,9 +1290,13 @@ fn detrend(a: &[Value]) -> R<Matrix> {
             Some("quadratic") => 2,
             Some(t) => return rt(format!("Invalid option '{t}'.")),
             None => {
-                let n = v.scalar()?;
+                let nm = v.to_matrix()?;
+                if nm.numel() != 1 {
+                    return rt("Polynomial degree must be a non-negative integer scalar.");
+                }
+                let n = nm.data[0];
                 if n < 0.0 || n.fract() != 0.0 {
-                    return rt("Polynomial degree must be a nonnegative integer scalar.");
+                    return rt("Polynomial degree must be a non-negative integer scalar.");
                 }
                 n as usize
             }
@@ -1267,8 +1318,12 @@ fn detrend(a: &[Value]) -> R<Matrix> {
         None => (1..=len).map(|k| k as f64).collect(),
     };
     if t.len() != len {
-        return rt("Sample points must have the same length as the operating dimension.");
+        return rt(format!("The sample points vector length must be {len}, the same as the size of the input data in the operating dimension."));
     }
+    if t.windows(2).any(|p| p[1].partial_cmp(&p[0]) != Some(Ordering::Greater)) {
+        return rt("'SamplePoints' value must be sorted in ascending order.");
+    }
+    let omit = o.has("omitnan") || o.has("omitmissing");
     let (lo, hi) = (t.first().copied().unwrap_or(0.0), t.last().copied().unwrap_or(0.0));
     let mut bps: Vec<f64> = bps.into_iter().filter(|&b| b > lo && b < hi).collect();
     bps.sort_by(|a, b| a.partial_cmp(b).unwrap());
@@ -1294,6 +1349,15 @@ fn detrend(a: &[Value]) -> R<Matrix> {
         (0..rows).map(|r| rhs[r] - (0..ncols).map(|c| flat[c * rows + r] * coef[c]).sum::<f64>()).collect()
     };
     let out = map_dim(&x, dim, len, |v, _| {
+        if omit && v.iter().any(|z| z.is_nan()) {
+            let keep: Vec<usize> = (0..len).filter(|&i| !v[i].is_nan()).collect();
+            let r = fit(&keep, v, &bs);
+            let mut o = vec![f64::NAN; len];
+            for (k, &i) in keep.iter().enumerate() {
+                o[i] = r[k];
+            }
+            return o;
+        }
         if continuous && degree == 0 && !bs.is_empty() {
             // A continuous piecewise constant is the constant of the first segment.
             let first: Vec<f64> = (0..len).filter(|&i| ts[i] <= bs[0]).map(|i| v[i]).collect();
@@ -1522,10 +1586,20 @@ fn corrcoef(a: &[Value], nargout: usize) -> Ret {
 fn xcorr(name: &str, a: &[Value]) -> Ret {
     let mut scale = "none".to_string();
     let mut nums: Vec<Matrix> = Vec::new();
-    for v in a {
+    if a.len() > 4 {
+        return rt("Too many input arguments.");
+    }
+    if a.is_empty() {
+        return rt("Not enough input arguments.");
+    }
+    if (name == "xcorr" && matches!(&a[0], Value::Num(m) if m.kind == Kind::Char)) || !matches!(&a[0], Value::Num(_)) {
+        return rt("Invalid data type. First argument must be double, single, int8, uint8, int16, uint16, int32, uint32, or logical.");
+    }
+    for (vi, v) in a.iter().enumerate() {
         match lower(v) {
+            _ if vi == 0 => nums.push(v.to_matrix()?),
             Some(t) if ["none", "biased", "unbiased", "normalized", "coeff"].contains(&t.as_str()) => scale = t,
-            Some(t) => return rt(format!("Invalid option '{t}'.")),
+            Some(_) => return rt("Scale option must be 'biased', 'unbiased', 'normalized', or 'none'."),
             None => nums.push(v.to_matrix()?),
         }
     }
@@ -1541,7 +1615,12 @@ fn xcorr(name: &str, a: &[Value]) -> Ret {
         _ => {
             let y = nums.remove(0);
             let ml = nums.remove(0);
-            (Some(y), if ml.is_empty() { None } else { Some(ml.data[0]) })
+            {
+                if ml.numel() > 1 {
+                    return rt("Maximum lag must be a scalar.");
+                }
+                (Some(y), if ml.is_empty() { None } else { Some(ml.data[0]) })
+            }
         }
     };
     let kind = single_any(&[&x]);
@@ -1552,7 +1631,10 @@ fn xcorr(name: &str, a: &[Value]) -> Ret {
                 let v: Vec<C> = (0..rows).map(|i| c_at(m, j * rows + i)).collect();
                 if name == "xcov" && !v.is_empty() {
                     let s = v.iter().fold(C::new(0.0, 0.0), |s, z| s.add(*z));
-                    let mu = C::new(s.re / rows as f64, s.im / rows as f64);
+                    let mut mu = C::new(s.re / rows as f64, s.im / rows as f64);
+                    if m.kind.is_int() {
+                        mu = C::new(mu.re.round(), mu.im.round());
+                    }
                     v.into_iter().map(|z| z.sub(mu)).collect()
                 } else {
                     v
@@ -1564,8 +1646,11 @@ fn xcorr(name: &str, a: &[Value]) -> Ret {
     let mut cols: Vec<Vec<C>> = if xvec { center(&x, 1) } else { center(&x, x.cols()) };
     let pairs: Vec<(usize, usize)>;
     if let Some(y) = &y {
-        if !xvec || !(y.is_vector() || y.is_scalar()) {
-            return rt("When the second input is a vector, the first input must be a vector.");
+        if !(y.is_vector() || y.is_scalar()) {
+            return rt("Second argument must be a vector.");
+        }
+        if !xvec {
+            return rt("First argument must be a vector.");
         }
         let yc = center(y, 1).remove(0);
         let len = cols[0].len().max(yc.len());
@@ -1581,13 +1666,17 @@ fn xcorr(name: &str, a: &[Value]) -> Ret {
         let p = cols.len();
         pairs = (0..p).flat_map(|i| (0..p).map(move |j| (i, j))).collect();
     }
+    if cols.is_empty() {
+        let r = x.dims[0];
+        return Ok(Some(vec![Value::Num(Matrix::from_dims(vec![if r == 0 { 0 } else { 2 * r - 1 }, 0], vec![]))]));
+    }
     let n = cols[0].len();
     let ml = match maxlag {
         Some(m) => {
-            if m < 0.0 || m.fract() != 0.0 {
-                return rt("Maximum lag must be a nonnegative integer scalar.");
+            if m.fract() != 0.0 {
+                return rt("Maximum lag must be an integer.");
             }
-            m as usize
+            m.abs() as usize
         }
         None => n.saturating_sub(1),
     };
@@ -1595,12 +1684,17 @@ fn xcorr(name: &str, a: &[Value]) -> Ret {
     let mut out = Vec::with_capacity(nl * pairs.len());
     for &(i, j) in &pairs {
         let (u, v) = (&cols[i], &cols[j]);
+        let real_only = u.iter().chain(v.iter()).all(|z| z.im == 0.0);
         let corr = |m: isize| -> C {
             let mut s = C::new(0.0, 0.0);
             for k in 0..n as isize {
                 let p = k + m;
                 if p >= 0 && (p as usize) < n {
-                    s = s.add(u[p as usize].mul(v[k as usize].conj()));
+                    if real_only {
+                        s.re += u[p as usize].re * v[k as usize].re;
+                    } else {
+                        s = s.add(u[p as usize].mul(v[k as usize].conj()));
+                    }
                 }
             }
             s
@@ -1619,7 +1713,7 @@ fn xcorr(name: &str, a: &[Value]) -> Ret {
                 "normalized" | "coeff" => r0,
                 _ => 1.0,
             };
-            out.push(C::new(z.re / d, z.im / d));
+            out.push(C::new(z.re / d, if real_only { 0.0 } else { z.im / d }));
         }
     }
     let row = xvec && x.dims[0] == 1 && x.numel() > 1;
@@ -1669,10 +1763,10 @@ fn ends_arg(v: Option<&Value>) -> R<Ends> {
             Some("shrink") => Ok(Ends::Shrink),
             Some("discard") => Ok(Ends::Discard),
             Some("fill") => Ok(Ends::Fill(f64::NAN)),
-            Some(_) => rt("Endpoints must be 'shrink', 'discard', 'fill', or a numeric or logical scalar."),
+            Some(_) => rt("'Endpoints' value must be 'shrink', 'discard', 'fill', or a numeric or logical scalar."),
             None => match v {
                 Value::Num(m) if m.numel() == 1 && m.kind != Kind::Char => Ok(Ends::Pad(m.data[0])),
-                _ => rt("Endpoints must be 'shrink', 'discard', 'fill', or a numeric or logical scalar."),
+                _ => rt("'Endpoints' value must be 'shrink', 'discard', 'fill', or a numeric or logical scalar."),
             },
         },
     }
@@ -1785,14 +1879,14 @@ fn sample_points(v: Option<&Value>, n: usize) -> R<Option<Vec<f64>>> {
         None => Ok(None),
         Some(v) => {
             let t = match v {
-                Value::Time(_) => return rt("Sample points of class datetime or duration are not supported."),
+                Value::Time(_) => return rt("Invalid data type. Window size must be a duration if 'SamplePoints' value is duration."),
                 v => v.to_matrix()?.data,
             };
             if t.len() != n {
-                return rt("Sample points must have the same length as the operating dimension.");
+                return rt(format!("The sample points vector length must be {n}, the same as the size of the input data in the operating dimension."));
             }
             if t.windows(2).any(|p| p[1].partial_cmp(&p[0]) != Some(Ordering::Greater)) || t.iter().any(|x| !x.is_finite()) {
-                return rt("Sample points must be unique, sorted, and finite.");
+                return rt("'SamplePoints' value must be sorted in ascending order.");
             }
             Ok(Some(t))
         }
@@ -1800,10 +1894,44 @@ fn sample_points(v: Option<&Value>, n: usize) -> R<Option<Vec<f64>>> {
 }
 
 fn moving(name: &str, a: &[Value]) -> R<Matrix> {
+    if a.len() < 2 {
+        return rt("Not enough input arguments.");
+    }
+    // Options after the positional arguments: NaN flags first, then name-value pairs.
+    {
+        let first_opt = a.iter().enumerate().skip(2).find(|(_, v)| v.is_text()).map(|(i, _)| i);
+        if let Some(mut i) = first_opt {
+            let mut pairs = false;
+            let mut flagged = false;
+            while i < a.len() {
+                let t = a[i].text().unwrap_or_default();
+                let low = t.to_lowercase();
+                if NANFLAGS.contains(&low.as_str()) {
+                    if pairs || flagged {
+                        return rt("NaN condition must come before parameter name and value pairs.");
+                    }
+                    flagged = true;
+                    i += 1;
+                    continue;
+                }
+                let canon = ["Endpoints", "SamplePoints"].iter().find(|n| low.len() >= 1 && n.to_lowercase().starts_with(&low));
+                match canon {
+                    Some(n) => {
+                        if i + 1 >= a.len() {
+                            return rt(format!("Incorrect number of input arguments. '{n}' must be followed by a corresponding value."));
+                        }
+                        pairs = true;
+                        i += 2;
+                    }
+                    None => return rt("Invalid option. Option must be 'omitnan', 'includenan', 'omitmissing' or 'includemissing'."),
+                }
+            }
+        }
+    }
     let o = Opts::parse(a, NANFLAGS, &["Endpoints", "SamplePoints"])?;
     let x = num_arg(&o.pos, 0, name)?;
-    if x.is_complex() && !matches!(name, "movsum" | "movmean" | "movprod") {
-        return rt(format!("Complex values are not supported by {name}."));
+    if x.is_complex() && !matches!(name, "movsum" | "movmean" | "movprod" | "movmedian") {
+        return rt(if name == "movmad" { "Invalid data type. First input must be real.".to_string() } else { format!("Complex values are not supported by {name}.") });
     }
     let win = window_arg(arg(&o.pos, 1, name)?)?;
     let has_w = matches!(name, "movstd" | "movvar");
@@ -1835,6 +1963,7 @@ fn moving(name: &str, a: &[Value]) -> R<Matrix> {
     let out_len = if ends == Ends::Discard { sp.iter().filter(|s| s.complete).count() } else { len };
     let kind = match (name, x.kind) {
         ("movmin" | "movmax", k) => k,
+        ("movmedian" | "movmad", k) if k.is_int() => k,
         (_, Kind::Single) => Kind::Single,
         _ => Kind::Double,
     };
@@ -1865,6 +1994,18 @@ fn moving(name: &str, a: &[Value]) -> R<Matrix> {
                     vals.retain(|z| !is_nan_c(*z));
                 }
                 let z = match name {
+                    "movmedian" => {
+                        if vals.is_empty() || vals.iter().any(|z| is_nan_c(*z)) {
+                            C::new(f64::NAN, 0.0)
+                        } else {
+                            vals.sort_by(|p, q| {
+                                let (ap, aq) = (p.re.hypot(p.im), q.re.hypot(q.im));
+                                ap.partial_cmp(&aq).unwrap_or(Ordering::Equal).then(p.im.atan2(p.re).partial_cmp(&q.im.atan2(q.re)).unwrap_or(Ordering::Equal))
+                            });
+                            let n = vals.len();
+                            if n % 2 == 1 { vals[n / 2] } else { C::new((vals[n / 2 - 1].re + vals[n / 2].re) / 2.0, (vals[n / 2 - 1].im + vals[n / 2].im) / 2.0) }
+                        }
+                    }
                     "movprod" => vals.iter().fold(C::new(1.0, 0.0), |acc, z| acc.mul(*z)),
                     _ => {
                         let s = vals.iter().fold(C::new(0.0, 0.0), |acc, z| acc.add(*z));
@@ -3271,8 +3412,16 @@ struct OutSpec {
 
 /// Parses an outlier method and its options starting at positional `p`.
 fn out_spec(pos: &[Value], p: usize, o: &Opts, d: &[usize]) -> R<(OutSpec, usize)> {
+    out_spec_for(pos, p, o, d, false, &[])
+}
+
+const ISO_NAMES_TXT: &str = "'median', 'mean', 'quartiles', 'grubbs', 'gesd', 'movmedian', 'movmean', 'percentiles', 'SamplePoints', 'DataVariables', 'ThresholdFactor', 'MaxNumOutliers', 'OutputFormat'";
+const FILL_NAMES_TXT: &str = "'median', 'mean', 'quartiles', 'grubbs', 'gesd', 'movmedian', 'movmean', 'percentiles', 'SamplePoints', 'ReplaceValues', 'DataVariables', 'ThresholdFactor', 'MaxNumOutliers', 'OutlierLocations'";
+
+fn out_spec_for(pos: &[Value], p: usize, o: &Opts, d: &[usize], fill: bool, all_args: &[Value]) -> R<(OutSpec, usize)> {
     let mut p = p;
     let mut method = OutMethod::Median;
+    let win_err = || rt("Window length argument must be a numeric or duration finite positive scalar or 2-element numeric or duration finite nonnegative vector.");
     if let Some(m) = pos.get(p).and_then(lower) {
         method = match m.as_str() {
             "median" => OutMethod::Median,
@@ -3281,36 +3430,83 @@ fn out_spec(pos: &[Value], p: usize, o: &Opts, d: &[usize]) -> R<(OutSpec, usize
             "grubbs" => OutMethod::Grubbs,
             "gesd" => OutMethod::Gesd,
             "movmedian" | "movmean" => {
-                let w = window_arg(arg(pos, p + 1, "isoutlier")?)?;
+                let Some(wv) = pos.get(p + 1) else {
+                    return rt(format!("Specify a window length after '{m}'."));
+                };
+                let w = match window_arg(wv) {
+                    Ok(w) => w,
+                    Err(_) => return win_err(),
+                };
                 p += 1;
                 if m == "movmedian" { OutMethod::MovMedian(w) } else { OutMethod::MovMean(w) }
             }
             "percentiles" => {
-                let v = arg(pos, p + 1, "isoutlier")?.to_matrix()?;
+                let Some(pv) = pos.get(p + 1) else {
+                    return rt("Index exceeds the number of array elements. Index must not exceed 1.");
+                };
+                let v = pv.to_matrix()?;
                 p += 1;
                 if v.numel() != 2 || !(0.0 <= v.data[0] && v.data[0] <= v.data[1] && v.data[1] <= 100.0) {
-                    return rt("Percentiles must be a two-element vector [lp up] with 0 <= lp <= up <= 100.");
+                    return rt("'Percentiles' value must be a sorted 2-element numeric vector with entries between 0 and 100.");
                 }
                 OutMethod::Percentiles(v.data[0], v.data[1])
             }
-            other => return rt(format!("Invalid method '{other}'.")),
+            _ => {
+                let shown = pos.get(p).and_then(|v| v.text().ok()).unwrap_or_default();
+                return rt(format!("Expected input number {} to match one of these values:\n\n{}\n\nThe input, '{}', did not match any of the valid values.", p + 1, if fill { FILL_NAMES_TXT } else { ISO_NAMES_TXT }, shown));
+            }
         };
         p += 1;
     }
+    if pos.get(p).is_some_and(|v| v.is_text()) {
+        return rt("Incorrect number of input arguments. Each parameter name must be followed by a corresponding value.");
+    }
+    if let Some(Value::Num(m)) = pos.get(p) {
+        if m.numel() == 1 && m.data[0] <= 0.0 && !fill {
+            return rt(format!("Expected input number {}, dim, to be positive.", p + 1));
+        }
+    }
+    if o.get("DataVariables").is_some() {
+        return rt("'DataVariables' parameter is only supported for table and timetable inputs.");
+    }
     let dim = dim_at(pos, p, d)?;
     let th = match o.get("ThresholdFactor") {
-        Some(v) => v.scalar()?,
+        Some(v) => {
+            let m = match v {
+                Value::Num(m) if m.kind != Kind::Char => m,
+                _ => return rt("Expected ThresholdFactor to be one of these types:\n\ndouble, single, uint8, uint16, uint32, uint64, int8, int16, int32, int64"),
+            };
+            if m.numel() != 1 {
+                return rt("Expected ThresholdFactor to be a scalar.");
+            }
+            if m.data[0] < 0.0 {
+                return rt(if fill { format!("Expected input number {}, ThresholdFactor, to be nonnegative.", all_args.iter().position(|q| lower(q).as_deref() == Some("thresholdfactor")).map(|i| i + 2).unwrap_or(4)) } else { "Expected ThresholdFactor to be nonnegative.".to_string() });
+            }
+            m.data[0]
+        }
         None => match method {
             OutMethod::Grubbs | OutMethod::Gesd => 0.05,
             OutMethod::Quartiles => 1.5,
             _ => 3.0,
         },
     };
+    let len = d.get(dim - 1).copied().unwrap_or(1);
     let max_out = match o.get("MaxNumOutliers") {
-        Some(v) => Some(v.as_usize()?),
+        Some(v) => {
+            if !matches!(method, OutMethod::Gesd) {
+                return rt("'MaxNumOutliers' parameter supported only for 'gesd' method.");
+            }
+            let m = v.scalar()?;
+            if !(m > 0.0) {
+                return rt("Expected MaxNumOutliers to be positive.");
+            }
+            if m > len as f64 {
+                return rt("'MaxNumOutliers' value exceeds length of input array along operating dimension.");
+            }
+            Some(v.as_usize()?)
+        }
         None => None,
     };
-    let len = d.get(dim - 1).copied().unwrap_or(1);
     let t = sample_points(o.get("SamplePoints"), len)?;
     Ok((OutSpec { method, th, max_out, dim, t }, p))
 }
@@ -3340,12 +3536,28 @@ fn outliers(x: &Matrix, s: &OutSpec) -> (Matrix, Matrix, Matrix, Matrix) {
 
 const OUT_NAMES: &[&str] = &["ThresholdFactor", "SamplePoints", "MaxNumOutliers", "DataVariables", "OutputFormat", "MinNumOutliers"];
 
+fn outlier_type_check(a: &[Value]) -> R<()> {
+    let cls = match a.first() {
+        Some(Value::Num(m)) if m.kind.is_float() => {
+            if m.is_complex() {
+                return rt("Expected input number 1, A, to be real.");
+            }
+            return Ok(());
+        }
+        Some(Value::Num(m)) => m.kind.name().to_string(),
+        Some(other) => other.class_name().to_string(),
+        None => return rt("Not enough input arguments."),
+    };
+    if cls == "char" {
+        return rt("Expected input number 1, A, to be one of these types:\n\nsingle, double, table, timetable");
+    }
+    rt(format!("Expected input number 1, A, to be one of these types:\n\nsingle, double, table, timetable\n\nInstead its type was {cls}."))
+}
+
 fn isoutlier(a: &[Value]) -> Ret {
     let o = Opts::parse(a, &[], OUT_NAMES)?;
+    outlier_type_check(a)?;
     let x = num_arg(&o.pos, 0, "isoutlier")?;
-    if !x.kind.is_float() {
-        return rt("Invalid data type. First argument must be numeric or logical.");
-    }
     let (spec, _) = out_spec(&o.pos, 1, &o, &x.dims)?;
     let (tf, l, u, c) = outliers(&x, &spec);
     Ok(Some(vec![Value::Num(tf), Value::Num(l), Value::Num(u), Value::Num(c)]))
@@ -3353,9 +3565,40 @@ fn isoutlier(a: &[Value]) -> Ret {
 
 fn filloutliers(it: &mut Interpreter, a: &[Value]) -> Ret {
     let o = Opts::parse(a, &[], &["ThresholdFactor", "SamplePoints", "MaxNumOutliers", "DataVariables", "OutlierLocations"])?;
+    outlier_type_check(a)?;
     let x = num_arg(&o.pos, 0, "filloutliers")?;
     let fill = arg(&o.pos, 1, "filloutliers")?.clone();
-    let (spec, _) = out_spec(&o.pos, 2, &o, &x.dims)?;
+    match &fill {
+        Value::Num(m) if m.kind == Kind::Char => {
+            let t = fill.text().unwrap_or_default().to_lowercase();
+            if !["center", "clip", "previous", "next", "nearest", "linear", "spline", "pchip", "makima"].contains(&t.as_str()) {
+                return rt(format!("Expected input number 2, Fill, to match one of these values:\n\n'center', 'clip', 'previous', 'next', 'nearest', 'linear', 'spline', 'pchip', 'makima'\n\nThe input, '{}', did not match any of the valid values.", fill.text().unwrap_or_default()));
+            }
+        }
+        Value::Num(m) if m.numel() != 1 => return rt("Expected input number 2, Fill, to be a scalar."),
+        _ => {}
+    }
+    if let Some(v) = o.get("OutlierLocations") {
+        if o.pos.len() > 2 {
+            return rt("Method argument not supported when 'OutlierLocations' parameter is specified.");
+        }
+        if !matches!(v, Value::Num(m) if m.kind == Kind::Logical) {
+            let pos = a.iter().position(|q| lower(q).as_deref() == Some("outlierlocations")).map(|i| i + 2).unwrap_or(4);
+            let cls = match v {
+                Value::Num(m) => m.kind.name().to_string(),
+                other => other.class_name().to_string(),
+            };
+            return rt(format!("Expected input number {pos}, OutlierLocations, to be one of these types:
+
+logical
+
+Instead its type was {cls}."));
+        }
+        if matches!(lower(&fill).as_deref(), Some("center" | "clip")) {
+            return rt("'center' and 'clip' options not supported when 'OutlierLocations' parameter is specified.");
+        }
+    }
+    let (spec, _) = out_spec_for(&o.pos, 2, &o, &x.dims, true, a)?;
     let (tf, l, u, c) = match o.get("OutlierLocations") {
         Some(v) => {
             let m = v.to_matrix()?;
@@ -3556,7 +3799,131 @@ fn default_window(n: usize, factor: f64) -> f64 {
     w.round().clamp(1.0, n.max(1) as f64)
 }
 
+const SMOOTH_METHODS: &[&str] = &["movmean", "movmedian", "gaussian", "lowess", "loess", "rlowess", "rloess", "sgolay"];
+
+fn smooth_check(a: &[Value]) -> R<()> {
+    if a.is_empty() {
+        return rt("Not enough input arguments.");
+    }
+    let bad_method = "Smoothing method must be 'movmean', 'movmedian', 'gaussian', 'lowess', 'loess', 'rlowess', 'rloess', or 'sgolay'.";
+    let nan_msg = "NaN condition must be 'omitnan', 'includenan', 'omitmissing' or 'includemissing'.";
+    let mut i = 1;
+    if let Some(Value::Num(m)) = a.get(i) {
+        if m.kind != Kind::Char {
+            if m.numel() != 1 || !(m.data[0] >= 1.0) || m.data[0].fract() != 0.0 {
+                return rt("Dimension argument must be a positive integer scalar within indexing range.");
+            }
+            i += 1;
+        }
+    }
+    let mut method = "movmean".to_string();
+    let mut has_window = false;
+    let mut wpoints = 0usize;
+    if let Some(v) = a.get(i) {
+        if v.is_text() {
+            let t = v.text().unwrap_or_default().to_lowercase();
+            if !SMOOTH_METHODS.contains(&t.as_str()) {
+                return rt(bad_method);
+            }
+            method = t;
+            i += 1;
+            if let Some(w) = a.get(i) {
+                if let Value::Num(m) = w {
+                    if m.kind != Kind::Char {
+                        let ok = match m.numel() {
+                            1 => m.data[0] > 0.0 && m.data[0].is_finite(),
+                            2 => m.data.iter().all(|x| *x >= 0.0 && x.is_finite()),
+                            _ => false,
+                        };
+                        if !ok || m.im.is_some() {
+                            return rt("Window length must be a positive numeric or duration scalar or a 2-element numeric or duration vector.");
+                        }
+                        has_window = true;
+                        wpoints = if m.numel() == 1 { m.data[0].round() as usize } else { (m.data[0] + m.data[1] + 1.0) as usize };
+                        i += 1;
+                    }
+                }
+            }
+        }
+    }
+    let mut flagged = false;
+    let mut paired = false;
+    while i < a.len() {
+        let t = match &a[i] {
+            v if v.is_text() => v.text().unwrap_or_default(),
+            _ => return rt(nan_msg),
+        };
+        let low = t.to_lowercase();
+        if NANFLAGS.contains(&low.as_str()) {
+            if paired || flagged {
+                return rt("NaN condition must come before parameter name and value pairs.");
+            }
+            flagged = true;
+            i += 1;
+            continue;
+        }
+        let names = ["SmoothingFactor", "SamplePoints", "Degree", "DataVariables"];
+        let Some(n) = names.iter().find(|n| n.to_lowercase() == low) else { return rt(nan_msg) };
+        let Some(v) = a.get(i + 1) else {
+            return rt(format!("Incorrect number of input arguments. '{n}' must be followed by a corresponding value."));
+        };
+        paired = true;
+        match *n {
+            "SmoothingFactor" => {
+                if !matches!(v, Value::Num(m) if m.kind != Kind::Char && m.numel() == 1 && m.data[0] >= 0.0 && m.data[0] <= 1.0) {
+                    return rt("'SmoothingFactor' value must be a numeric scalar between 0 and 1.");
+                }
+                if has_window {
+                    return rt("'SmoothingFactor' is not supported when the window length is specified.");
+                }
+            }
+            "Degree" => {
+                if method != "sgolay" {
+                    return rt("'Degree' value is only supported when the method is 'sgolay'.");
+                }
+                let d = match v {
+                    Value::Num(m) if m.kind != Kind::Char && m.numel() == 1 => m.data[0],
+                    _ => f64::NAN,
+                };
+                if !(d >= 1.0) || d.fract() != 0.0 {
+                    return rt("'Degree' value must be a positive integer.");
+                }
+                if has_window && d as usize >= wpoints {
+                    return rt(format!("'Degree' value must be less than the largest number of points in any window ({wpoints})."));
+                }
+            }
+            "DataVariables" => return rt("'DataVariables' parameter is only supported for table and timetable inputs."),
+            _ => {}
+        }
+        i += 2;
+    }
+    Ok(())
+}
+
 fn smoothdata(a: &[Value]) -> Ret {
+    smooth_check(a)?;
+    // Integer and logical data are smoothed as double; complex data real and imaginary parts apart.
+    if let Value::Num(m) = &a[0] {
+        if m.im.is_some() && m.kind.is_float() {
+            let mut re = m.clone();
+            re.im = None;
+            let mut im = Matrix::from_dims(m.dims.clone(), m.im.clone().unwrap());
+            im.kind = m.kind;
+            let (mut a1, mut a2) = (a.to_vec(), a.to_vec());
+            a1[0] = Value::Num(re);
+            a2[0] = Value::Num(im);
+            let (r1, r2) = (smoothdata(&a1)?.unwrap(), smoothdata(&a2)?.unwrap());
+            let (m1, m2) = (r1[0].to_matrix()?, r2[0].to_matrix()?);
+            let mut out = Matrix::complex(m1.dims.clone(), m1.data.clone(), m2.data.clone());
+            out.kind = m1.kind;
+            return Ok(Some(vec![Value::Num(out), r1[1].clone()]));
+        }
+        if !m.kind.is_float() && m.kind != Kind::Char {
+            let mut a1 = a.to_vec();
+            a1[0] = Value::Num(m.clone().cast_to(Kind::Double));
+            return smoothdata(&a1);
+        }
+    }
     let o = Opts::parse(a, NANFLAGS, &["SmoothingFactor", "SamplePoints", "Degree", "DataVariables"])?;
     let x = num_arg(&o.pos, 0, "smoothdata")?;
     if !x.kind.is_float() {
@@ -3617,9 +3984,7 @@ fn smoothdata(a: &[Value]) -> Ret {
         Some(v) => v.as_usize()?,
         None => 2,
     };
-    if method == "sgolay" && degree as f64 >= wlen {
-        return rt("Degree must be less than the window size.");
-    }
+    let degree = if method == "sgolay" && o.get("Degree").is_none() { degree.min((wlen.round() as usize).saturating_sub(1)) } else { degree };
     let out = map_dim(&x, dim, len, |v, _| smooth_vec(&method, v, &t, win, wlen, degree, omit));
     Ok(Some(vec![Value::Num(out.cast_to(x.kind)), Value::Num(wout)]))
 }
@@ -4073,7 +4438,78 @@ fn hull_optimal(segs: &[(f64, Vec<usize>)], k: usize) -> bool {
     lo <= hi
 }
 
+fn islocal_check(a: &[Value]) -> R<()> {
+    if a.is_empty() {
+        return rt("Not enough input arguments.");
+    }
+    if let Value::Num(m) = &a[0] {
+        if m.is_complex() {
+            return rt("Complex input arguments are not supported.");
+        }
+    }
+    let mut i = 1;
+    if let Some(Value::Num(m)) = a.get(1) {
+        if m.kind != Kind::Char {
+            if m.numel() != 1 || !(m.data[0] >= 1.0) || m.data[0].fract() != 0.0 {
+                return rt("Dimension must be a positive integer.");
+            }
+            i = 2;
+        }
+    }
+    if (a.len() - i) % 2 != 0 {
+        return rt("Incorrect number of input arguments. Parameter names and values must occur in pairs.");
+    }
+    while i + 1 < a.len() {
+        let name = a[i].text().unwrap_or_default().to_lowercase();
+        let v = &a[i + 1];
+        let num = |v: &Value| -> Option<Matrix> {
+            match v {
+                Value::Num(m) if m.kind != Kind::Char => Some(m.clone()),
+                _ => None,
+            }
+        };
+        match name.as_str() {
+            "minprominence" => {
+                if !matches!(num(v), Some(m) if m.numel() == 1 && m.data[0] >= 0.0 && m.im.is_none()) {
+                    return rt("'MinProminence' value must be a nonnegative numeric scalar.");
+                }
+            }
+            "minseparation" => {
+                if !matches!(num(v), Some(m) if m.numel() == 1 && m.data[0] >= 0.0 && m.data[0].is_finite() && m.im.is_none()) {
+                    return rt("'MinSeparation' value must be a nonnegative, real, finite scalar.");
+                }
+            }
+            "maxnumextrema" => {
+                if !matches!(num(v), Some(m) if m.numel() == 1 && m.data[0] >= 1.0 && m.data[0].fract() == 0.0) {
+                    return rt("'MaxNumExtrema' value must be a positive integer.");
+                }
+            }
+            "prominencewindow" => {
+                let ok = match num(v) {
+                    Some(m) if m.numel() == 1 => m.data[0] > 0.0,
+                    Some(m) if m.numel() == 2 => m.data.iter().all(|x| *x >= 0.0),
+                    _ => false,
+                };
+                if !ok {
+                    return rt("'ProminenceWindow' value must be a positive scalar or 2-element vector of nonnegative scalars.");
+                }
+            }
+            "flatselection" => {
+                let t = v.text().unwrap_or_default().to_lowercase();
+                if !v.is_text() || !["first", "center", "last", "all"].contains(&t.as_str()) {
+                    return rt("'FlatSelection' must be 'first', 'center', 'last', or 'all'.");
+                }
+            }
+            "samplepoints" | "datavariables" => {}
+            _ => return rt("Parameter name must be 'MaxNumExtrema', 'MinSeparation', 'MinProminence', 'FlatSelection', or 'SamplePoints'."),
+        }
+        i += 2;
+    }
+    Ok(())
+}
+
 fn islocal(name: &str, a: &[Value], nargout: usize) -> Ret {
+    islocal_check(a)?;
     let o = Opts::parse(a, &[], &["MinProminence", "FlatSelection", "MinSeparation", "MaxNumExtrema", "ProminenceWindow", "SamplePoints", "DataVariables"])?;
     let x = num_arg(&o.pos, 0, name)?;
     let dim = dim_at(&o.pos, 1, &x.dims)?;

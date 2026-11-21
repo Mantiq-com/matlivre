@@ -1,0 +1,162 @@
+{
+  "header": {
+    "release": "2023b",
+    "version": "23.2.0.2409890 (R2023b) Update 3",
+    "computer": "PCWIN64",
+    "recorded": "2026-11-17"
+  },
+  "log": "matlab.lang.OnOffSwitchState\nmatlab.lang.OnOffSwitchState\n3\n\nans =\n\n     3\n\n",
+  "error": {
+    "identifier": "",
+    "message": ""
+  },
+  "lastwarn": {
+    "message": "",
+    "identifier": ""
+  },
+  "variables": {
+    "ans": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4008000000000000"
+        ]
+      },
+      "display": "\nans =\n\n     3\n\n"
+    },
+    "r1": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nr1 =\n\n     1\n\n"
+    },
+    "r2": {
+      "class": "double",
+      "size": [
+        1,
+        2
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          2
+        ],
+        "real": [
+          "3ff0000000000000",
+          "0000000000000000"
+        ]
+      },
+      "display": "\nr2 =\n\n     1     0\n\n"
+    },
+    "r3": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nr3 =\n\n     1\n\n"
+    },
+    "r4": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nr4 =\n\n     1\n\n"
+    },
+    "r5": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nr5 =\n\n     1\n\n"
+    },
+    "r6": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nr6 =\n\n     1\n\n"
+    }
+  },
+  "figures": [],
+  "nfigures": 0
+}

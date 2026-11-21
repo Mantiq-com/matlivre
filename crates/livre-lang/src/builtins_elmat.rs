@@ -385,7 +385,7 @@ fn resize(name: &str, a: &[Value]) -> R<Value> {
     let v = &a[0];
     let size_err = "Second argument must be a finite nonnegative integer scalar or vector of nonnegative integers.";
     let target: Vec<usize> = match &a[1] {
-        Value::Num(m) if !m.is_complex() && !m.is_empty() && is_vector_shape(&m.dims) => {
+        Value::Num(m) if !m.is_complex() && m.kind != Kind::Char && !m.is_empty() && is_vector_shape(&m.dims) => {
             if m.data.iter().any(|&x| x < 0.0 || x.fract() != 0.0 || !x.is_finite()) {
                 return rt(size_err);
             }
@@ -400,6 +400,9 @@ fn resize(name: &str, a: &[Value]) -> R<Value> {
     };
     let names_msg = if can_pad { "Parameter name must be 'Dimension', 'FillValue', 'Pattern', or 'Side'." } else { "Parameter name must be 'Dimension' or 'Side'." };
     let (mut dims_opt, mut fill, mut pat, mut side) = (None, None, Pattern::Constant, Side::Trailing);
+    if (a.len() - 2) % 2 != 0 {
+        return rt("Incorrect number of input arguments. Parameter names and values must occur in pairs.");
+    }
     let mut i = 2;
     while i < a.len() {
         let key = if a[i].is_text() { a[i].text()?.to_ascii_lowercase() } else { return rt(names_msg) };
@@ -408,7 +411,7 @@ fn resize(name: &str, a: &[Value]) -> R<Value> {
             "dimension" => {
                 let m = val.to_matrix()?;
                 if m.is_empty() || m.data.iter().any(|&x| x < 1.0 || x.fract() != 0.0) {
-                    return rt("Dimension must be a positive integer scalar or vector of positive integers.");
+                    return rt("Dimension must be a real positive integer scalar or a vector of unique positive integers.");
                 }
                 dims_opt = Some(m.data.iter().map(|&x| x as usize).collect::<Vec<_>>());
             }
@@ -441,7 +444,14 @@ fn resize(name: &str, a: &[Value]) -> R<Value> {
         }
         i += 2;
     }
+    if fill.is_some() && matches!(v, Value::Cell(_)) {
+        return rt("Unable to convert fill value to the data type of the first argument.");
+    }
     let d = v.dims();
+    if name == "paddata" && matches!(v, Value::Num(m) if m.dims == vec![0, 0]) && target.len() == 1 && dims_opt.is_none() {
+        let fillv = fill.as_ref().map(|m| m.data[0]).unwrap_or(0.0);
+        return Ok(Value::Num(Matrix::from_dims(vec![target[0], 1], vec![fillv; target[0]])));
+    }
     let dims: Vec<usize> = match dims_opt {
         Some(ds) => {
             if target.len() != 1 && target.len() != ds.len() {
@@ -773,7 +783,41 @@ fn equal_nan(a: &Value, b: &Value) -> bool {
 }
 
 fn freqspace(a: &[Value], nargout: usize) -> Ret {
+    if a.is_empty() {
+        return rt("Not enough input arguments.");
+    }
+    if a.len() > 2 {
+        return rt("Too many input arguments.");
+    }
+    if matches!(&a[0], Value::Cell(_)) {
+        return rt("Undefined function 'eq' for input arguments of type 'cell'.");
+    }
     let n = m_arg(a, 0, "freqspace")?;
+    let out_kind = if n.kind == Kind::Single || n.kind.is_int() { Some(n.kind) } else { None };
+    if nargout <= 1 {
+        if let Some(k) = out_kind {
+            // The step and the count are computed in the class of the input.
+            let flag = a.len() > 1;
+            if n.numel() == 1 {
+                let nv = n.data[0];
+                let step = k.cast(2.0 / nv);
+                let stop = k.cast(if flag { 2.0 * (nv - 1.0) / nv } else { 1.0 });
+                let count = if nv <= 0.0 || step == 0.0 || !step.is_finite() { 0 } else { ((stop / step) * (1.0 + 1e-15)).floor() as usize + 1 };
+                let vals: Vec<f64> = (0..count).map(|j| k.cast(j as f64 * step)).collect();
+                let mut m = Matrix::row(vals);
+                m.kind = k;
+                return one(Value::Num(m));
+            }
+        }
+        if n.numel() == 1 && n.im.is_some() {
+            let (re, im) = (n.data[0], n.im_at(0));
+            let d = re * re + im * im;
+            let step = 2.0 * re / d;
+            let stop = 1.0;
+            let count = if step <= 0.0 || !step.is_finite() { 0 } else { ((stop / step) * (1.0 + 1e-15)).floor() as usize + 1 };
+            return one(Value::Num(Matrix::row((0..count).map(|k| k as f64 * step).collect())));
+        }
+    }
     let flag = a.len() > 1;
     // Points of a centered 2-D grid: ((0:n-1) - floor(n/2)) * (2/n).
     let centered = |n: f64| -> Matrix {
@@ -788,7 +832,10 @@ fn freqspace(a: &[Value], nargout: usize) -> Ret {
         let n = n.data[0];
         let step = 2.0 / n;
         let stop = if flag { 2.0 * (n - 1.0) / n } else { 1.0 };
-        let count = if n <= 0.0 || !step.is_finite() { 0 } else { ((stop / step) * (1.0 + 1e-15)).floor() as usize + 1 };
+        if n.is_nan() {
+            return one(Value::Num(Matrix::row(vec![f64::NAN])));
+        }
+        let count = if n <= 0.0 || !step.is_finite() || n.is_infinite() { 0 } else { ((stop / step) * (1.0 + 1e-15)).floor() as usize + 1 };
         return one(Value::Num(Matrix::row((0..count).map(|k| k as f64 * step).collect())));
     }
     let (rows, cols) = if n.numel() >= 2 { (n.data[0], n.data[1]) } else { (n.data[0], n.data[0]) };
