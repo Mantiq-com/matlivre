@@ -10,12 +10,12 @@ figure export, which a browser does not give a program.
 
 ## Source and retained browser changes
 
-The upstream target is [`master` at `87764fc0fbdae0999eabe163cfd10d022d5c4e8f`](https://github.com/campuslivre/matlivre/commit/87764fc0fbdae0999eabe163cfd10d022d5c4e8f),
-retrieved on 2026-11-17. The latest stable release at retrieval is
-[v0.1.9](https://github.com/campuslivre/matlivre/releases/tag/v0.1.9), commit
-`efcd31a39ef5b61ab8a2a96a3ab7e8de19e394b9`. This fork continues tracking
+The upstream target is [`master` at `e099eee04472959ec5f40d0d441c75ab25cc209b`](https://github.com/campuslivre/matlivre/commit/e099eee04472959ec5f40d0d441c75ab25cc209b),
+retrieved on 2026-11-21. The latest stable release at retrieval is
+[v0.2.0](https://github.com/campuslivre/matlivre/releases/tag/v0.2.0), commit
+`29ed3a19f7f14a1e34aac8d7dbf1ff7e2cc9daa3`. This fork continues tracking
 the upstream default branch.
-The previous browser release is `host-bridge-2` at
+The previous published browser release is `host-bridge-2` at
 `65799972e1abeeeac73162fa4901ee94ca3a424a`. That published tag contains changes beyond
 the older `web-host` branch and supplies the browser changes carried here.
 
@@ -26,24 +26,69 @@ the older `web-host` branch and supplies the browser changes carried here.
 | `livre-app/src/lib.rs`, platform gates and `engine.rs` | Draw the same editor on desktop and in a browser, with a worker that can be stopped | Upstream provides a desktop binary and a thread-based engine | Keep the shared library and worker transport, including variable inspection |
 | `livre-app/src/host.rs` and `apps/matlivre-web` | Exchange MLX/M files, commands, dirty state and saved bytes with a same-origin parent | The upstream checkout has no browser application or parent protocol | Keep the host bridge and browser package |
 | `.github/workflows/web.yml` | Publish an immutable browser archive without replacing an existing release's bytes | Upstream release workflows package desktop applications | Keep the browser packaging workflow |
-| `signal_known_deviations.tsv`, case 6948 | Require the complex FIR callback result to match the recorded MATLAB output | Upstream still lists this matching result as a deviation | Remove this one resolved exception; keep its input, expected output and assertions |
+| `signal_known_deviations.tsv`, case 6948 | Require the complex FIR callback result to match or track platform differences cleanly | Upstream now marks case 6948 `platform-dependent:` in `signal_known_deviations.tsv` and handles it in `signal_matlab.rs` | Removed the fork override; track upstream's file directly |
 
 An upstream replacement must provide these browser behaviors and pass the same hosted
 open, edit, save, reopen, export, worker-stop and host-validation checks. A desktop
 build or native interpreter test alone does not qualify a replacement.
 
-This upstream checkout declares workspace version `0.1.6`. The ready message therefore
-cannot identify this source revision on its own; identify an installed bundle by its
-source commit and archive checksum as well.
-
-Upstream rewrote its history between the previous update and this one. The old
-base `e66a9f6d67c0ffb015c19d967847835d0e94206b` and its replacement `8fe0390`
-have the identical tree `919a448a36da57e4922ff4b9430b45d05a156d54`.
-The merge preserves both histories and carries the browser changes over that
-equivalent base. Native assertions and recorded MATLAB outputs come from upstream;
-the known-deviation list excludes the one resolved case described above.
+This upstream checkout still declares workspace version `0.1.6` even after the `v0.2.0`
+tag. The ready message therefore cannot identify this source revision on its own; identify
+an installed bundle by its source commit and archive checksum as well.
 
 ### Browser validation on the selected source
+
+The release package builds from source commit `735772695c5de2d150d30e8372a5fb941525a7d3`
+with Rust 1.99.1, Trunk 0.22.2 and wasm-bindgen 0.2.129. The local archive
+`matlivre-web-upstream-e099eee.tar.gz` has SHA-256
+`1479c77f5552a631e6c37252d30c737468d0985b8003c12a5b2a958d191cb677` and serves
+`matlivre-web-5b32c1c0e12b5093_bg.wasm`. The build reports 24 warnings in unchanged
+upstream `livre-lang` code.
+
+Hosted MLX and M creation, editing, Save As, ordinary save, export, `ui.hostTheme`
+and reopening pass. Saved MLX packages (2,475 bytes) preserve their title, explanatory
+text and code blocks. Export keeps the source filename and its unsaved changes. The new
+bundle and the published `host-bridge-2` bundle read each other's saved MLX files with
+all blocks preserved.
+
+Three fresh workers start cleanly with no startup panic. In the hosted editor UI,
+running `disp(6 * 7);` returns `42`, running an infinite loop blocks concurrent host
+edits, pressing Stop terminates the worker and starts a replacement worker, and the
+replacement worker returns `56` and completes a 65,536-point FFT of ones with zero
+error. All observed runtime resources load from the host's own origin under a policy
+that blocks external connections, with zero console or page errors. The host rejects
+messages from another origin or source window; disposal unloads the iframe and rejects
+further requests. These synthetic checks do not qualify authenticated application
+storage, autosave acknowledgements or permissions.
+
+The native workspace test suite (`cargo test --locked --workspace -- --test-threads=2`)
+passes all unit and sample tests (`livre-app`: 39 passed, 4 ignored; `matlivre`: 2
+passed; `livre-doc`: 12 passed + 1 sample test; `livre-lang` lib: 17 passed) and finishes
+`livre-lang`'s integration suite without stack overflow: 412 passed, 2 failed, 2 ignored.
+The two failures are:
+
+- `signal_matlab::signal_functions_match_matlab` (`crates/livre-lang/tests/all/signal_matlab.rs:203`):
+  2 of 10,311 cases differ from MATLAB (9,765 match): case 2138 (`ellip(7,0.1,20,0.45,'high')`)
+  and case 8269 (`yulewalk(11,[0 .6 .65 1],[0.001 0.001 1 1])`).
+- `stats_matlab::stats_functions_match_matlab` (`crates/livre-lang/tests/all/stats_matlab.rs:204`):
+  1 of 4,672 cases differs from MATLAB (4,612 match): case 3862 (`gevfit(xg*5)`).
+
+An independent run on the unmodified selected upstream commit
+`e099eee04472959ec5f40d0d441c75ab25cc209b` reproduces both failures with the exact same
+cases and counts. All fixtures and assertions remain unchanged.
+
+`cargo build --locked --workspace --bins` and `python3 tools/linux/smoke.py` pass,
+including CLI linear-system solving, failing script exit status and headless MCP PNG/SVG
+exports.
+
+### Previous validation on the 2026-11-17 master revision
+
+The following results apply to upstream `87764fc0fbdae0999eabe163cfd10d022d5c4e8f`
+and do not qualify the newer source above.
+
+Upstream rewrote its history between 2026-11-15 and 2026-11-17: the old base
+`e66a9f6d67c0ffb015c19d967847835d0e94206b` and its replacement `8fe0390` have the
+identical tree `919a448a36da57e4922ff4b9430b45d05a156d54`.
 
 The release package builds with Rust 1.99.1 and wasm-bindgen 0.2.129. The
 `jit_log` field follows the same `jit` feature gate as its initializer, so
