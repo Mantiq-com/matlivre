@@ -171,6 +171,17 @@ fn assign_dense(base: Option<Value>, idx: &[IndexArg], rhs: Value) -> R<Value> {
         }
         Value::Sparse(_) => unreachable!("expanded by assign"),
         b @ Value::Object(_) if crate::gfx::is_gfx(&b) && crate::gfx::is_gfx(&rhs) => crate::gfx::assign_handles(&b, idx, &rhs),
+        // r(k) = state: states, on/off text and numbers (nonzero is on) go into the array.
+        b @ Value::Object(_) if crate::class::is_on_off(&b) => {
+            let Some(r) = crate::class::on_off_states_of(&rhs) else {
+                return rt(format!("Conversion to matlab.lang.OnOffSwitchState from {} is not possible.", rhs.class_name()));
+            };
+            let base = Value::Num(crate::class::on_off_matrix(&b).unwrap_or_else(crate::class::empty_states));
+            match assign_dense(Some(base), idx, Value::Num(r))? {
+                Value::Num(m) => Ok(crate::class::on_off_from_matrix(m)),
+                other => Ok(other),
+            }
+        }
         b @ (Value::Func(_) | Value::Object(_)) => {
             let (pos, _) = nd::assign_plan(&[1, 1], idx, &rd)?;
             if pos.iter().all(|&p| p == 0) && nd::numel(&rd) == 1 {
@@ -226,6 +237,10 @@ pub fn delete(base: Value, idx: &[IndexArg]) -> R<Value> {
             nd::delete(&mut s.dims, &mut s.data, idx)?;
             Value::Sym(s)
         }
+        b if crate::class::is_on_off(&b) => match delete(Value::Num(crate::class::on_off_matrix(&b).unwrap_or_else(crate::class::empty_states)), idx)? {
+            Value::Num(m) => crate::class::on_off_from_matrix(m),
+            other => other,
+        },
         other => return rt(format!("Deletion is not supported for values of class '{}'.", other.class_name())),
     })
 }
@@ -245,6 +260,16 @@ pub fn concat(items: Vec<Value>, dim: usize) -> R<Value> {
     // ['v=' ax.Visible]: next to text, an OnOffSwitchState value is the text on / off.
     if items.iter().any(crate::class::is_on_off) && items.iter().any(Value::is_text) {
         return concat(items.into_iter().map(crate::class::on_off_as_text).collect(), dim);
+    }
+    // [a b], [a true]: states (OnOffSwitchState values and logicals) join into an array.
+    if items.iter().any(crate::class::is_on_off)
+        && items.iter().all(|v| crate::class::is_on_off(v) || matches!(v, Value::Num(m) if m.kind == Kind::Logical))
+    {
+        let parts: Vec<Value> = items.iter().filter_map(|v| crate::class::on_off_states_of(v).map(Value::Num)).collect();
+        return match concat(parts, dim)? {
+            Value::Num(m) => Ok(crate::class::on_off_from_matrix(m)),
+            other => Ok(other),
+        };
     }
     if items.len() == 1 && dim < 2 {
         return Ok(items.into_iter().next().unwrap());

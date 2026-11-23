@@ -105,6 +105,22 @@ fn length(it: &mut Interpreter, a: &[Value], name: &str) -> R<usize> {
         }
         _ => m_arg(a, 0, name)?,
     };
+    if m.kind == Kind::Logical && name == "kaiser" {
+        return rt("Input N in kaiser must be numeric, instead it was logical.");
+    }
+    if m.kind == Kind::Logical {
+        let label = match name {
+            "hamming" | "hann" | "blackman" | "flattopwin" => "input number 1, N,",
+            "bartlett" => "L",
+            _ => "N",
+        };
+        if !matches!(name, "kaiser" | "rectwin" | "tukeywin" | "gausswin" | "parzenwin" | "bohmanwin" | "barthannwin" | "chebwin") {
+            return rt(format!("Expected {label} to be one of these types:\n\ndouble, single, uint8, uint16, uint32, uint64, int8, int16, int32, int64\n\nInstead its type was logical."));
+        }
+    }
+    if m.im.is_some() && matches!(name, "hamming" | "hann" | "blackman" | "flattopwin") {
+        return rt("Expected input number 1, N, to be real.");
+    }
     if m.numel() != 1 {
         return rt("Expected N to be a scalar.");
     }
@@ -125,7 +141,11 @@ fn length(it: &mut Interpreter, a: &[Value], name: &str) -> R<usize> {
 fn periodic_flag(a: &[Value]) -> R<bool> {
     let Some(v) = a.get(1) else { return Ok(false) };
     let Ok(s) = v.text() else {
-        return rt("Expected input to be one of these types:\n\nchar, string\n\nInstead its type was double.");
+        let cls = match v {
+            Value::Num(m) => m.kind.name().to_string(),
+            other => other.class_name().to_string(),
+        };
+        return rt(format!("Expected input to be one of these types:\n\nchar, string\n\nInstead its type was {cls}."));
     };
     let low = s.to_lowercase();
     if !low.is_empty() && "periodic".starts_with(&low) {

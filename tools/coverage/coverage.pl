@@ -40,6 +40,9 @@ my @out_categories = (
     'Data Import and Analysis > Visual Exploration',
     'Mathematics > Quantum Computing',
     'MuPAD to MATLAB Migration',
+    # Statistics and Machine Learning Toolbox (see docs/stats-coverage-plan.md).
+    'Simulink and Code Generation',
+    'Incremental Learning',
 );
 # Audio and video: files are in scope, devices and players are not.
 my %device = map { $_ => 1 } qw(audioplayer audiorecorder audiodevinfo audiodevreset sound soundsc beep getaudiodata getplayer isplaying isrecording
@@ -55,13 +58,16 @@ my %entry;    # name => [category, status, reason]
 sub out_reason {
     my ($cat, $name) = @_;
     for my $o (@out_categories) { return $o if index($cat, $o) == 0 || index($cat, " > $o") >= 0 }
+    return 'App' if $name eq 'Polynomial Fitting Tool';
     return 'Audio and video devices' if $cat =~ /Audio and Video Data/ && $device{$name};
     return undef;
 }
 
-my %product_label = (matlab => 'MATLAB', symbolic => 'Symbolic Math Toolbox');
+my %product_label = (matlab => 'MATLAB', symbolic => 'Symbolic Math Toolbox', stats => 'Statistics and Machine Learning Toolbox');
 my @rows = map { [split /\t/, $_, -1] } lines("$dir/documented.tsv");
 push @rows, map { my @p = split /\t/, $_, -1; ['matlab', @p] } lines("$dir/classes.tsv");
+# Statistics and Machine Learning Toolbox: stats.tsv (category<TAB>name), R2023b-era names only.
+push @rows, map { my @p = split /\t/, $_, -1; ['stats', @p] } lines("$dir/stats.tsv");
 for my $r (@rows) {
     my ($prod, $cat, $name) = @$r;
     next unless defined $name && length $name;
@@ -113,7 +119,7 @@ my $date = sprintf '%04d-%02d-%02d', $t[5] + 1900, $t[4] + 1, $t[3];
 print $o <<"HEAD";
 # MATLAB coverage
 
-Every function in the MATLAB R2023b and Symbolic Math Toolbox function references (the
+Every function in the MATLAB R2023b, Symbolic Math Toolbox and Statistics and Machine Learning Toolbox function references (the
 installation's `help/*/helpfuncbycat.xml`), plus key classes and undocumented public functions
 found in the toolbox folders, checked against MatLivre. Regenerate with
 `tools/coverage/update.sh` after merging work ($date).

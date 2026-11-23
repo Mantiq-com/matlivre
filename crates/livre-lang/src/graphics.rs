@@ -245,6 +245,18 @@ pub struct Axes {
     /// `plotyy`: the id of the axes these are drawn over (sharing its box, with the y axis
     /// on the right); 0 for ordinary axes.
     pub overlay_of: u64,
+    /// Where the axes are drawn, as a fraction of the figure ([left bottom width height], measured
+    /// from the bottom left like MATLAB's positions): the box that holds the axes with their
+    /// labels and ticks. `None` is the cell of the figure's subplot grid the axes sit in.
+    pub layout: Option<[f64; 4]>,
+    /// MATLAB's `Position` of the axes (their plot box, a fraction of the figure). `None`
+    /// for axes that sit by their index in the figure's grid: see `Figure::effective_position`.
+    pub position: Option<[f64; 4]>,
+    /// The tile of a tiled layout these axes are in (1-based), if any.
+    pub tile: Option<usize>,
+    /// Stacking: axes made or selected later with `axes` are in front of earlier ones (0 for
+    /// axes that were never raised; those stack by their position in the figure).
+    pub raised: u64,
 }
 
 /// The y axis of one side of `yyaxis` axes.
@@ -726,24 +738,137 @@ pub struct Figure {
     pub next_tile: usize,
     /// `colororder` of the figure: used by axes without their own.
     pub color_order: Option<Vec<[f64; 3]>>,
-    /// False for a new figure: MATLAB makes the first axes only when something needs them
-    /// (`plot`, `gca`, `axes`, `subplot`), so `Children` is empty until then.
-    pub axes_made: bool,
+}
+
+/// The `Position` of axes (the plot box) as a fraction of their outer box, MATLAB's default.
+const INNER_IN_OUTER: [f64; 4] = [0.13, 0.11, 0.775, 0.815];
+/// The `Position` of the axes a new figure starts with.
+pub const DEFAULT_POSITION: [f64; 4] = INNER_IN_OUTER;
+
+/// The `Position` of the cells `cells` (1-based, row-major) of an `m`-by-`n` subplot grid: the box
+/// round all of them. MATLAB spaces the plot boxes by 0.24 of a box horizontally and 0.28
+/// vertically, inside the default `Position`.
+pub fn subplot_position(m: usize, n: usize, cells: &[usize]) -> [f64; 4] {
+    let (r0, r1, c0, c1) = cell_span(n, cells);
+    let [l, b, w, h] = DEFAULT_POSITION;
+    let px = w / (n as f64 - 0.24);
+    let py = h / (m as f64 - 0.28);
+    let left = l + c0 as f64 * px;
+    let right = (l + c1 as f64 * px) + 0.76 * px;
+    let bottom = b + (m - 1 - r1) as f64 * py;
+    let top = (b + (m - 1 - r0) as f64 * py) + 0.72 * py;
+    [left, bottom, right - left, top - bottom]
+}
+
+/// The cells `cells` of an `m`-by-`n` grid as a fraction of the figure ([left bottom width
+/// height]): the box the axes are drawn in.
+pub fn subplot_cell(m: usize, n: usize, cells: &[usize]) -> [f64; 4] {
+    let (r0, r1, c0, c1) = cell_span(n, cells);
+    [c0 as f64 / n as f64, (m - 1 - r1) as f64 / m as f64, (c1 - c0 + 1) as f64 / n as f64, (r1 - r0 + 1) as f64 / m as f64]
+}
+
+/// (first row, last row, first column, last column), 0-based, of the cells of a grid `n` wide.
+fn cell_span(n: usize, cells: &[usize]) -> (usize, usize, usize, usize) {
+    let rows = cells.iter().map(|&p| (p - 1) / n);
+    let cols = cells.iter().map(|&p| (p - 1) % n);
+    (rows.clone().min().unwrap_or(0), rows.max().unwrap_or(0), cols.clone().min().unwrap_or(0), cols.max().unwrap_or(0))
+}
+
+/// Whether two boxes ([left bottom width height]) share an area.
+pub fn boxes_overlap(a: [f64; 4], b: [f64; 4]) -> bool {
+    a[0] < b[0] + b[2] - 1e-9 && b[0] < a[0] + a[2] - 1e-9 && a[1] < b[1] + b[3] - 1e-9 && b[1] < a[1] + a[3] - 1e-9
+}
+
+/// Whether two boxes are the same one, to the rounding of the numbers that made them.
+pub fn boxes_equal(a: [f64; 4], b: [f64; 4]) -> bool {
+    a.iter().zip(b).all(|(x, y)| (x - y).abs() < 1e-6)
+}
+
+/// The `Position` that goes with an outer box (the relation of `outer_of_position`, inverted).
+pub fn position_of_outer(o: [f64; 4]) -> [f64; 4] {
+    [o[0] + INNER_IN_OUTER[0] * o[2], o[1] + INNER_IN_OUTER[1] * o[3], INNER_IN_OUTER[2] * o[2], INNER_IN_OUTER[3] * o[3]]
+}
+
+/// The outer box (`Axes::layout`) of axes whose `Position` is `p`, keeping MATLAB's default
+/// relation between the two. `None` for a box without width or height.
+pub fn outer_of_position(p: [f64; 4]) -> Option<[f64; 4]> {
+    if !(p[2] > 0.0 && p[3] > 0.0) || p.iter().any(|x| !x.is_finite()) {
+        return None;
+    }
+    let (w, h) = (p[2] / INNER_IN_OUTER[2], p[3] / INNER_IN_OUTER[3]);
+    Some([p[0] - INNER_IN_OUTER[0] * w, p[1] - INNER_IN_OUTER[1] * h, w, h])
 }
 
 impl Figure {
     pub fn new(id: u32) -> Self {
-        Self { id, name: String::new(), grid: (1, 1), axes: vec![Axes::default()], current_axes: 0, colormap: None, flow: false, objects: Vec::new(), next_tile: 0, color_order: None, axes_made: false }
+        Self { id, name: String::new(), grid: (1, 1), axes: Vec::new(), current_axes: 0, colormap: None, flow: false, objects: Vec::new(), next_tile: 0, color_order: None }
+    }
+
+    /// Makes the first axes when the figure has none yet: MATLAB makes them only when something
+    /// needs them (`plot`, `gca`, `axes`, `subplot`), so `Children` of a new figure is empty.
+    pub fn ensure_axes(&mut self) {
+        if self.axes.is_empty() {
+            self.axes.push(Axes::default());
+            self.current_axes = 0;
+        }
     }
 
     pub fn axes_mut(&mut self) -> &mut Axes {
-        self.axes_made = true;
+        self.ensure_axes();
         &mut self.axes[self.current_axes]
     }
 
-    /// Whether the figure has axes yet (a grid of several always does).
+    /// The `Position` of axes `i`: their own, or that of the cell they sit in.
+    pub fn effective_position(&self, i: usize) -> [f64; 4] {
+        if let Some(p) = self.axes[i].position {
+            return p;
+        }
+        let (r, c) = (self.grid.0.max(1), self.grid.1.max(1));
+        if r * c > 1 { subplot_position(r, c, &[i % (r * c) + 1]) } else { DEFAULT_POSITION }
+    }
+
+    /// Gives the axes that sit by their index in the grid a `Position` and a box of their own,
+    /// so that axes made or removed afterwards cannot move them.
+    pub fn fix_grid_axes(&mut self) {
+        let (r, c) = (self.grid.0.max(1), self.grid.1.max(1));
+        for i in 0..self.axes.len() {
+            if self.axes[i].position.is_none() && self.axes[i].layout.is_none() && self.axes[i].overlay_of == 0 {
+                let cell = [i % (r * c) + 1];
+                self.axes[i].position = Some(self.effective_position(i));
+                if r * c > 1 {
+                    self.axes[i].layout = Some(subplot_cell(r, c, &cell));
+                }
+            }
+        }
+    }
+
+    /// Puts the tile axes where their tiles are in the grid of the layout (it grows with `flow`).
+    pub fn relayout_tiles(&mut self) {
+        let (r, c) = (self.grid.0.max(1), self.grid.1.max(1));
+        for ax in self.axes.iter_mut() {
+            if let Some(k) = ax.tile.filter(|&k| k >= 1 && k <= r * c) {
+                ax.position = Some(subplot_position(r, c, &[k]));
+                ax.layout = Some(subplot_cell(r, c, &[k]));
+            }
+        }
+    }
+
+    /// Brings axes `a` in front of the others.
+    pub fn raise(&mut self, a: usize) {
+        let top = self.axes.iter().map(|x| x.raised).max().unwrap_or(0);
+        self.axes[a].raised = top + 1;
+    }
+
+    /// The axes indices from the back to the front: `Children` lists them the other way round.
+    pub fn stacking(&self) -> Vec<usize> {
+        let mut order: Vec<usize> = (0..self.axes.len()).collect();
+        order.sort_by_key(|&i| (self.axes[i].raised, i));
+        order
+    }
+
+    /// Whether the figure has axes yet.
     pub fn has_axes(&self) -> bool {
-        self.axes_made || self.axes.len() != 1
+        !self.axes.is_empty()
     }
 }
 

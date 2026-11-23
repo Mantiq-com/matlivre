@@ -560,7 +560,7 @@ fn colormap_fn(it: &mut Interpreter, a: &[Value]) -> Ret {
     let f = it.current_figure_index();
     let Some(v) = rest.first() else {
         let fig = &it.figures[f];
-        let m = fig.axes[fig.current_axes].colormap.clone().or_else(|| fig.colormap.clone()).unwrap_or_else(|| graphics::colormap("parula", 256).unwrap());
+        let m = fig.axes.get(fig.current_axes).and_then(|a| a.colormap.clone()).or_else(|| fig.colormap.clone()).unwrap_or_else(|| graphics::colormap("parula", 256).unwrap());
         return one(map_value(&m));
     };
     let map = map_arg(v)?;
