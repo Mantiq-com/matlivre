@@ -112,6 +112,8 @@ pub fn call(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
             real_row(ticks),
             Value::chars("YTickLabel"),
             labels,
+            Value::chars("YGrid"),
+            Value::chars("on"),
         ],
         0,
     )?;
