@@ -341,8 +341,9 @@ pub fn call(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) ->
         "gca" => one(it.current_axes_handle()),
         "box" => {
             // `box on`, `box off`, or `box` to toggle the current axes.
+            // `box` makes the axes if the figure has none, as `gca` does.
+            it.current_axes_handle();
             let f = it.current_figure_index();
-            it.figures[f].axes_made = true;
             let id = crate::gfx::axes_id(it, f, it.figures[f].current_axes);
             let now = crate::gfx::get_prop_raw(it, id, "Box").ok().and_then(|v| v.text().ok()).is_some_and(|t| t == "on");
             let on = match a.first() {
