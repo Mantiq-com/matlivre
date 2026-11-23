@@ -168,3 +168,63 @@ fn empty_axes_limits_and_strrep_on_switch_values() {
     assert_eq!(text(&it, "c"), "matlab.lang.OnOffSwitchState");
     assert!(out.iter().any(|l| l.contains("Inputs must be character vectors, cell arrays of character vectors, or string arrays.")), "{out:?}");
 }
+
+#[test]
+fn switch_state_arrays_as_text_and_numbers() {
+    let (it, out) = run("ax = axes; a = ax.Box; b = ax.Visible; r = [a b]; s = string(r); c = cellstr(r); n = numel(s) + numel(c); m = ismember('on', r); k = strcmp(r, 'on'); z = sum(r); t = size(r'); q = char(r); w = double(r(2) == 'on');");
+    assert!(!out.iter().any(|l| l.starts_with("Error")), "{out:?}");
+    assert_eq!(num(&it, "n"), [4.0]);
+    assert_eq!(num(&it, "m"), [1.0]);
+    assert_eq!(num(&it, "k"), [0.0, 1.0]);
+    assert_eq!(num(&it, "z"), [1.0]);
+    assert_eq!(num(&it, "t"), [2.0, 1.0]);
+    assert_eq!(num(&it, "w"), [1.0]);
+    assert_eq!(text(&it, "q"), "1x2 OnOffSwitchState");
+}
+
+#[test]
+fn axes_makes_new_axes_and_positions_them() {
+    let (it, out) = run("f = figure; a1 = axes; a2 = axes; n = numel(f.Children); axes(a1); c = double(isequal(gca, a1)); p = axes('Position', [0.1 0.2 0.5 0.4]); pos = get(p, 'Position'); m = numel(f.Children); top = double(f.Children(1) == p);");
+    assert!(!out.iter().any(|l| l.starts_with("Error")), "{out:?}");
+    assert_eq!(num(&it, "n"), [2.0]);
+    assert_eq!(num(&it, "c"), [1.0]);
+    assert_eq!(num(&it, "m"), [3.0]);
+    assert_eq!(num(&it, "top"), [1.0]);
+    assert_eq!(num(&it, "pos"), [0.1, 0.2, 0.5, 0.4]);
+    // The box the axes are drawn in keeps MATLAB's relation to their Position.
+    let outer = livre_lang::graphics::outer_of_position([0.13, 0.11, 0.775, 0.815]).unwrap();
+    assert!(outer.iter().zip([0.0, 0.0, 1.0, 1.0]).all(|(a, b)| (a - b).abs() < 1e-12), "{outer:?}");
+    assert!(livre_lang::graphics::outer_of_position([0.1, 0.1, 0.0, 0.5]).is_none());
+}
+
+#[test]
+fn subplot_positions_match_matlab() {
+    use livre_lang::graphics::subplot_position;
+    // (m, n, cells, Position) as MATLAB R2023b reports them.
+    let table: [(usize, usize, &[usize], [f64; 4]); 7] = [
+        (1, 2, &[2], [0.57034090909090907, 0.11, 0.33465909090909096, 0.815]),
+        (2, 3, &[5], [0.41079710144927539, 0.11, 0.21340579710144925, 0.34116279069767441]),
+        (3, 4, &[7], [0.54223404255319152, 0.40963235294117645, 0.1566489361702128, 0.21573529411764708]),
+        (4, 4, &[1], [0.13, 0.76725806451612899, 0.15664893617021275, 0.15774193548387094]),
+        (5, 1, &[3], [0.13, 0.45533898305084736, 0.775, 0.12432203389830504]),
+        (7, 6, &[40], [0.53364583333333337, 0.11, 0.10225694444444444, 0.087321428571428591]),
+        (3, 3, &[2, 9], [0.410797, 0.11, 0.494203, 0.815]),
+    ];
+    for (m, n, cells, want) in table {
+        let got = subplot_position(m, n, cells);
+        let tol = if want[0] == 0.410797 { 1e-6 } else { 1e-12 };
+        assert!(got.iter().zip(want).all(|(g, w)| (g - w).abs() < tol), "({m},{n},{cells:?}): {got:?} against {want:?}");
+    }
+}
+
+#[test]
+fn subplot_makes_one_axes_per_call() {
+    let (it, out) = run("f = figure; a = subplot(2,1,1); b = subplot(2,1,2); a2 = subplot(2,1,1); n = numel(f.Children); s = double(isequal(a, a2)); c = subplot(1,2,1); m = numel(f.Children); v = double(isvalid(a)) + double(isvalid(b)); pos = get(c, 'Position');");
+    assert!(!out.iter().any(|l| l.starts_with("Error")), "{out:?}");
+    assert_eq!(num(&it, "n"), [2.0]);
+    assert_eq!(num(&it, "s"), [1.0]);
+    assert_eq!(num(&it, "m"), [1.0]);
+    assert_eq!(num(&it, "v"), [0.0]);
+    let pos = num(&it, "pos");
+    assert!((pos[0] - 0.13).abs() < 1e-9 && (pos[2] - 0.334659).abs() < 1e-6, "{pos:?}");
+}

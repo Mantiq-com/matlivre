@@ -1,0 +1,20 @@
+{
+  "header": {
+    "release": "2023b",
+    "version": "23.2.0.2409890 (R2023b) Update 3",
+    "computer": "PCWIN64",
+    "recorded": "2026-11-17"
+  },
+  "log": "1011.2251 245.0180 80.1827 29.2117 0.0000 0.0010 0.0020 0.0000 5.0000 0.3593 \n1149.9938 258.8794 79.4632 27.7536 1.0000 3.0000 0.4161 \n384 1 128 9 \nExpected FFTLength to be a scalar with value >= 128.\nExpected S to be nonnegative.\n",
+  "error": {
+    "identifier": "",
+    "message": ""
+  },
+  "lastwarn": {
+    "message": "",
+    "identifier": ""
+  },
+  "variables": {},
+  "figures": [],
+  "nfigures": 0
+}

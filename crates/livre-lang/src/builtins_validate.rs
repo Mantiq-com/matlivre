@@ -21,7 +21,7 @@ pub const NAMES: &[&str] = &[
     "mustBeInteger", "mustBeLessThan", "mustBeLessThanOrEqual", "mustBeMember", "mustBeNegative", "mustBeNonempty", "mustBeNonmissing", "mustBeNonNan",
     "mustBeNonnegative", "mustBeNonpositive", "mustBeNonsparse", "mustBeNonzero", "mustBeNonzeroLengthText", "mustBeNumeric", "mustBeNumericOrLogical",
     "mustBePositive", "mustBeReal", "mustBeScalarOrEmpty", "mustBeSparse", "mustBeText", "mustBeTextScalar", "mustBeUnderlyingType",
-    "mustBeValidVariableName", "mustBeVector", "lasterr", "lasterror", "lastwarn", "rethrow", "matlab.lang.makeValidName",
+    "mustBeValidVariableName", "mustBeVector", "lasterr", "lasterror", "lastwarn", "rethrow", "matlab.lang.makeValidName", "matlab.lang.OnOffSwitchState",
     "matlab.lang.makeUniqueStrings", "matlab.lang.correction.AppendArgumentsCorrection", "matlab.lang.correction.ReplaceIdentifierCorrection", "matlab.lang.correction.ConvertToFunctionNotationCorrection", "namedargs2cell", "onCleanup", "validatecolor", "mlock", "munlock", "mislocked", "inputParser",
     "matlivre_inputparser_method", "MException", "MException.last", "throw", "throwAsCaller", "getReport", "addCause", "addCorrection",
     "matlivre_mexception_method",
@@ -938,6 +938,10 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
             }))
         }
         "matlivre_mexception_method" => me_method(it, a),
+        "matlab.lang.OnOffSwitchState" => match crate::class::on_off_construct(arg(a, 0, name)?) {
+            Some(r) => one(r),
+            None => rt("Input must be 'on', 'off', a logical or numeric value, or a cell or string array of those."),
+        },
         "matlab.lang.makeValidName" => {
             let v = arg(a, 0, name)?;
             let (mut style, mut prefix) = ("underscore".to_string(), "x".to_string());

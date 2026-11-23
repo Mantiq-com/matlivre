@@ -962,6 +962,12 @@ impl Interpreter {
                 self.call_method(&f, &o.class.clone(), vec![v.clone()], 0)?;
                 return Ok(());
             }
+            if crate::class::is_on_off(v) && crate::class::on_off_text(o).is_none() {
+                if let Some(text) = crate::class::on_off_matrix(v).and_then(|m| crate::class::on_off_display(name, &m, self.command_window)) {
+                    self.emit(OutputKind::Value { name: name.to_string(), text });
+                    return Ok(());
+                }
+            }
             if let Some(m) = crate::class::enum_name(o) {
                 let short = o.class.name.rsplit('.').next().unwrap_or(&o.class.name);
                 let text = if self.command_window {
@@ -1543,6 +1549,12 @@ impl Interpreter {
                     if !o.has_prop(f) {
                         return rt(format!("Unrecognized property '{f}' for class '{}'.", o.class.name));
                     }
+                    if o.class.name == "GeneralizedLinearModel" {
+                        return rt(format!("The {f} property for class GeneralizedLinearModel is read-only."));
+                    }
+                    if o.class.name == "LinearModel" {
+                        return rt(format!("The {f} property for class LinearModel is read-only."));
+                    }
                     if o.class.name == "digitalFilter" {
                         return rt("You cannot change the specifications of a digital filter.
 If you want to design a new filter with different specifications, use the designfilt function with your new inputs, or call designfilt(D), where D is the digital filter of interest, to edit the filter using the Filter Design Assistant.");
@@ -1723,6 +1735,12 @@ If you want to design a new filter with different specifications, use the design
             }
             Expr::Unary(op, x) => {
                 let v = self.eval(x)?;
+                // r' keeps the class: the states transposed.
+                if matches!(op, UnOp::Transpose | UnOp::CTranspose) && crate::class::is_on_off(&v) {
+                    if let Value::Num(m) = ops::unary(*op, &Value::Num(crate::class::on_off_matrix(&v).unwrap_or_else(crate::class::empty_states)))? {
+                        return Ok(crate::class::on_off_from_matrix(m));
+                    }
+                }
                 let v = crate::class::on_off_as_logical(v);
                 if let Value::Object(o) = &v {
                     let name = match op {
@@ -2136,6 +2154,14 @@ If you want to design a new filter with different specifications, use the design
             Value::Table(t) => {
                 let vals = self.eval_raw_args(args, &bv.dims())?;
                 Ok(vec![Value::Table(Box::new(t.paren(&vals)?))])
+            }
+            Value::Object(o) if o.class.name == crate::class::ON_OFF_CLASS => {
+                let idx = self.eval_index_args(args, &bv.dims())?;
+                let states = Value::Num(crate::class::on_off_matrix(&bv).unwrap_or_else(crate::class::empty_states));
+                Ok(vec![match indexing::index(&states, &idx)? {
+                    Value::Num(m) => crate::class::on_off_from_matrix(m),
+                    other => other,
+                }])
             }
             Value::Object(o) if crate::gfx::is_gfx_class(&o.class.name) => {
                 let idx = self.eval_index_args(args, &bv.dims())?;

@@ -338,6 +338,7 @@ pub fn summary(v: &Value, f: NumFormat) -> String {
         Value::Func(fv) => func_text(fv),
         Value::Object(o) if crate::gfx::is_gfx_class(&o.class.name) => format!("{} {}", nd::size_text(&v.dims()), o.class.name.rsplit('.').next().unwrap_or("")),
         Value::Object(_) if crate::containers::is_categorical(v) => crate::containers::inline_text(v).unwrap_or_default(),
+        Value::Object(o) if crate::class::on_off_text(o).is_some() => format!("[{}]", crate::class::on_off_text(o).unwrap_or_default()),
         Value::Object(o) => format!("1×1 {}", o.class.name),
         Value::Time(t) => t.summary(),
         Value::Table(t) => format!("{}×{} table", t.nrows, t.vars.len()),
@@ -646,6 +647,19 @@ pub fn display_value_cw(name: &str, v: &Value, f: NumFormat) -> Option<String> {
             Some(block(" ", format!("  {} struct array with fields:\n\n{}", ascii(&s.dims), struct_names_body(s).trim_end_matches('\n'))))
         }
         Value::Func(fv) => Some(block("", format!("  function_handle with value:\n\n    {}", func_text(fv)))),
+        Value::Object(o) if matches!(o.class.name.as_str(), "ClassificationKNN" | "ClassificationNaiveBayes" | "ClassificationDiscriminant") => crate::stats::learners::object_text(o).map(|t| format!("
+{name} = 
+
+{t}
+
+")),
+        Value::Object(o) if o.class.name == "GeneralizedLinearModel" => crate::stats::glmodel::object_text(o).map(|t| format!("\n{name} = \n\n\n{t}\n")),
+        Value::Object(o) if o.class.name == "LinearModel" => crate::stats::linmodel::object_text(o).map(|t| format!("
+{name} = 
+
+
+{t}
+")),
         Value::Object(o) if o.class.name == "digitalFilter" => crate::signal::digfilt::object_text(o).map(|t| format!("
 {name} = 
 
