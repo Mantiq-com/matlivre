@@ -779,9 +779,12 @@ fn computed(it: &mut Interpreter, id: u64, t: Target, name: &str) -> R<Option<Va
             "Number" => Value::num(it.figures[f].id as f64),
             "Colormap" => colormap_value(it.figures[f].colormap.clone().unwrap_or_else(|| graphics::colormap("parula", 256).unwrap_or_default())),
             "Children" => {
-                // The axes that are not in a tiled layout, in front, then the layout.
+                // A legend is a child of the figure, listed before its axes. Then the axes that are
+                // not in a tiled layout, in front, then the layout.
                 let order: Vec<usize> = it.figures[f].stacking().into_iter().filter(|&a| it.figures[f].axes[a].tile.is_none()).collect();
-                let mut ids: Vec<u64> = order.into_iter().rev().map(|a| axes_id(it, f, a)).collect();
+                let with_legend: Vec<usize> = order.iter().rev().copied().filter(|&a| it.figures[f].axes[a].legend.is_some()).collect();
+                let mut ids: Vec<u64> = with_legend.into_iter().map(|a| axes_id(it, f, a) + Part::Legend as u64).collect();
+                ids.extend(order.into_iter().rev().map(|a| axes_id(it, f, a)));
                 ids.extend(it.figures[f].objects.iter().filter(|o| o.kind == graphics::FigObjKind::Layout).map(|o| o.id));
                 handles(it, &ids)
             }
@@ -966,6 +969,7 @@ fn computed(it: &mut Interpreter, id: u64, t: Target, name: &str) -> R<Option<Va
                 "LineWidth" => Value::num(s.line_width as f64),
                 "Marker" => Value::chars(marker_name(s.marker)),
                 "MarkerSize" => Value::num(s.marker_size as f64),
+                "SizeData" if s.size_data.is_some() => Value::num(s.size_data.unwrap_or(36.0)),
                 "DisplayName" => Value::chars(s.name.as_deref().unwrap_or("")),
                 "Visible" => on_off_value(s.visible),
                 "String" if s.kind == SeriesKind::Text => Value::chars(&s.label),
@@ -1345,7 +1349,10 @@ pub(crate) fn set_prop(it: &mut Interpreter, id: u64, name: &str, v: Value) -> R
                 "LineWidth" => s.line_width = v.scalar()? as f32,
                 "Marker" => s.marker = parse_marker(&v.text()?),
                 "MarkerSize" => s.marker_size = v.scalar()? as f32,
-                "SizeData" => s.marker_size = (v.scalar()?.sqrt() as f32).max(2.0),
+                "SizeData" => {
+                    s.marker_size = (v.scalar()?.sqrt() as f32).max(2.0);
+                    s.size_data = Some(v.scalar()?);
+                }
                 "DisplayName" => s.name = Some(v.text()?),
                 "Visible" => s.visible = on_off(&v)?,
                 "String" | "Label" => s.label = texts(&v)?.join("\n"),
@@ -1616,6 +1623,7 @@ fn object_title(it: &mut Interpreter, id: u64, t: Target) -> String {
     let class = class_of(it, t);
     match t {
         Target::Root => "Graphics Root".to_string(),
+        Target::Part(f, a, Part::Legend) => format!("Legend ({})", it.figures[f].axes[a].legend.clone().unwrap_or_default().join(", ")),
         Target::Figure(f) => {
             let n = it.figures[f].id;
             match stored(it, id, "Name").map(|v| v.text().unwrap_or_default()).filter(|s| !s.is_empty()) {
@@ -1827,6 +1835,12 @@ pub(crate) fn descendants(it: &mut Interpreter, id: u64, out: &mut Vec<u64>) {
         }
         Some(Target::Figure(f)) => {
             let order = if it.figures[f].has_axes() { it.figures[f].stacking() } else { Vec::new() };
+            // The legends are children of the figure, listed before the axes.
+            let with_legend: Vec<usize> = order.iter().rev().copied().filter(|&a| it.figures[f].axes[a].legend.is_some()).collect();
+            for a in with_legend {
+                let legend = axes_id(it, f, a) + Part::Legend as u64;
+                out.push(legend);
+            }
             for a in order {
                 let ax = axes_id(it, f, a);
                 out.push(ax);
