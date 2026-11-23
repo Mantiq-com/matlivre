@@ -96,22 +96,106 @@ fn trig_pi(it: &mut Interpreter, name: &str, a: &[Value]) -> R<Value> {
     Ok(Value::Num(Matrix::from_dims(m.dims.clone(), data).cast_to(m.kind)))
 }
 
-fn rms(it: &mut Interpreter, a: &[Value]) -> R<Value> {
-    let x = arg(a, 0, "rms")?;
-    let Value::Num(m) = x else {
-        return rt(format!("Undefined function 'real' for input arguments of type '{}'.", x.class_name()));
-    };
-    let kind = if m.kind == Kind::Single { Kind::Single } else { Kind::Double };
-    let sq: Vec<f64> = (0..m.numel()).map(|i| m.data[i] * m.data[i] + m.im_at(i) * m.im_at(i)).collect();
-    let mut args = vec![Value::Num(Matrix::from_dims(m.dims.clone(), sq).cast_to(kind))];
-    args.extend_from_slice(&a[1..]);
-    match call1(it, "mean", args)? {
-        Value::Num(mut r) => {
-            r.data.iter_mut().for_each(|v| *v = v.sqrt());
-            Ok(Value::Num(r.cast_to(kind)))
-        }
-        o => Ok(o),
+fn rms(_it: &mut Interpreter, a: &[Value]) -> R<Value> {
+    if a.is_empty() {
+        return rt("Not enough input arguments.");
     }
+    if a.len() > 3 {
+        return rt("Too many input arguments.");
+    }
+    let m = match &a[0] {
+        Value::Num(m) if m.kind != Kind::Char => m.clone(),
+        Value::Num(m) => m.clone(),
+        Value::Time(_) => return rt("Multiplication is not defined between two duration arrays."),
+        other => return rt(format!("Undefined function 'real' for input arguments of type '{}'.", other.class_name())),
+    };
+    let second = "Second argument must be a positive integer scalar, a vector of unique positive integers, 'all', 'omitnan', 'includenan', 'omitmissing' or 'includemissing'.";
+    let third = "Third argument must be 'omitnan', 'includenan', 'omitmissing' or 'includemissing'.";
+    let mut all = false;
+    let mut omit = false;
+    let mut dims: Option<Vec<usize>> = None;
+    for (i, v) in a.iter().enumerate().skip(1) {
+        let bad = if i == 1 { second } else { third };
+        match v {
+            Value::Num(t) if t.kind == Kind::Char || matches!(v, Value::Str(_)) => {
+                let w = v.text().unwrap_or_default().to_lowercase();
+                match w.as_str() {
+                    "omitnan" | "omitmissing" => omit = true,
+                    "includenan" | "includemissing" => omit = false,
+                    "all" if i == 1 => all = true,
+                    _ => return rt(bad),
+                }
+            }
+            Value::Str(_) => {
+                let w = v.text().unwrap_or_default().to_lowercase();
+                match w.as_str() {
+                    "omitnan" | "omitmissing" => omit = true,
+                    "includenan" | "includemissing" => omit = false,
+                    "all" if i == 1 => all = true,
+                    _ => return rt(bad),
+                }
+            }
+            Value::Num(d) if i == 1 && d.numel() > 0 && d.im.is_none() && d.data.iter().all(|x| *x >= 1.0 && x.fract() == 0.0 && x.is_finite()) => {
+                let mut ds: Vec<usize> = d.data.iter().map(|x| *x as usize).collect();
+                let mut u = ds.clone();
+                u.sort();
+                u.dedup();
+                if u.len() != ds.len() {
+                    return rt("Elements of a dimension vector must be unique.");
+                }
+                ds.sort();
+                dims = Some(ds);
+            }
+            Value::Num(_) if i == 1 => return rt("Dimension argument must be a positive integer scalar, a vector of unique positive integers, or 'all'."),
+            _ => return rt(bad),
+        }
+    }
+    if m.numel() == 0 && m.dims.len() == 2 && m.dims[0] == 0 && m.dims[1] == 0 && dims.is_none() && !all {
+        return Ok(Value::Num(Matrix::scalar(f64::NAN)));
+    }
+    let nd = m.dims.len();
+    let reduce: Vec<bool> = if all {
+        vec![true; nd]
+    } else if let Some(ds) = &dims {
+        (0..nd).map(|k| ds.contains(&(k + 1))).collect()
+    } else {
+        let first = m.dims.iter().position(|d| *d != 1).unwrap_or(0);
+        (0..nd).map(|k| k == first).collect()
+    };
+    let out_dims: Vec<usize> = (0..nd).map(|k| if reduce[k] { 1 } else { m.dims[k] }).collect();
+    let on: usize = out_dims.iter().product();
+    let mut sum = vec![0.0f64; on];
+    let mut cnt = vec![0usize; on];
+    let mut sub = vec![0usize; nd];
+    for idx in 0..m.numel() {
+        let mut o = 0;
+        let mut stride = 1;
+        for k in 0..nd {
+            if !reduce[k] {
+                o += sub[k] * stride;
+                stride *= out_dims[k];
+            }
+        }
+        let v = m.data[idx] * m.data[idx] + m.im_at(idx) * m.im_at(idx);
+        if !(omit && v.is_nan()) {
+            sum[o] += v;
+            cnt[o] += 1;
+        }
+        for k in 0..nd {
+            sub[k] += 1;
+            if sub[k] < m.dims[k] {
+                break;
+            }
+            sub[k] = 0;
+        }
+    }
+    let single = m.kind == Kind::Single;
+    let data: Vec<f64> = sum.iter().zip(&cnt).map(|(s, c)| if *c == 0 { f64::NAN } else { (s / *c as f64).sqrt() }).collect();
+    let mut r = Matrix::from_dims(out_dims, data);
+    if single {
+        r = r.cast_to(Kind::Single);
+    }
+    Ok(Value::Num(r))
 }
 
 // ---- residue -------------------------------------------------------------------------------
@@ -574,39 +658,132 @@ fn padecoef(a: &[Value]) -> R<Vec<Value>> {
 }
 
 fn ss2tf(it: &mut Interpreter, a: &[Value]) -> R<Vec<Value>> {
-    let am = m_arg(a, 0, "ss2tf")?;
-    let b = m_arg(a, 1, "ss2tf")?;
-    let c = m_arg(a, 2, "ss2tf")?;
-    let d = m_arg(a, 3, "ss2tf")?;
-    let iu = match a.get(4) {
-        Some(v) => v.scalar()? as usize,
-        None => 1,
-    };
-    let n = am.rows();
-    if am.cols() != n || b.rows() != n || c.cols() != n {
-        return rt("The A, B, C and D matrices must have consistent dimensions.");
+    if a.len() < 4 {
+        return rt("Not enough input arguments.");
     }
-    if iu < 1 || iu > b.cols() {
-        return rt("The input index IU must be between 1 and the number of inputs.");
+    if a.len() > 5 {
+        return rt("Too many input arguments.");
     }
-    let den = call1(it, "poly", vec![Value::Num(am.clone())])?.to_matrix()?;
-    let ny = c.rows();
-    let mut num = vec![0.0; ny * (n + 1)];
-    for i in 0..ny {
-        // num_i = poly(A - B(:,iu) C(i,:)) + (D(i,iu) - 1) poly(A).
-        let mut m = am.clone();
-        for r in 0..n {
-            for k in 0..n {
-                m.data[k * n + r] -= b.data[(iu - 1) * n + r] * c.data[k * ny + i];
+    for v in &a[..4] {
+        if let Value::Num(m) = v {
+            if !m.kind.is_float() && m.kind != Kind::Char {
+                return rt("Invalid data type. Input matrix must be double or single.");
             }
         }
-        let p = call1(it, "poly", vec![Value::Num(m)])?.to_matrix()?;
-        let dd = if d.numel() == 0 { 0.0 } else { d.data[(iu - 1) * d.rows() + i] };
-        for k in 0..=n {
-            num[k * ny + i] = p.data[k] + (dd - 1.0) * den.data[k];
+    }
+    let mat = |v: &Value| -> Matrix {
+        match v {
+            Value::Num(m) => m.clone(),
+            _ => Matrix::scalar(0.0),
+        }
+    };
+    let (am, b, c, d) = (mat(&a[0]), mat(&a[1]), mat(&a[2]), mat(&a[3]));
+    let n = am.rows();
+    let empty_system = am.numel() == 0 && b.numel() == 0 && c.numel() == 0;
+    if !empty_system {
+        if am.cols() != n || am.dims.len() > 2 {
+            return rt("The A matrix must be square.");
+        }
+        if b.rows() != n {
+            return rt("The A and B matrices must have the same number of rows.");
+        }
+        if c.cols() != n {
+            return rt("The A and C matrices must have the same number of columns.");
+        }
+        if d.rows() != c.rows() {
+            return rt("The C and D matrices must have the same number of rows.");
+        }
+        if d.cols() != b.cols() {
+            return rt("The B and D matrices must have the same number of columns.");
         }
     }
-    Ok(vec![Value::Num(Matrix::from_dims(vec![ny, n + 1], num)), Value::Num(den)])
+    let nin = if empty_system { d.cols().max(1) } else { b.cols() };
+    let iu = match a.get(4) {
+        Some(v) => {
+            let m = match v {
+                Value::Num(m) if m.kind != Kind::Char && m.kind != Kind::Logical => m.clone(),
+                other => {
+                    let cls = match other {
+                        Value::Num(m) => m.kind.name().to_string(),
+                        o => o.class_name().to_string(),
+                    };
+                    if cls == "char" {
+                        return rt("Expected input number 5, IU, to be one of these types:\n\ndouble, single, uint8, uint16, uint32, uint64, int8, int16, int32, int64");
+                    }
+                    return rt(format!("Expected input number 5, IU, to be one of these types:\n\ndouble, single, uint8, uint16, uint32, uint64, int8, int16, int32, int64\n\nInstead its type was {cls}."));
+                }
+            };
+            if m.numel() != 1 {
+                return rt("Expected input number 5, IU, to be a scalar.");
+            }
+            if !(m.data[0] > 0.0) {
+                return rt("Expected input number 5, IU, to be positive.");
+            }
+            if m.data[0].fract() != 0.0 {
+                return rt("Expected input number 5, IU, to be integer-valued.");
+            }
+            if m.data[0] as usize > nin {
+                return rt("IU cannot exceed the number of system inputs.");
+            }
+            m.data[0] as usize
+        }
+        None => {
+            if nin > 1 {
+                return rt("IU must be specified for systems with more than one input.");
+            }
+            1
+        }
+    };
+    let ny = if empty_system { d.rows().max(1) } else { c.rows() };
+    let dget = |i: usize| -> f64 { if d.numel() == 0 { 0.0 } else { d.data[(iu - 1) * d.rows() + i] } };
+    if empty_system {
+        let num: Vec<f64> = (0..ny).map(&dget).collect();
+        return Ok(vec![Value::Num(Matrix::from_dims(vec![ny, 1], num)), Value::Num(Matrix::scalar(1.0))]);
+    }
+    if am.data.iter().any(|v| !v.is_finite()) {
+        // poly of a matrix with non-finite entries is 1.
+        let nan = am.data.iter().any(|v| v.is_nan());
+        let num: Vec<f64> = (0..ny).map(|_| if nan { f64::NAN } else { 0.0 }).collect();
+        return Ok(vec![Value::Num(Matrix::from_dims(vec![ny, 1], num)), Value::Num(Matrix::scalar(1.0))]);
+    }
+    let den = call1(it, "poly", vec![Value::Num(am.clone())])?.to_matrix()?;
+    let cplx = am.is_complex() || b.is_complex() || c.is_complex() || d.is_complex();
+    let mut num = vec![C::new(0.0, 0.0); ny * (n + 1)];
+    for i in 0..ny {
+        let dd = if d.numel() == 0 { C::new(0.0, 0.0) } else { C::new(d.data[(iu - 1) * d.rows() + i], d.im_at((iu - 1) * d.rows() + i)) };
+        if !dd.re.is_finite() || !dd.im.is_finite() {
+            num[n * ny + i] = dd;
+            continue;
+        }
+        // num_i = poly(A - B(:,iu) C(i,:)) + (D(i,iu) - 1) poly(A).
+        let mut m = am.clone();
+        let (mut re, mut im) = (vec![0.0; n * n], vec![0.0; n * n]);
+        for r in 0..n {
+            for k in 0..n {
+                let bi = (iu - 1) * n + r;
+                let ci = k * ny + i;
+                let prod = C::new(b.data[bi], b.im_at(bi)).mul(C::new(c.data[ci], c.im_at(ci)));
+                re[k * n + r] = am.data[k * n + r] - prod.re;
+                im[k * n + r] = am.im_at(k * n + r) - prod.im;
+            }
+        }
+        m.data = re;
+        m.im = if cplx { Some(im) } else { None };
+        let p = call1(it, "poly", vec![Value::Num(m)])?.to_matrix()?;
+        for k in 0..=n {
+            let pk = C::new(p.data[k], p.im_at(k));
+            let dk = C::new(den.data[k], den.im_at(k));
+            let t = C::new(dd.re - 1.0, dd.im).mul(dk);
+            num[k * ny + i] = C::new(pk.re + t.re, pk.im + t.im);
+        }
+    }
+    let mut dm = den.clone();
+    if am.kind == Kind::Single {
+        dm = dm.cast_to(Kind::Single);
+    }
+    let mut nm = if cplx { Matrix::complex(vec![ny, n + 1], num.iter().map(|z| z.re).collect(), num.iter().map(|z| z.im).collect()) } else { Matrix::from_dims(vec![ny, n + 1], num.iter().map(|z| z.re).collect()) };
+    nm.kind = Kind::Double;
+    Ok(vec![Value::Num(nm), Value::Num(dm)])
 }
 
 fn ltitr(a: &[Value]) -> R<Value> {

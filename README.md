@@ -1,11 +1,11 @@
 # MatLivre
 
 <!-- release-manager:download -->
-[![Download MatLivre 0.1.9](https://img.shields.io/badge/Download-v0.1.9-005FB8?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/campuslivre/matlivre/releases/download/v0.1.9/matlivre-win-Setup.exe)
+[![Download MatLivre 0.2.0](https://img.shields.io/badge/Download-v0.2.0-005FB8?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/campuslivre/matlivre/releases/download/v0.2.0/matlivre-win-Setup.exe)
 
-[matlivre-win-Setup.exe](https://github.com/campuslivre/matlivre/releases/download/v0.1.9/matlivre-win-Setup.exe) · Windows installer, version 0.1.9
+[matlivre-win-Setup.exe](https://github.com/campuslivre/matlivre/releases/download/v0.2.0/matlivre-win-Setup.exe) · Windows installer, version 0.2.0
 
-[MatLivre-0.1.9-macOS.dmg](https://github.com/campuslivre/matlivre/releases/download/v0.1.9/MatLivre-0.1.9-macOS.dmg) · macOS disk image (Apple Silicon and Intel), version 0.1.9
+[MatLivre-0.2.0-macOS.dmg](https://github.com/campuslivre/matlivre/releases/download/v0.2.0/MatLivre-0.2.0-macOS.dmg) · macOS disk image (Apple Silicon and Intel), version 0.2.0
 <!-- /release-manager:download -->
 
 **MatLivre is a fast live script editor and runtime for MATLAB code.** It opens, edits and runs
@@ -23,7 +23,7 @@ of MATLAB, written in Rust: no MATLAB installation, license or Java runtime is n
   algebra, sorting, strings, structs and cells, MatLivre is 5.5x faster than MATLAB R2023b,
   83x faster than GNU Octave and 83x faster than Scilab (geometric mean), with identical results
   in all four.
-- **Speaks MATLAB.** 1,889 MATLAB and Symbolic Math Toolbox functions, MATLAB's display format,
+- **Speaks MATLAB.** 2,149 MATLAB, Symbolic Math and Statistics Toolbox functions, MATLAB's display format,
   error messages and semantics, checked against MATLAB R2023b output.
 - **One small program.** A single 36 MB executable that depends only on DLLs shipped with
   Windows.
@@ -118,7 +118,7 @@ retaining allocator) are in [`docs/performance.md`](docs/performance.md); the sc
 
 MATLAB compatibility is the rule: semantics, display and error messages follow MATLAB R2023b.
 [`docs/matlab-coverage.md`](docs/matlab-coverage.md) lists every function of the MATLAB and
-Symbolic Math Toolbox references and its status (1,889 implemented).
+Symbolic Math Toolbox references and its status (2,149 implemented).
 
 - **Core:** N-D arrays of every numeric type, strings, complex numbers, every `format` mode,
   regular expressions and text patterns; cells, structs, function handles, `containers.Map`,
@@ -132,11 +132,15 @@ Symbolic Math Toolbox references and its status (1,889 implemented).
   (stiff, DAE, implicit, `ode` objects), delay, boundary value and parabolic PDE problems,
   integration, optimization, statistics, FFT and filtering, computational geometry, special
   functions, image resizing and indexed color.
-- **Signal Processing (in progress):** 241 functions so far, compared call by call with
+- **Signal Processing (in progress):** 258 functions so far, compared call by call with
   MATLAB R2023b (about 8,800 recorded calls): windows, waveforms, `butter`/`cheby1`/`cheby2`/`ellip`/`besself`
   designed through state space with MATLAB's pole and zero order, `freqz`/`freqs`, `levinson`
   and reflection-coefficient conversions, spectral estimates. Plan and known deviations:
   [`docs/signal-coverage-plan.md`](docs/signal-coverage-plan.md).
+- **Statistics and Machine Learning (in progress):** 260 functions so far, compared call by call with
+  MATLAB R2023b (about 5,800 recorded calls): descriptive statistics, `corr`, 20 univariate
+  distributions (`pdf`/`cdf`/`inv`/`stat`), `ttest` family, `pdist`/`linkage`/`cluster`, `kmeans`, `pca`,
+  `regress`, rank tests, `anova1`, `kstest`, closed-form fits, `fitlm`, `fitglm` and `glmfit` (matrix input), normality and variance tests (`jbtest`, `lillietest`, `chi2gof`, `vartestn`, `ansaribradley`, `dwtest`), `hist3`, `capability`, `controlrules`, `fracfact`, `ccdesign`, `multcompare`, `anovan`, `adtest`, `testcholdout`, `regstats`, `stepwisefit`, `plsregress`, `hmmtrain`, `bootstrp`, `bootci`, `lhsdesign`. Plan and known deviations: [`docs/stats-coverage-plan.md`](docs/stats-coverage-plan.md).
 - **Symbolic Math:** exact arithmetic, `diff`, `int`, `limit`, `taylor`, `solve`, `dsolve` for
   linear equations, Laplace, Z, Fourier and Hilbert transforms, `simplify`, symbolic matrices
   and canonical forms, abstract functions and DAE structure tools, `subexpr`, `symmatrix`,

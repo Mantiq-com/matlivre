@@ -114,15 +114,18 @@ fn layout_of(it: &mut Interpreter, f: usize) -> Option<usize> {
     it.figures[f].objects.iter().position(|o| o.kind == FigObjKind::Layout)
 }
 
+/// The grid a `flow` layout of `n` tiles has: as many rows as the square root of `n` rounded up
+/// (1x1, 2x1, 2x2, 3x2, 3x3, 4x3, ...).
 fn flow_grid(n: usize) -> (usize, usize) {
-    let cols = (n as f64).sqrt().ceil().max(1.0) as usize;
-    (n.div_ceil(cols).max(1), cols)
+    let rows = (n as f64).sqrt().ceil().max(1.0) as usize;
+    (rows, n.div_ceil(rows).max(1))
 }
 
 fn tiledlayout(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
     let a = leading_handle(it, a);
-    let (pos, props) = split_props(a)?;
-    let flow = pos.is_empty() && a.first().map(|v| v.text().map(|t| t.eq_ignore_ascii_case("flow")).unwrap_or(false)).unwrap_or(true);
+    // tiledlayout(arrangement, name, value, ...) or tiledlayout(m, n, name, value, ...)
+    let arrangement = a.first().and_then(|v| v.text().ok()).map(|t| t.to_lowercase()).filter(|t| matches!(t.as_str(), "flow" | "vertical" | "horizontal"));
+    let (pos, props): (&[Value], Vec<(String, Value)>) = if arrangement.is_some() { (&[], split_props(&a[1..])?.1) } else { split_props(a)? };
     let (props, flow, grid) = if !pos.is_empty() {
         let r = pos[0].as_usize()?;
         let c = match pos.get(1) {
@@ -130,16 +133,10 @@ fn tiledlayout(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
             None => return rt("Specify the grid size as two positive integers or as 'flow'."),
         };
         (props, false, (r.max(1), c.max(1)))
-    } else if a.first().map(is_textlike).unwrap_or(false) && a.len() % 2 == 1 {
-        // tiledlayout(arrangement, name, value, ...)
-        let (_, p) = split_props(&a[1..])?;
-        let arr = a[0].text()?.to_lowercase();
-        if !matches!(arr.as_str(), "flow" | "vertical" | "horizontal") {
-            return rt(format!("'{}' is not a valid tile arrangement.", a[0].text()?));
-        }
-        (p, true, (1, 1))
+    } else if arrangement.is_none() && a.first().map(is_textlike).unwrap_or(false) && a.len() % 2 == 1 {
+        return rt(format!("'{}' is not a valid tile arrangement.", a[0].text()?));
     } else {
-        (props, flow, (1, 1))
+        (props, true, (1, 1))
     };
     let id = gfx::alloc(it);
     let fig = it.current_figure();
@@ -147,7 +144,6 @@ fn tiledlayout(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
     *fig = graphics::Figure::new(fid);
     fig.grid = grid;
     fig.flow = flow;
-    fig.axes = vec![Axes::default(); grid.0 * grid.1];
     fig.objects.push(FigObject::new(id, FigObjKind::Layout));
     apply_props(it, &[id], &props)?;
     handles_out(it, &[id], nargout)
@@ -172,16 +168,32 @@ fn nexttile(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
         _ => fig.next_tile,
     };
     if fig.flow {
-        let n = (k + 1).max(fig.axes.len().min(fig.next_tile.max(k + 1)));
-        let g = flow_grid(n);
-        if g.0 * g.1 > fig.axes.len() || fig.grid != g {
+        // The grid grows with the tiles: those already there move to their new places.
+        let g = flow_grid(k + 1);
+        if g != fig.grid && g.0 * g.1 >= fig.grid.0 * fig.grid.1 {
             fig.grid = g;
-            fig.axes.resize(g.0 * g.1, Axes::default());
+            fig.relayout_tiles();
         }
-    } else if k >= fig.axes.len() {
+    } else if k >= fig.grid.0 * fig.grid.1 {
         return rt(format!("Tile {} does not exist in a {}-by-{} layout.", k + 1, fig.grid.0, fig.grid.1));
     }
-    fig.current_axes = k;
+    // The axes of a tile are made when it is first used, and found again after that.
+    let at = match fig.axes.iter().position(|x| x.tile == Some(k + 1)) {
+        Some(i) => i,
+        None => {
+            let (r, c) = (fig.grid.0.max(1), fig.grid.1.max(1));
+            fig.axes.push(Axes {
+                tile: Some(k + 1),
+                position: Some(graphics::subplot_position(r, c, &[k + 1])),
+                layout: Some(graphics::subplot_cell(r, c, &[k + 1])),
+                ..Axes::default()
+            });
+            let last = fig.axes.len() - 1;
+            fig.raise(last);
+            last
+        }
+    };
+    fig.current_axes = at;
     fig.next_tile = k + 1;
     let id = fig.id;
     it.mark_figure_dirty(id);
@@ -1427,7 +1439,7 @@ fn tick_format_fn(it: &mut Interpreter, name: &str, a: &[Value]) -> Ret {
 fn polar_axes(it: &mut Interpreter, nargout: usize) -> Ret {
     let ax = current_axes(it);
     let id = ax.id;
-    *ax = Axes { id, polar: true, ..Axes::default() };
+    *ax = Axes { id, polar: true, layout: ax.layout, position: ax.position, raised: ax.raised, tile: ax.tile, ..Axes::default() };
     if nargout == 0 {
         return none();
     }
@@ -1693,7 +1705,7 @@ pub fn call(it: &mut Interpreter, name: &str, a: &[Value], nargout: usize) -> Re
             let ax = current_axes(it);
             if !ax.hold {
                 let (grid, id) = (ax.grid, ax.id);
-                *ax = Axes { grid, id, overlay_of: ax.overlay_of, ..Axes::default() };
+                *ax = Axes { grid, id, overlay_of: ax.overlay_of, layout: ax.layout, position: ax.position, raised: ax.raised, tile: ax.tile, ..Axes::default() };
             }
             if nargout == 0 {
                 return none();

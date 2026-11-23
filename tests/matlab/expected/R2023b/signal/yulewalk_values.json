@@ -1,0 +1,320 @@
+{
+  "header": {
+    "release": "2023b",
+    "version": "23.2.0.2409890 (R2023b) Update 3",
+    "computer": "PCWIN64",
+    "recorded": "2026-11-17"
+  },
+  "log": "\nsz =\n\n     1     9     1     9\n\n\na1 =\n\n     1\n\n\nbq =\n\n      144021      716607     1742704     2691738     2908341     2286675     1297139      492205       97051\n\n\naq =\n\n     1000000     1752538     2920797     2715453     2211434     1152374      493163      113916       16174\n\n\nstable =\n\n     1\n\n\nhq =\n\n       10001       10108          42\n\n\nsz2 =\n\n     1     7     1     7\n\n\nb2q =\n\n       78300       53475      -44682     -116975      -51970       56194       77576\n\n\na2q =\n\n     1000000    -1402561     1796310    -1417813      954760     -322763      134399\n\n\nis_double3 =\n\n     1\n\n\nb3q =\n\n      588143      235026     -153350      -41995\n\n\nmsg1_ok =\n\n     1\n\n\nmsg2_ok =\n\n     1\n\n",
+  "error": {
+    "identifier": "",
+    "message": ""
+  },
+  "lastwarn": {
+    "message": "",
+    "identifier": ""
+  },
+  "variables": {
+    "a1": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\na1 =\n\n     1\n\n"
+    },
+    "a2q": {
+      "class": "double",
+      "size": [
+        1,
+        7
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          7
+        ],
+        "real": [
+          "412e848000000000",
+          "c13566c100000000",
+          "413b68d600000000",
+          "c135a25500000000",
+          "412d231000000000",
+          "c113b32c00000000",
+          "410067f800000000"
+        ]
+      },
+      "display": "\na2q =\n\n     1000000    -1402561     1796310    -1417813      954760     -322763      134399\n\n"
+    },
+    "aq": {
+      "class": "double",
+      "size": [
+        1,
+        9
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          9
+        ],
+        "real": [
+          "412e848000000000",
+          "413abdda00000000",
+          "414648ae80000000",
+          "4144b79e80000000",
+          "4140df3500000000",
+          "4131957600000000",
+          "411e19ac00000000",
+          "40fbcfc000000000",
+          "40cf970000000000"
+        ]
+      },
+      "display": "\naq =\n\n     1000000     1752538     2920797     2715453     2211434     1152374      493163      113916       16174\n\n"
+    },
+    "b2q": {
+      "class": "double",
+      "size": [
+        1,
+        7
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          7
+        ],
+        "real": [
+          "40f31dc000000000",
+          "40ea1c6000000000",
+          "c0e5d14000000000",
+          "c0fc8ef000000000",
+          "c0e9604000000000",
+          "40eb704000000000",
+          "40f2f08000000000"
+        ]
+      },
+      "display": "\nb2q =\n\n       78300       53475      -44682     -116975      -51970       56194       77576\n\n"
+    },
+    "b3q": {
+      "class": "double",
+      "size": [
+        1,
+        4
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          4
+        ],
+        "real": [
+          "4121f2de00000000",
+          "410cb09000000000",
+          "c102b83000000000",
+          "c0e4816000000000"
+        ]
+      },
+      "display": "\nb3q =\n\n      588143      235026     -153350      -41995\n\n"
+    },
+    "bq": {
+      "class": "double",
+      "size": [
+        1,
+        9
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          9
+        ],
+        "real": [
+          "410194a800000000",
+          "4125de7e00000000",
+          "413a977000000000",
+          "4144894d00000000",
+          "4146305a80000000",
+          "4141722980000000",
+          "4133caf300000000",
+          "411e0ab400000000",
+          "40f7b1b000000000"
+        ]
+      },
+      "display": "\nbq =\n\n      144021      716607     1742704     2691738     2908341     2286675     1297139      492205       97051\n\n"
+    },
+    "hq": {
+      "class": "double",
+      "size": [
+        1,
+        3
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          3
+        ],
+        "real": [
+          "40c3888000000000",
+          "40c3be0000000000",
+          "4045000000000000"
+        ]
+      },
+      "display": "\nhq =\n\n       10001       10108          42\n\n"
+    },
+    "is_double3": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nis_double3 =\n\n     1\n\n"
+    },
+    "msg1_ok": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nmsg1_ok =\n\n     1\n\n"
+    },
+    "msg2_ok": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nmsg2_ok =\n\n     1\n\n"
+    },
+    "stable": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nstable =\n\n     1\n\n"
+    },
+    "sz": {
+      "class": "double",
+      "size": [
+        1,
+        4
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          4
+        ],
+        "real": [
+          "3ff0000000000000",
+          "4022000000000000",
+          "3ff0000000000000",
+          "4022000000000000"
+        ]
+      },
+      "display": "\nsz =\n\n     1     9     1     9\n\n"
+    },
+    "sz2": {
+      "class": "double",
+      "size": [
+        1,
+        4
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          4
+        ],
+        "real": [
+          "3ff0000000000000",
+          "401c000000000000",
+          "3ff0000000000000",
+          "401c000000000000"
+        ]
+      },
+      "display": "\nsz2 =\n\n     1     7     1     7\n\n"
+    }
+  },
+  "figures": [],
+  "nfigures": 0
+}

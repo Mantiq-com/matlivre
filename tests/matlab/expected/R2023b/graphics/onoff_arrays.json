@@ -1,0 +1,529 @@
+{
+  "header": {
+    "release": "2023b",
+    "version": "23.2.0.2409890 (R2023b) Update 3",
+    "computer": "PCWIN64",
+    "recorded": "2026-11-17"
+  },
+  "log": "\nr = \n\n  1x2 OnOffSwitchState enumeration array\n\n    off    on \n\n\nc = \n\n  2x1 OnOffSwitchState enumeration array\n\n    off\n    on \n\n\nd = \n\n  1x3 OnOffSwitchState enumeration array\n\n    off    on     off\n\n\ne = \n\n  2x2 OnOffSwitchState enumeration array\n\n    off    on \n    on     off\n\n\ns1 = \n\n  OnOffSwitchState enumeration\n\n    on\n\n\ns2 = \n\n  OnOffSwitchState enumeration\n\n    on\n\n\nr2 = \n\n  1x2 OnOffSwitchState enumeration array\n\n    off    off\n\n\nr3 = \n\n  1x3 OnOffSwitchState enumeration array\n\n    off    on     on \n\n\nr4 = \n\n  OnOffSwitchState enumeration\n\n    on\n\n\nr5 = \n\n  1x2 OnOffSwitchState enumeration array\n\n    off    on \n\n\nr6 = \n\n  2x1 OnOffSwitchState enumeration array\n\n    off\n    on \n\n\nr7 = \n\n  1x3 OnOffSwitchState enumeration array\n\n    off    off    off\n\n\nr8 = \n\n  1x2 OnOffSwitchState enumeration array\n\n    on     off\n\n\nr9 = \n\n  1x4 OnOffSwitchState enumeration array\n\n    off    on     on     off\n\n\nq = \n\n  OnOffSwitchState enumeration\n\n    on\n\n\nk = \n\n  1x3 OnOffSwitchState enumeration array\n\n    on     off    on \n\n\nk2 = \n\n  1x2 OnOffSwitchState enumeration array\n\n    on     off\n\n\ny = \n\n  OnOffSwitchState enumeration\n\n    on\n\n    off    on \n\n    off    on \n    on     off\n\n[matlab.lang.OnOffSwitchState.off matlab.lang.OnOffSwitchState.on]\n0 1\noff on\n",
+  "error": {
+    "identifier": "",
+    "message": ""
+  },
+  "lastwarn": {
+    "message": "",
+    "identifier": ""
+  },
+  "variables": {
+    "a": {
+      "class": "matlab.lang.OnOffSwitchState",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "char",
+        "size": [
+          1,
+          3
+        ],
+        "rows": [
+          "off"
+        ]
+      },
+      "display": "\na = \n\n  <a href=\"matlab:helpPopup matlab.lang.OnOffSwitchState\" style=\"font-weight:bold\">OnOffSwitchState</a> enumeration\n\n    off\n\n"
+    },
+    "b": {
+      "class": "matlab.lang.OnOffSwitchState",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "char",
+        "size": [
+          1,
+          2
+        ],
+        "rows": [
+          "on"
+        ]
+      },
+      "display": "\nb = \n\n  <a href=\"matlab:helpPopup matlab.lang.OnOffSwitchState\" style=\"font-weight:bold\">OnOffSwitchState</a> enumeration\n\n    on\n\n"
+    },
+    "c": {
+      "class": "matlab.lang.OnOffSwitchState",
+      "size": [
+        2,
+        1
+      ],
+      "value": {
+        "kind": "char",
+        "size": [
+          1,
+          20
+        ],
+        "rows": [
+          "2x1 OnOffSwitchState"
+        ]
+      },
+      "display": "\nc = \n\n  2x1 <a href=\"matlab:helpPopup matlab.lang.OnOffSwitchState\" style=\"font-weight:bold\">OnOffSwitchState</a> enumeration array\n\n    off\n    on \n\n"
+    },
+    "d": {
+      "class": "matlab.lang.OnOffSwitchState",
+      "size": [
+        1,
+        3
+      ],
+      "value": {
+        "kind": "char",
+        "size": [
+          1,
+          20
+        ],
+        "rows": [
+          "1x3 OnOffSwitchState"
+        ]
+      },
+      "display": "\nd = \n\n  1x3 <a href=\"matlab:helpPopup matlab.lang.OnOffSwitchState\" style=\"font-weight:bold\">OnOffSwitchState</a> enumeration array\n\n    off    on     off\n\n"
+    },
+    "e": {
+      "class": "matlab.lang.OnOffSwitchState",
+      "size": [
+        2,
+        2
+      ],
+      "value": {
+        "kind": "char",
+        "size": [
+          1,
+          20
+        ],
+        "rows": [
+          "2x2 OnOffSwitchState"
+        ]
+      },
+      "display": "\ne = \n\n  2x2 <a href=\"matlab:helpPopup matlab.lang.OnOffSwitchState\" style=\"font-weight:bold\">OnOffSwitchState</a> enumeration array\n\n    off    on \n    on     off\n\n"
+    },
+    "k": {
+      "class": "matlab.lang.OnOffSwitchState",
+      "size": [
+        1,
+        3
+      ],
+      "value": {
+        "kind": "char",
+        "size": [
+          1,
+          20
+        ],
+        "rows": [
+          "1x3 OnOffSwitchState"
+        ]
+      },
+      "display": "\nk = \n\n  1x3 <a href=\"matlab:helpPopup matlab.lang.OnOffSwitchState\" style=\"font-weight:bold\">OnOffSwitchState</a> enumeration array\n\n    on     off    on \n\n"
+    },
+    "k2": {
+      "class": "matlab.lang.OnOffSwitchState",
+      "size": [
+        1,
+        2
+      ],
+      "value": {
+        "kind": "char",
+        "size": [
+          1,
+          20
+        ],
+        "rows": [
+          "1x2 OnOffSwitchState"
+        ]
+      },
+      "display": "\nk2 = \n\n  1x2 <a href=\"matlab:helpPopup matlab.lang.OnOffSwitchState\" style=\"font-weight:bold\">OnOffSwitchState</a> enumeration array\n\n    on     off\n\n"
+    },
+    "q": {
+      "class": "matlab.lang.OnOffSwitchState",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "char",
+        "size": [
+          1,
+          2
+        ],
+        "rows": [
+          "on"
+        ]
+      },
+      "display": "\nq = \n\n  <a href=\"matlab:helpPopup matlab.lang.OnOffSwitchState\" style=\"font-weight:bold\">OnOffSwitchState</a> enumeration\n\n    on\n\n"
+    },
+    "r": {
+      "class": "matlab.lang.OnOffSwitchState",
+      "size": [
+        1,
+        2
+      ],
+      "value": {
+        "kind": "char",
+        "size": [
+          1,
+          20
+        ],
+        "rows": [
+          "1x2 OnOffSwitchState"
+        ]
+      },
+      "display": "\nr = \n\n  1x2 <a href=\"matlab:helpPopup matlab.lang.OnOffSwitchState\" style=\"font-weight:bold\">OnOffSwitchState</a> enumeration array\n\n    off    on \n\n"
+    },
+    "r2": {
+      "class": "matlab.lang.OnOffSwitchState",
+      "size": [
+        1,
+        2
+      ],
+      "value": {
+        "kind": "char",
+        "size": [
+          1,
+          20
+        ],
+        "rows": [
+          "1x2 OnOffSwitchState"
+        ]
+      },
+      "display": "\nr2 = \n\n  1x2 <a href=\"matlab:helpPopup matlab.lang.OnOffSwitchState\" style=\"font-weight:bold\">OnOffSwitchState</a> enumeration array\n\n    off    off\n\n"
+    },
+    "r3": {
+      "class": "matlab.lang.OnOffSwitchState",
+      "size": [
+        1,
+        3
+      ],
+      "value": {
+        "kind": "char",
+        "size": [
+          1,
+          20
+        ],
+        "rows": [
+          "1x3 OnOffSwitchState"
+        ]
+      },
+      "display": "\nr3 = \n\n  1x3 <a href=\"matlab:helpPopup matlab.lang.OnOffSwitchState\" style=\"font-weight:bold\">OnOffSwitchState</a> enumeration array\n\n    off    on     on \n\n"
+    },
+    "r4": {
+      "class": "matlab.lang.OnOffSwitchState",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "char",
+        "size": [
+          1,
+          2
+        ],
+        "rows": [
+          "on"
+        ]
+      },
+      "display": "\nr4 = \n\n  <a href=\"matlab:helpPopup matlab.lang.OnOffSwitchState\" style=\"font-weight:bold\">OnOffSwitchState</a> enumeration\n\n    on\n\n"
+    },
+    "r5": {
+      "class": "matlab.lang.OnOffSwitchState",
+      "size": [
+        1,
+        2
+      ],
+      "value": {
+        "kind": "char",
+        "size": [
+          1,
+          20
+        ],
+        "rows": [
+          "1x2 OnOffSwitchState"
+        ]
+      },
+      "display": "\nr5 = \n\n  1x2 <a href=\"matlab:helpPopup matlab.lang.OnOffSwitchState\" style=\"font-weight:bold\">OnOffSwitchState</a> enumeration array\n\n    off    on \n\n"
+    },
+    "r6": {
+      "class": "matlab.lang.OnOffSwitchState",
+      "size": [
+        2,
+        1
+      ],
+      "value": {
+        "kind": "char",
+        "size": [
+          1,
+          20
+        ],
+        "rows": [
+          "2x1 OnOffSwitchState"
+        ]
+      },
+      "display": "\nr6 = \n\n  2x1 <a href=\"matlab:helpPopup matlab.lang.OnOffSwitchState\" style=\"font-weight:bold\">OnOffSwitchState</a> enumeration array\n\n    off\n    on \n\n"
+    },
+    "r7": {
+      "class": "matlab.lang.OnOffSwitchState",
+      "size": [
+        1,
+        3
+      ],
+      "value": {
+        "kind": "char",
+        "size": [
+          1,
+          20
+        ],
+        "rows": [
+          "1x3 OnOffSwitchState"
+        ]
+      },
+      "display": "\nr7 = \n\n  1x3 <a href=\"matlab:helpPopup matlab.lang.OnOffSwitchState\" style=\"font-weight:bold\">OnOffSwitchState</a> enumeration array\n\n    off    off    off\n\n"
+    },
+    "r8": {
+      "class": "matlab.lang.OnOffSwitchState",
+      "size": [
+        1,
+        2
+      ],
+      "value": {
+        "kind": "char",
+        "size": [
+          1,
+          20
+        ],
+        "rows": [
+          "1x2 OnOffSwitchState"
+        ]
+      },
+      "display": "\nr8 = \n\n  1x2 <a href=\"matlab:helpPopup matlab.lang.OnOffSwitchState\" style=\"font-weight:bold\">OnOffSwitchState</a> enumeration array\n\n    on     off\n\n"
+    },
+    "r9": {
+      "class": "matlab.lang.OnOffSwitchState",
+      "size": [
+        1,
+        4
+      ],
+      "value": {
+        "kind": "char",
+        "size": [
+          1,
+          20
+        ],
+        "rows": [
+          "1x4 OnOffSwitchState"
+        ]
+      },
+      "display": "\nr9 = \n\n  1x4 <a href=\"matlab:helpPopup matlab.lang.OnOffSwitchState\" style=\"font-weight:bold\">OnOffSwitchState</a> enumeration array\n\n    off    on     on     off\n\n"
+    },
+    "s1": {
+      "class": "matlab.lang.OnOffSwitchState",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "char",
+        "size": [
+          1,
+          2
+        ],
+        "rows": [
+          "on"
+        ]
+      },
+      "display": "\ns1 = \n\n  <a href=\"matlab:helpPopup matlab.lang.OnOffSwitchState\" style=\"font-weight:bold\">OnOffSwitchState</a> enumeration\n\n    on\n\n"
+    },
+    "s2": {
+      "class": "matlab.lang.OnOffSwitchState",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "char",
+        "size": [
+          1,
+          2
+        ],
+        "rows": [
+          "on"
+        ]
+      },
+      "display": "\ns2 = \n\n  <a href=\"matlab:helpPopup matlab.lang.OnOffSwitchState\" style=\"font-weight:bold\">OnOffSwitchState</a> enumeration\n\n    on\n\n"
+    },
+    "t1": {
+      "class": "double",
+      "size": [
+        1,
+        2
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          2
+        ],
+        "real": [
+          "0000000000000000",
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nt1 =\n\n     0     1\n\n"
+    },
+    "t2": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nt2 =\n\n     1\n\n"
+    },
+    "t3": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nt3 =\n\n     1\n\n"
+    },
+    "t4": {
+      "class": "double",
+      "size": [
+        1,
+        2
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          2
+        ],
+        "real": [
+          "0000000000000000",
+          "3ff0000000000000"
+        ]
+      },
+      "display": "\nt4 =\n\n     0     1\n\n"
+    },
+    "t5": {
+      "class": "double",
+      "size": [
+        1,
+        2
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          2
+        ],
+        "real": [
+          "3ff0000000000000",
+          "0000000000000000"
+        ]
+      },
+      "display": "\nt5 =\n\n     1     0\n\n"
+    },
+    "t6": {
+      "class": "double",
+      "size": [
+        1,
+        6
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          6
+        ],
+        "real": [
+          "3ff0000000000000",
+          "0000000000000000",
+          "3ff0000000000000",
+          "4000000000000000",
+          "4000000000000000",
+          "4000000000000000"
+        ]
+      },
+      "display": "\nt6 =\n\n     1     0     1     2     2     2\n\n"
+    },
+    "t7": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "4000000000000000"
+        ]
+      },
+      "display": "\nt7 =\n\n     2\n\n"
+    },
+    "y": {
+      "class": "matlab.lang.OnOffSwitchState",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "char",
+        "size": [
+          1,
+          2
+        ],
+        "rows": [
+          "on"
+        ]
+      },
+      "display": "\ny = \n\n  <a href=\"matlab:helpPopup matlab.lang.OnOffSwitchState\" style=\"font-weight:bold\">OnOffSwitchState</a> enumeration\n\n    on\n\n"
+    }
+  },
+  "figures": [],
+  "nfigures": 0
+}

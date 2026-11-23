@@ -681,6 +681,10 @@ impl Value {
                 None => vec![1, 1],
             },
             Value::Object(o) if crate::containers::is_container(&o.class.name) => crate::containers::dims(o),
+            Value::Object(o) if o.class.name == crate::class::ON_OFF_CLASS => match o.props.borrow().get(1) {
+                Some(Value::Num(m)) => m.dims.clone(),
+                _ => vec![1, 1],
+            },
             Value::Func(_) | Value::Object(_) => vec![1, 1],
         }
     }

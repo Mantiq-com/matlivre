@@ -1,0 +1,20 @@
+{
+  "header": {
+    "release": "2023b",
+    "version": "23.2.0.2409890 (R2023b) Update 3",
+    "computer": "PCWIN64",
+    "recorded": "2026-11-17"
+  },
+  "log": "-0.204358 -0.081105 0.188539 0.006303 -0.332996 \n0.678399 -0.322285 -1.357093 \n0.723611 -0.168912 -1.207213 \n0.557140 0.082347 -0.717246 \nFilter order 20 too large for specified search length 8.  For automatic order selection, specify ORDER either as 'aic' or Inf.\nExpected ORDER to be positive.\n",
+  "error": {
+    "identifier": "",
+    "message": ""
+  },
+  "lastwarn": {
+    "message": "",
+    "identifier": ""
+  },
+  "variables": {},
+  "figures": [],
+  "nfigures": 0
+}
