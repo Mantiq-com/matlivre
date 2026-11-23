@@ -1305,7 +1305,7 @@ fn draw_axes(c: &mut dyn Canvas, t: &Tokens, ax: &Axes, fig_map: Option<&[[f64; 
         let xstep = sx.step();
         for (i, &v) in sx.ticks.iter().enumerate() {
             let Some(x) = mx(v).filter(|x| (plot.left() - 0.5..=plot.right() + 0.5).contains(x)) else { continue };
-            if ax.grid {
+            if ax.grid && !ax.ygrid_only {
                 c.line(&[pos2(x, plot.top()), pos2(x, plot.bottom())], grid, &[]);
             }
             c.line(&[pos2(x, plot.bottom()), pos2(x, plot.bottom() - 4.0)], axis, &[]);

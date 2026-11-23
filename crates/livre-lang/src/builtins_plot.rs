@@ -389,6 +389,9 @@ pub fn call(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) ->
                 Some("off") => false,
                 _ => !*flag,
             };
+            if name == "grid" {
+                ax.ygrid_only = false;
+            }
             none()
         }
         "ishold" => {

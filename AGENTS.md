@@ -54,6 +54,8 @@ runs each case in MatLivre and diffs it against them.
   the release you named.
 - `MATLIVRE_TARGET_RELEASE` picks the release compared against (default `R2023b`). A case with no
   snapshot for it is listed as not recorded, not failed.
+- `MATLIVRE_DIFFTEST_ALL=1` makes a failing run list every difference in full instead of the
+  first twelve cut to 140 characters.
 - **Any difference from MATLAB fails the test.** There is no pending or skip marker: a failing
   case is behaviour still to implement. Do not weaken a case, the harness or the comparison to
   make it pass; fix MatLivre.

@@ -198,6 +198,8 @@ pub struct Axes {
     pub xlabel: String,
     pub ylabel: String,
     pub grid: bool,
+    /// Only the y grid lines are on (`YGrid on` alone, as `strips` sets): the x and z grids read off.
+    pub ygrid_only: bool,
     pub hold: bool,
     pub legend: Option<Vec<String>>,
     pub series: Vec<Series>,

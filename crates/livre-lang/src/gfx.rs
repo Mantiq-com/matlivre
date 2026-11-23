@@ -861,7 +861,8 @@ fn computed(it: &mut Interpreter, id: u64, t: Target, name: &str) -> R<Option<Va
                 "XScale" => Value::chars(if ax.xlog { "log" } else { "linear" }),
                 "YScale" => Value::chars(if ax.ylog { "log" } else { "linear" }),
                 "YDir" => Value::chars(if ax.y_reverse { "reverse" } else { "normal" }),
-                "XGrid" | "YGrid" | "ZGrid" => on_off_value(ax.grid),
+                "XGrid" | "ZGrid" => on_off_value(ax.grid && !ax.ygrid_only),
+                "YGrid" => on_off_value(ax.grid),
                 "XTick" => row(&tick_values(&ax.xticks, x0, x1)),
                 "YTick" => row(&tick_values(&ax.yticks, y0, y1)),
                 "XTickLabel" => label_value(&ax.xticks, &tick_labels(&ax.xticks, &tick_values(&ax.xticks, x0, x1))),
@@ -1217,7 +1218,20 @@ pub(crate) fn set_prop(it: &mut Interpreter, id: u64, name: &str, v: Value) -> R
                 "XScale" => ax.xlog = v.text()?.eq_ignore_ascii_case("log"),
                 "YScale" => ax.ylog = v.text()?.eq_ignore_ascii_case("log"),
                 "YDir" => ax.y_reverse = v.text()?.eq_ignore_ascii_case("reverse"),
-                "XGrid" | "YGrid" | "ZGrid" => ax.grid = on_off(&v)?,
+                "YGrid" => {
+                    let on = on_off(&v)?;
+                    ax.ygrid_only = on && !ax.grid;
+                    ax.grid = on;
+                }
+                "XGrid" | "ZGrid" => {
+                    let on = on_off(&v)?;
+                    if on {
+                        ax.ygrid_only = false;
+                        ax.grid = true;
+                    } else if !ax.ygrid_only {
+                        ax.grid = false;
+                    }
+                }
                 "XTick" => ax.xticks.values = Some(v.to_matrix()?.data),
                 "YTick" => ax.yticks.values = Some(v.to_matrix()?.data),
                 "XTickMode" if auto => ax.xticks.values = None,
