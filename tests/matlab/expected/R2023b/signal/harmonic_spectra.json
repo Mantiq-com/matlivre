@@ -1,0 +1,20 @@
+{
+  "header": {
+    "release": "2023b",
+    "version": "23.2.0.2409890 (R2023b) Update 3",
+    "computer": "PCWIN64",
+    "recorded": "2026-11-17"
+  },
+  "log": "-19.0309 -3.0103 -23.0103 -29.0309 77.3000 154.6000 231.9000 \n-19.0309 -3.0103 -23.0103 -29.0309 77.3000 154.6000 231.9000 \n38.1162 -41.1265 \n18.9776 -21.9879 \n20.0792 -23.1159 154.2969 \nUnknown option:  'psd'\nNot enough input arguments.\n",
+  "error": {
+    "identifier": "",
+    "message": ""
+  },
+  "lastwarn": {
+    "message": "",
+    "identifier": ""
+  },
+  "variables": {},
+  "figures": [],
+  "nfigures": 0
+}

@@ -51,7 +51,7 @@ pub fn function_names() -> Vec<&'static str> {
 fn all_names() -> &'static std::collections::HashSet<&'static str> {
     static ALL: std::sync::OnceLock<std::collections::HashSet<&'static str>> = std::sync::OnceLock::new();
     ALL.get_or_init(|| {
-        [NAMES, crate::builtins_elfun::NAMES, crate::builtins_datafun::NAMES, crate::builtins_lang::NAMES, crate::builtins_strings::NAMES, crate::builtins_types::NAMES, crate::builtins_dates::NAMES, crate::builtins_files::NAMES, crate::builtins_textio::NAMES, crate::builtins_data::NAMES, crate::builtins_media::NAMES, crate::builtins_archive::NAMES, crate::builtins_structio::NAMES, crate::gfx::NAMES, crate::builtins_plotfmt::NAMES, crate::builtins_graph3d::NAMES, crate::builtins_funfun::NAMES, crate::builtins_matfun::NAMES, crate::builtins_elmat::NAMES, crate::builtins_ops::NAMES, crate::builtins_specfun::NAMES, crate::polyshape::NAMES, crate::builtins_polyfun::NAMES, crate::builtins_geom::NAMES, crate::polyfun_classes::NAMES, crate::builtins_text::NAMES, crate::builtins_plot::NAMES, crate::time::NAMES, crate::table::NAMES, crate::sym::NAMES, crate::sym::extra::NAMES, crate::sym::special::NAMES, crate::sym::tools::NAMES, crate::sym::units::NAMES, crate::sym::transforms::NAMES, crate::sym::forms::NAMES, crate::sym::ode::NAMES, crate::sym::formula::NAMES, crate::sym::dae::NAMES, crate::containers::NAMES, crate::table_ops::NAMES, crate::builtins_plotmore::NAMES, crate::patterns::NAMES, crate::builtins_validate::NAMES, crate::graphs::NAMES, crate::graphs::FUNCS, crate::builtins_excel::NAMES, crate::builtins_sparse::NAMES, crate::builtins_ode::NAMES, crate::timetable::NAMES, crate::io_more::NAMES, crate::lang_more::NAMES, crate::plot_extra::NAMES, crate::volume::NAMES, crate::timeseries::NAMES, crate::charts::NAMES, crate::images::NAMES, crate::math_more::NAMES, crate::func_objects::NAMES, crate::files_more::NAMES, crate::random::NAMES, crate::timers::NAMES, crate::session_more::NAMES, crate::settings::NAMES, crate::sysobj::NAMES, crate::tiff::NAMES, crate::decomp::NAMES, crate::messages::NAMES, crate::ode_objects::NAMES, crate::gfx_util::NAMES, crate::figfile::NAMES, crate::xml_dom::NAMES, crate::gfx_defaults::NAMES, crate::signal::windows::NAMES, crate::signal::waveforms::NAMES, crate::signal::db::NAMES, crate::signal::analog::NAMES, crate::signal::iir::NAMES, crate::signal::fir::NAMES, crate::signal::response::NAMES, crate::signal::filtering::NAMES, crate::signal::conversions::NAMES, crate::signal::measures::NAMES, crate::signal::spectral::NAMES, crate::signal::transforms::NAMES, crate::signal::peaks::NAMES, crate::signal::smoothing::NAMES, crate::signal::lpc::NAMES, crate::signal::sos::NAMES, crate::signal::rational::NAMES, crate::signal::elliptic::NAMES, crate::signal::order::NAMES, crate::signal::firdes::NAMES, crate::signal::remez::NAMES, crate::signal::fanalysis::NAMES, crate::signal::measure2::NAMES, crate::signal::lpc2::NAMES, crate::signal::ar::NAMES, crate::signal::transforms2::NAMES, crate::signal::cepstra::NAMES, crate::signal::pspec::NAMES, crate::signal::change::NAMES, crate::signal::resamp::NAMES, crate::signal::bandwidth::NAMES, crate::signal::modeling::NAMES, crate::signal::pulses::NAMES, crate::signal::zcrate::NAMES, crate::signal::chgpts::NAMES, crate::signal::envelope::NAMES, crate::signal::invfreq::NAMES, crate::signal::stmcb::NAMES, crate::signal::framing::NAMES, crate::signal::stfts::NAMES, crate::signal::maxflat::NAMES, crate::signal::findsig::NAMES, crate::signal::cls::NAMES, crate::signal::subspace::NAMES, crate::signal::zplane::NAMES, crate::signal::cfir::NAMES, crate::signal::mtm::NAMES, crate::signal::lomb::NAMES, crate::signal::octave::NAMES, crate::signal::wigner::NAMES, crate::signal::instf::NAMES, crate::signal::envspec::NAMES, crate::signal::tsa::NAMES, crate::signal::vmd::NAMES, crate::signal::tachorpm::NAMES, crate::signal::modal::NAMES, crate::signal::rpmmap::NAMES, crate::signal::rpmorder::NAMES, crate::signal::pspect::NAMES, crate::signal::xspec::NAMES, crate::signal::ifsst::NAMES, crate::signal::ridge::NAMES, crate::signal::digfilt::NAMES, crate::signal::lpfilt::NAMES, crate::signal::modalfit::NAMES, crate::signal::waveforms2::NAMES, crate::signal::ssconv::NAMES]
+        [NAMES, crate::builtins_elfun::NAMES, crate::builtins_datafun::NAMES, crate::builtins_lang::NAMES, crate::builtins_strings::NAMES, crate::builtins_types::NAMES, crate::builtins_dates::NAMES, crate::builtins_files::NAMES, crate::builtins_textio::NAMES, crate::builtins_data::NAMES, crate::builtins_media::NAMES, crate::builtins_archive::NAMES, crate::builtins_structio::NAMES, crate::gfx::NAMES, crate::builtins_plotfmt::NAMES, crate::builtins_graph3d::NAMES, crate::builtins_funfun::NAMES, crate::builtins_matfun::NAMES, crate::builtins_elmat::NAMES, crate::builtins_ops::NAMES, crate::builtins_specfun::NAMES, crate::polyshape::NAMES, crate::builtins_polyfun::NAMES, crate::builtins_geom::NAMES, crate::polyfun_classes::NAMES, crate::builtins_text::NAMES, crate::builtins_plot::NAMES, crate::time::NAMES, crate::table::NAMES, crate::sym::NAMES, crate::sym::extra::NAMES, crate::sym::special::NAMES, crate::sym::tools::NAMES, crate::sym::units::NAMES, crate::sym::transforms::NAMES, crate::sym::forms::NAMES, crate::sym::ode::NAMES, crate::sym::formula::NAMES, crate::sym::dae::NAMES, crate::containers::NAMES, crate::table_ops::NAMES, crate::builtins_plotmore::NAMES, crate::patterns::NAMES, crate::builtins_validate::NAMES, crate::graphs::NAMES, crate::graphs::FUNCS, crate::builtins_excel::NAMES, crate::builtins_sparse::NAMES, crate::builtins_ode::NAMES, crate::timetable::NAMES, crate::io_more::NAMES, crate::lang_more::NAMES, crate::plot_extra::NAMES, crate::volume::NAMES, crate::timeseries::NAMES, crate::charts::NAMES, crate::images::NAMES, crate::math_more::NAMES, crate::func_objects::NAMES, crate::files_more::NAMES, crate::random::NAMES, crate::timers::NAMES, crate::session_more::NAMES, crate::settings::NAMES, crate::sysobj::NAMES, crate::tiff::NAMES, crate::decomp::NAMES, crate::messages::NAMES, crate::ode_objects::NAMES, crate::gfx_util::NAMES, crate::figfile::NAMES, crate::xml_dom::NAMES, crate::gfx_defaults::NAMES, crate::signal::windows::NAMES, crate::signal::waveforms::NAMES, crate::signal::db::NAMES, crate::signal::analog::NAMES, crate::signal::iir::NAMES, crate::signal::fir::NAMES, crate::signal::response::NAMES, crate::signal::filtering::NAMES, crate::signal::conversions::NAMES, crate::signal::measures::NAMES, crate::signal::spectral::NAMES, crate::signal::transforms::NAMES, crate::signal::peaks::NAMES, crate::signal::smoothing::NAMES, crate::signal::lpc::NAMES, crate::signal::sos::NAMES, crate::signal::rational::NAMES, crate::signal::elliptic::NAMES, crate::signal::order::NAMES, crate::signal::firdes::NAMES, crate::signal::remez::NAMES, crate::signal::fanalysis::NAMES, crate::signal::measure2::NAMES, crate::signal::lpc2::NAMES, crate::signal::ar::NAMES, crate::signal::transforms2::NAMES, crate::signal::cepstra::NAMES, crate::signal::pspec::NAMES, crate::signal::change::NAMES, crate::signal::resamp::NAMES, crate::signal::bandwidth::NAMES, crate::signal::modeling::NAMES, crate::signal::pulses::NAMES, crate::signal::zcrate::NAMES, crate::signal::chgpts::NAMES, crate::signal::envelope::NAMES, crate::signal::invfreq::NAMES, crate::signal::stmcb::NAMES, crate::signal::yulewalk::NAMES, crate::signal::framing::NAMES, crate::signal::stfts::NAMES, crate::signal::maxflat::NAMES, crate::signal::findsig::NAMES, crate::signal::cls::NAMES, crate::signal::subspace::NAMES, crate::signal::zplane::NAMES, crate::signal::cfir::NAMES, crate::signal::mtm::NAMES, crate::signal::lomb::NAMES, crate::signal::octave::NAMES, crate::signal::wigner::NAMES, crate::signal::instf::NAMES, crate::signal::envspec::NAMES, crate::signal::tsa::NAMES, crate::signal::vmd::NAMES, crate::signal::tachorpm::NAMES, crate::signal::modal::NAMES, crate::signal::rpmmap::NAMES, crate::signal::rpmorder::NAMES, crate::signal::pspect::NAMES, crate::signal::xspec::NAMES, crate::signal::ifsst::NAMES, crate::signal::ridge::NAMES, crate::signal::digfilt::NAMES, crate::signal::lpfilt::NAMES, crate::signal::modalfit::NAMES, crate::signal::waveforms2::NAMES, crate::signal::ssconv::NAMES, crate::signal::gateway::NAMES, crate::signal::harmonic::NAMES, crate::signal::fillgaps::NAMES, crate::signal::magrec::NAMES, crate::signal::strips::NAMES, crate::signal::specdesc::NAMES, crate::signal::wavelet::NAMES, crate::stats::descr::NAMES, crate::stats::corr::NAMES, crate::stats::dist::NAMES, crate::stats::rnd::NAMES, crate::stats::htest::NAMES, crate::stats::dist_matrix::NAMES, crate::stats::hier::NAMES, crate::stats::pca::NAMES, crate::stats::regress::NAMES, crate::stats::kmeans::NAMES, crate::stats::sampling::NAMES, crate::stats::nonpar::NAMES, crate::stats::anova::NAMES, crate::stats::fitters::NAMES, crate::stats::ks::NAMES, crate::stats::linmodel::NAMES, crate::stats::glmodel::NAMES, crate::stats::misc::NAMES, crate::stats::tests2::NAMES, crate::stats::lifefit::NAMES, crate::stats::generic::NAMES, crate::stats::neighbors::NAMES, crate::stats::classif::NAMES, crate::stats::learners::NAMES, crate::stats::cluster2::NAMES, crate::stats::fits2::NAMES, crate::stats::searchers::NAMES, crate::stats::distobj::NAMES, crate::stats::anova2::NAMES, crate::stats::tests3::NAMES, crate::stats::tests4::NAMES, crate::stats::multcmp::NAMES, crate::stats::anovan::NAMES, crate::stats::tests5::NAMES, crate::stats::tests6::NAMES, crate::stats::tests7::NAMES, crate::stats::tests8::NAMES, crate::stats::tests9::NAMES, crate::stats::tests10::NAMES, crate::stats::tests11::NAMES]
             .iter()
             .flat_map(|n| n.iter().copied())
             .collect()
@@ -75,7 +75,7 @@ fn mat(m: Matrix) -> Ret {
 }
 
 pub(crate) fn arg<'a>(args: &'a [Value], i: usize, fname: &str) -> R<&'a Value> {
-    args.get(i).ok_or_else(|| LangError::new(format!("Not enough input arguments for '{fname}'."), 0))
+    args.get(i).ok_or_else(|| LangError::new("Not enough input arguments.", 0))
 }
 
 pub(crate) fn m_arg(args: &[Value], i: usize, fname: &str) -> R<Matrix> {
@@ -801,8 +801,43 @@ pub fn call_ref(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize
             return Ok(Some(vec![args[0].clone()]));
         }
         if name == "mat2str" && args.len() == 1 {
-            let state = if crate::class::on_off_state(&args[0]) == Some(true) { "on" } else { "off" };
-            return Ok(Some(vec![Value::chars(&format!("{}.{state}", crate::class::ON_OFF_CLASS))]));
+            if let Some(m) = crate::class::on_off_matrix(&args[0]) {
+                let one = |x: f64| format!("{}.{}", crate::class::ON_OFF_CLASS, if x != 0.0 { "on" } else { "off" });
+                let text = if m.numel() == 1 {
+                    one(m.data[0])
+                } else {
+                    let rows: Vec<String> = (0..m.rows()).map(|i| (0..m.cols()).map(|j| one(m.data[i + j * m.rows()])).collect::<Vec<_>>().join(" ")).collect();
+                    format!("[{}]", rows.join(";"))
+                };
+                return Ok(Some(vec![Value::chars(&text)]));
+            }
+        }
+        // Functions that rearrange elements work on the states and give the class back.
+        if crate::class::ON_OFF_SHAPING.contains(&name) {
+            let states: Vec<Value> = args.iter().cloned().map(crate::class::on_off_as_logical).collect();
+            let mut out = call_ref(it, name, &states, nargout)?;
+            if let Some(first) = out.as_mut().and_then(|v| v.first_mut()) {
+                if let Value::Num(m) = first {
+                    if m.kind == Kind::Logical {
+                        *first = crate::class::on_off_from_matrix(m.clone());
+                    }
+                }
+            }
+            return Ok(out);
+        }
+        if name == "num2cell" && args.len() == 1 {
+            let out = call_ref(it, name, &[crate::class::on_off_as_logical(args[0].clone())], nargout)?;
+            return Ok(out.map(|v| {
+                v.into_iter()
+                    .map(|x| match x {
+                        Value::Cell(c) => Value::Cell(crate::value::CellArray::from_dims(
+                            c.dims.clone(),
+                            c.data.iter().map(|e| if let Value::Num(m) = e { crate::class::on_off_from_matrix(m.clone()) } else { e.clone() }).collect(),
+                        )),
+                        other => other,
+                    })
+                    .collect()
+            }));
         }
         if let Some(converted) = crate::class::on_off_args(name, args) {
             return call_ref(it, name, &converted, nargout);
@@ -968,6 +1003,9 @@ fn call_dense_inner(it: &mut Interpreter, name: &str, args: &[Value], nargout: u
     if let Some(r) = crate::signal::call(it, name, &args, nargout)? {
         return Ok(Some(r));
     }
+    if let Some(r) = crate::stats::call(it, name, &args, nargout)? {
+        return Ok(Some(r));
+    }
     if crate::gfx_defaults::NAMES.contains(&name) {
         if let Some(r) = crate::gfx_defaults::call(it, name, &args, nargout)? {
             return Ok(Some(r));
@@ -1036,7 +1074,8 @@ fn call_dense_inner(it: &mut Interpreter, name: &str, args: &[Value], nargout: u
             return Ok(Some(r));
         }
     }
-    if matches!(name, "char" | "string" | "cellstr") {
+    // (An OnOffSwitchState array is not one member: its char is handled with the text builtins.)
+    if matches!(name, "char" | "string" | "cellstr") && !args.first().is_some_and(|v| crate::class::is_on_off(v) && v.dims() != [1, 1]) {
         if let Some(v) = crate::lang_more::enum_text(name, &args) {
             return Ok(Some(vec![v]));
         }
@@ -2900,6 +2939,9 @@ fn call_dense_inner(it: &mut Interpreter, name: &str, args: &[Value], nargout: u
             Ok(Some(out))
         }
         "polyval" => {
+            if a.len() >= 3 || nargout > 1 {
+                return crate::stats::neighbors::polyval_full(a, nargout);
+            }
             let p = m_arg(a, 0, name)?;
             let x = m_arg(a, 1, name)?;
             if !p.is_complex() && !x.is_complex() {
@@ -3159,6 +3201,10 @@ fn call_dense_inner(it: &mut Interpreter, name: &str, args: &[Value], nargout: u
                 it.emit(OutputKind::Text(text + "\n"));
                 return none();
             }
+            if let Some(m) = crate::class::on_off_matrix(v).filter(|m| m.numel() != 1 && m.dims.len() == 2) {
+                it.emit(OutputKind::Text(crate::class::on_off_disp(&m)));
+                return none();
+            }
             if let Some(state) = crate::class::on_off_state(v) {
                 // An enumeration member shows indented, with a blank line after it.
                 it.emit(OutputKind::Text(format!("    {}
@@ -3191,6 +3237,10 @@ fn call_dense_inner(it: &mut Interpreter, name: &str, args: &[Value], nargout: u
             }
             let mut s = disp_value(v, it.format);
             if !(v.numel() == 0 && matches!(v, Value::Num(_))) {
+                s.push('\n');
+            }
+            // The command window ends the display of a number or matrix with a blank line.
+            if it.command_window && matches!(v, Value::Num(m) if m.kind != crate::value::Kind::Char && !m.is_empty()) {
                 s.push('\n');
             }
             it.emit(OutputKind::Text(s));

@@ -11,17 +11,20 @@ How MatLivre grows to cover the MATLAB Signal Processing Toolbox. The function i
 |---|---:|
 | Functions in scope (R2023b-era, from `signal.tsv`) | 333 |
 | Already in MatLivre before this plan (`xcorr`, `xcov`, `resample`, `rms`, `sinc`, `detrend`, `movmedian`, `movmad`, `isoutlier`, `filloutliers`, `smoothdata`, `islocalmax`, `paddata`, `trimdata`, `resize`, `freqspace`, `ss2tf`) | 17 |
-| Implemented by this plan (`crates/livre-lang/src/signal/`) | 237 |
-| Still to implement and verifiable here | 65 |
-| Not verifiable: requires Wavelet/Audio Toolbox, not installed (see below) | 14 |
+| Implemented by this plan (`crates/livre-lang/src/signal/`) | 258 |
+| Still to implement and verifiable here (incl. 1 registered without its main syntax) | 8 |
+| Not verifiable: requires Wavelet/Audio Toolbox, not installed (see below) | 16 |
+| Out of scope (see below) | 34 |
 
-The 237 are checked against MATLAB: see "How it is tested".
+The 258 are checked against MATLAB: see "How it is tested". `isfir`, `tf`, `zpk` and `ss` count as done (digitalFilter methods, which `exist()` cannot see).
+
+Still to do (8): `emd`, `hht`, `fsst`, `kurtogram`, `orderwaveform`, `ordertrack`, `rpmtrack`, and `xwvd` (registered, main syntax not implemented: the cross distribution's rule was not recovered).
 
 ## Not verifiable: requires Wavelet/Audio Toolbox, not installed
 
 The MATLAB install used for recording has neither the Wavelet nor the Audio Toolbox, so these cannot be
 recorded and are not implemented: `cwt`, `modwt`, `modwpt`, `imodwt`, `wsst`, `wcoherence`, `tqwt`, `cqt`,
-`ewt`, `spectralCrest`, `spectralEntropy`, `spectralFlatness`, `spectralKurtosis`, `spectralSkewness`.
+`ewt`, `waveletScattering`, `cwtmag2sig`, `wsstridge`, `spectralCrest`, `spectralEntropy`, `spectralFlatness`, `spectralKurtosis`, `spectralSkewness`.
 They stay in the gap count; the `dwt`/`wavedec` family is likewise unrecordable.
 
 ## How it is tested
@@ -58,10 +61,10 @@ Following the existing scope rules for a live-script engine:
 - `filt2block` (Simulink) and code generation.
 - The Slepian database functions `dpssclear`, `dpssdir`, `dpssload`, `dpsssave`
   (`dpss` itself is in scope).
-- Signal labeling objects and region-of-interest functions (15 functions, object-heavy).
+- Signal labeling objects and region-of-interest functions (15 functions, object-heavy), and the two feature-extractor frameworks `signalTimeFeatureExtractor` and `signalFrequencyFeatureExtractor` (object-heavy, grouped with the labeling objects).
 - EDF file I/O (`edfheader`, `edfinfo`, `edfread`, `edfwrite`): a file-format task.
 
-That removes about 32 of the 333 names from the practical target; they stay in `signal.tsv`
+That removes 34 of the 333 names from the practical target; they stay in `signal.tsv`
 so the coverage page can list them as out of scope.
 
 ## Phases
@@ -82,7 +85,7 @@ cases in `signal_cases.m` and MATLAB's output recorded as above.
 4. **Analog prototypes and IIR design**. Done: `buttap`, `cheb1ap`, `cheb2ap`, `butter`,
    `cheby1`, `cheby2`, `ellipap`, `besselap`, `ellip`, `besself`, `buttord`, `cheb1ord`, `cheb2ord`, `ellipord` (digital and analog, all four band
    types, transfer function, zero-pole-gain and state-space outputs), `maxflat` (without the second-order-section
-   outputs). To do: `yulewalk`.
+   outputs), `yulewalk` (all arguments, including `npt` and `lap`).
 5. **FIR design and filter analysis**. Done: `fir1`, `freqz`, `freqs`, `grpdelay`, `phasez`, `phasedelay`, `zerophase`,
    `isstable`, `impz`, `stepz`, `sgolay`, `fir2`, `firls`, `kaiserord`, `firpm`, `firpmord`, `gaussdesign`, `rcosdesign`, `intfilt`, `impzlength`, `filternorm`, `filtord`,
    `firtype`, `isminphase`, `ismaxphase`, `islinphase`, `isallpass`, `fircls`, `fircls1` (without the WT and
@@ -126,6 +129,11 @@ not exercise:
   case in twenty MATLAB's order follows rounding errors in the entries of that matrix, which
   differ here (five recorded cases).
 - **Degenerate designs**: `cheby1` with zero ripple and `cheby2` with zero attenuation.
+- **`yulewalk`** of high order: the design is ill-conditioned from about order 12, and rounding
+  differences in the FFTs and least-squares solves grow to 1e-8 (order 12) and 1e-2 (order 16 with
+  a sharp edge). Not recorded, and known to differ: a step at frequency 0 with `lap` 0 or 1
+  (rank-deficient equations, MATLAB picks another basic solution) and some complex magnitudes
+  (`yulewalk(4,[0 1],[1 1i])`, 6e-4 off in the numerator).
 - **Single precision**: results are computed in double precision and rounded to single; MATLAB's
   own single arithmetic can differ in the last digits (the recorded cases allow 1e-6).
 - **N-D arrays** and operating along dimension 3 (`dct`, `hilbert`).
@@ -259,7 +267,7 @@ Exact against MATLAB except the cases in the deviations file. Findings: Kaiser w
 ### Research queue, one more dense round (not recovered)
 - `emd`: spline envelopes through the extrema (plain, end points added, linear end extrapolation, mirrored extension) do not reproduce the first sift; the mean envelope agrees to 1e-4 in the interior, so the end handling is what is missing.
 - `snr` family: for a clean sinusoid the signal power is exactly `sum(P(lo:hi))/ENBW` over the monotone mainlobe of a Kaiser(beta 38) periodogram (power-scaled), but the noise estimate (median level, `min(level, P)`) was not recovered.
-- `fillgaps`: forward and backward Burg predictions weighted linearly across the gap reproduce MATLAB to 6e-3; the exact fit (which samples feed each model) was not recovered.
+- (`fillgaps` is recovered, see the note at the end.)
 - (`filtfilt` with second-order sections is recovered, see the note at the end.)
 - Vold-Kalman (`orderwaveform`, `ordertrack`, `rpmtrack`): the coupled real least-squares form (data weight 1, structure weight `r`) with first and second order differences was tried; best fits leave 15-20 % error for any `r`.
 - The lowpass family needs `designfilt` (deferred).
@@ -313,3 +321,37 @@ The IIR branch of the four response functions is `designfilt('<resp>iir', same e
 
 ### IIR section gains: research queue facts
 ellip(6,...) lowpass sections have DC gains 1.57, 14.97 and 0.038; their cumulative L-infinity prefix norms are 3.4, 25.7 and 1; the cascade peak is exactly 1; the first section's gain at DC equals its gain at the passband edge. Ruled out: per-section G^(1/L) at the reference frequency; cumulative L-infinity and L2 scaling on the prefix, on the section's own response and on the internal node 1/A_i; zp2sos/ss2sos up/down with none/inf/two scaling (all miss by 0.04 to 1.2). The gain split only matters through rounding: `filter(d,x)` and `impz(d)` on butter lowpass, butter bandpass and elliptic lowpass objects match MATLAB to 1e-9 as full vectors (cases 8238-8245).
+
+### window, db, scaleFilterSections (done)
+`window(@f,N,...)` passes everything to the window function (function handle, or a name as char or string): the output is the first output, two outputs give `Output argument "varargout{2}" (and possibly others) not assigned a value in the execution with "window" function.`; an unknown name gives `Undefined function 'foo' for input arguments of type 'double'.`; anything else `Function to evaluate must be represented as a string scalar, character vector, or function_handle object.` A single-precision N gives a double window (hamming, hann, blackman, rectwin); `hamming`/`hann`/`blackman`/`flattopwin` reject logical and complex N with MATLAB's messages. `db(x,unit,R)`: voltage `10*log10(abs(x).^2./R)` (R default 1; R may be an array or complex, a negative R gives a complex result), power `10*log10(x)` with `Power cannot be negative.` for a negative real; the unit is matched by prefix (`'v'`, `'volt'`, `'p'`, `'POWER'`), in the two-argument form a char is the unit and a number is R; integer and logical input fails in `log10`; single input is computed in double and rounded (MATLAB's single `log10` is 1.3e-6 off, two listed deviations). `scaleFilterSections(N,g)`: g scalar or a vector of L+1 values, section i is multiplied by `g(i)*g(L+1)^(1/L)` (principal root, so a negative g gives complex sections); integer N takes only a scalar g; an N-D array is folded into columns. `hanning(N)` (undocumented legacy): `hann(N+2)` without the end points, `'periodic'` gives `hann(N,'periodic')`, single N gives a single result.
+
+### thd, sfdr, toi, snr, sinad (done for tones; floors are deviations)
+All use a power-scaled periodogram of the whole record (nfft = N, Kaiser window beta 38). A tone's power is the sum of the periodogram over its mainlobe divided by the window's equivalent noise bandwidth in bins (`N*sum(w.^2)/sum(w)^2`), and its frequency is the power-weighted centroid of that band; the mainlobe is the monotone-decreasing run of bins either side of the peak, the valley bin on the high side belonging to the next lobe. The fundamental is the largest peak above the DC mainlobe (13 bins; a DC offset is ignored). thd: harmonic k is searched within 2 bins of `k*f1` (aliased folds above Nyquist, otherwise NaN), `r = 10*log10(sum(harmonics 2..n)/fundamental)`, default `n = 6`, frequency scale 1 when `Fs` is omitted; sfdr: the largest local maximum outside the fundamental's lobe and `MSD`; toi: the two largest local maxima are the fundamentals, the products at `2f1-f2` and `2f2-f1`, `OIP3 = mean(Pf + (Pf-Pim)/2)` over the two sides (dB, no 30 dB offset); snr(x,y) is the ratio of summed squared magnitudes; snr(x,Fs,N) divides the fundamental by the periodogram outside the DC guard and the first N harmonic lobes; sinad divides it by everything outside the DC guard and the fundamental. Exact (1e-13) for noise-free tones and for noise when the excluded harmonics are present. Not recovered (listed deviations): harmonics absent from the signal (MATLAB's band for a harmonic that is not there is a single bin at a position that is not `round(k*f1)`, and its power is the bin value itself rather than `sum/enbw`: `hp = P(bin)` for the single-bin case), so the default `N = 6` on a signal with fewer harmonics differs by 0.06 dB in the noise power; floors at -300 dB; tones closer than a mainlobe (toi); single-precision floors. The spectrum-input syntaxes (`'psd'`, `'power'`) are not implemented.
+
+### fillgaps (done)
+Two passes over the NaN runs: a forward pass fills the gaps left to right, each from an AR model fitted (Burg, `arburg`) to all samples before the gap with their mean removed, extended recursively over the gap, and the filled values feed the model of the next gap; a backward pass does the same right to left on the reversed samples. Sample `k` of a gap of length `L` is `(1-k/(L+1))*forward + k/(L+1)*backward`; a gap at the start takes only the backward estimate, at the end only the forward one; all-NaN stays NaN; a single non-NaN sample fills everything with it (order 0 = the mean). `MAXLEN` keeps the last (first) `MAXLEN` samples before (after) the gap and an `ORDER` larger than `MAXLEN` is an error. The automatic order minimises `N*log(e) + 2*q` over `q = 1..N-1` (`e` = the Burg error variance, `N` the number of samples used, picked separately for the two directions); a fixed or infinite order is truncated to `N-1`. Single, integer, logical, N-D input and Inf are errors (`Expected X to be one of these types: double`). Exact (1e-13) except: two gaps with automatic order when the backward data contain the AR extension of a later gap (the AIC picks the maximal order, a degenerate fit), and complex input.
+
+### stftmag2sig (done for 'gla')
+Griffin-Lim exactly as MATLAB (1e-13): start `Sest = S.*exp(i*phase)` (zero phase), then each iteration is `x = istft(Sest, ConjugateSymmetric for centered/twosided); S2 = stft(x); Sest = S.*exp(i*angle(S2))`; it stops after `MaxIterations` (default 100) or at the first iteration whose spectral convergence `norm(abs(S2)-S)/norm(S)` is below `InconsistencyTolerance` (default 1e-4; the documented inconsistency `norm(S2-Sest)/norm(Sest)` does not reproduce the stopping point); the result is `istft(Sest)` after the last iteration (`MaxIterations=0` is `istft(S)`). Window default `hann(128,'periodic')`, overlap `floor(0.75*numel(window))`, FFT length at least the window length, `FrequencyRange` centered/onesided/twosided, 3-D input is a multichannel signal, `InputTimeDimension='downrows'` transposes. Outputs: `t = (0:length(x)-1)'/Fs` (or `*Ts` as a duration, samples when omitted) and `info` with `ExitFlag` (1 when the tolerance was met), `NumIterations`, `Inconsistency` (the last spectral convergence, `Inf` for zero iterations), `ReconstructedSTFT = Sest` and `ReconstructedPhase = angle(Sest)`. `Method='gd'` fails with MATLAB's `Undefined function 'dlarray'` (Deep Learning Toolbox). Not recovered: `'fgla'` (Perraudin's momentum step matches MATLAB after one iteration only), `'legla'`, `InitializePhaseMethod='random'`, a nonzero `InitialPhase` (a constant offset has no effect in MATLAB), and MATLAB's single-precision iterations.
+
+### strips (done)
+One line per column made of NaN-terminated strips of N samples (the last strip padded with NaN; the NaNs are negative NaN), the first strip on top: `y = x*scale - mid + offset`, `mid = (max+min)/2` over all columns, strip spacing `d = 1.25*range` (1 for a constant signal, then `YLim = [0 S*d]`), `YLim = [-0.75*range, S*d - 0.5*d + 0.1*d]` (the operation order matters to the last bit), `YTick` = the offsets, `YTickLabel = num2str` of the strip start samples (or seconds for `strips(x,sd,fs)`, where N = round(sd*fs)), `XLim = [0 N]` or `[0 sd]`; a complex X warns `X vector complex.  I'm ignoring the imaginary part.`. The recorded cases use rounded data (sin/cos differ in the last bit).
+
+Absent-harmonic data point (thd/snr): with f1 = 77.3 Hz, N = 1024, fs = 1000, MATLAB's single-bin lobes are at 0-based bins 395 (k=5, expected 395.84) and 476 (k=6, expected 474.93; bin 477 is the local maximum); `round`, `floor` and a biased centroid estimate of f1 each fit at most one of them, and the lobe power is the raw bin value.
+
+### kurtogram (closed: not recovered, two rounds)
+Known: the call is `kurtogram(x, Fs, level)` (the second argument is the sample rate, so `kurtogram(x,[],0)`); the level-0 row is exactly the centred real kurtosis minus 3, `mean((x-mean(x)).^4)/mean((x-mean(x)).^2)^2 - 3`, constant across the 3 columns (1.94393545547285 for `x = sin(0.9n)+0.4 sin(0.05 n^1.3)+0.2 cos(2.7n)+3*(mod(n,37)==0)`, n = 1:256); for `level = 1` the matrix is 2 x 6 and the second row is `[K_low K_low K_low K_high K_high K_high]` = `[0.200825242192111 x3, 5.03012351574369 x3]` for that signal, so each band's value is repeated over its share of the `3*2^level` columns; the default level is `max(0, floor(log2(N)-6))`; W holds the equivalent window sizes `2^(n+1)`. Ruled out for the level-1 values: Antoni's prototype `h = fir1(16,0.4).*exp(2i*pi*(0:16)*0.125)` with `g = h(1+mod(1-n,16)).*(-1).^(1-n)` (n = 2:16) applied as filter/conv, decimating from sample 1 or 2, with or without trailing zeros or `same` trimming, and the complex kurtosis `mean|z|^4/mean|z|^2^2 - 2` (best 0.2084 / 5.5456, 0.0218 / 6.668, -0.0346 / 6.463). The exact padding, decimation phase, filter lengths per level and any kurtosis correction remain unknown.
+
+fsst, second round: re-implemented the rule above for a 96-sample signal with `kaiser(16,10)` (output 9 x 96): every cell is within 1e-3 relative of MATLAB's magnitude after a common scale of 1.0008, so the squeezing positions agree and the remaining difference is a smooth amplitude one (window scaling or segment alignment), not the rounding-boundary cells; not pursued further.
+
+fsst, correction: the common scale of 1.0008 was an artefact of a least-squares fit. Cell by cell the ratio mine/MATLAB is exactly 1 (1e-15) for most cells, in particular rows 7-9 and most columns, and differs only in rows 1-6 of some columns (up to 8 % and 20 % in rows 4 and 5, residual 1.6 % after the best scale), none of the window sums (symmetric 5.8670, periodic 6.2578, w(L/2+1) 0.9791, norm 2.0577) gives it. So the differences are individual cells whose squeezed position or contributions differ from MATLAB's (the earlier rounding-boundary diagnosis stands); `fsst` stays closed as not recovered.
+
+### Vold-Kalman family (orderwaveform, ordertrack, rpmtrack): closed, blocked by the solver
+For constant rpm the first-order filter is `|H(df)| = 1/(1+(df/a)^4)` with `a` about 0.633*Bandwidth (bw 2: a = 1.266; bw 5: 3.166; bw 10: 6.33; the exact half-power value would be 0.623*bw), equivalent to the second-difference weight `r = (fs/(2*pi*a))^4`. MATLAB solves it with `pcg` (`signal.internal.vk` warns that the tolerance may not be achievable and that PCG did not converge for FilterOrder 2 and narrow bandwidths) and the output at df = 0 is 1.00003 / 1.0006 / 1.00997 for bw 2 / 5 / 10 instead of 1, so its results carry an iteration error of 1e-3 to 1e-2 that a direct solver cannot reproduce to 1e-9.
+
+Vold-Kalman, second check: the model is the system `(I + r*D'*D) x = 2*conj(c).*y` with `D = diff(speye(N),2)`, carrier `c = exp(2i*pi*f0*t)`, output `real(x.*c)`; a direct solve matches `orderwaveform` (constant rpm, FilterOrder 1, Bandwidth 5, N = 3000) to 1.2e-5 with `a/bw = 0.632911` (`r = (fs/(2*pi*a))^4`; 4.6e-4 with 0.6332), a constant not explained by the half-power formula (0.6232). Plain `pcg(A,b,tol,maxit)` without a preconditioner returns the zero start (flag 1, 0 iterations) for this r and N, so MATLAB's solver settings are different and not inferable.
+
+### emd / hht (closed: not recovered)
+One round with `'Interpolation','pchip'`, `SiftMaxIterations 1`, `MaxNumIMF 1` on a 40-sample signal (maxima at 2 9 16 22 30 37, minima at 6 13 19 27 33): the first sift `x - (upper+lower)/2` with pchip envelopes through the extrema only equals MATLAB's IMF to 1e-15 for samples 13-27 and differs outside (0.1 at sample 1 growing to 0.44 at sample 40), so the interior rule is right and the end handling is the unknown. Mirror extensions (about the end samples, between samples, odd), the end samples as extra extrema, the end samples with the nearest extremum's value, and linear extrapolation of the first two extrema all fail (best 0.42). `hht` depends on `emd`.
+
+Spectrum inputs of thd/sfdr/toi/snr/sinad (done): `(Pxx,F,[N],'psd')` and `(Sxx,F,RBW,[N],'power')`. The band power is `sum(Pxx)*df` for a PSD and `sum(Sxx)*df/RBW` for a power spectrum (the same quantity as the time-domain `sum(P)/enbw`), so the time-domain engine runs unchanged on the given spectrum (results equal the time-domain ones to 1e-13). `sfdr` accepts only the power form: its largest and spur values are the raw bin values and bin frequencies (not mainlobe sums); the `'psd'` form reports `Unknown option:  'psd'`. Errors: `Not enough input arguments.` when RBW is missing, `Expected input number 1, Pxx, to be nonnegative.`, N errors are numbered from the spectrum call (`input number 4` for a `'psd'` call with N in third place), and F shorter than the spectrum gives `Index exceeds the number of array elements. Index must not exceed <numel(F)>.`.

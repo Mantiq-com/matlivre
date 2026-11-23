@@ -294,7 +294,7 @@ fn erfc_solve(q: f64, mut x: f64) -> f64 {
     x
 }
 
-fn erfinv(y: f64) -> f64 {
+pub(crate) fn erfinv(y: f64) -> f64 {
     if y.is_nan() || y.abs() > 1.0 {
         return NAN;
     }
@@ -430,7 +430,7 @@ pub(crate) fn gammaln(x: f64) -> f64 {
 }
 
 /// Digamma for x >= 0 (Cody's PSI with IEEE double constants).
-fn digamma(x: f64) -> f64 {
+pub(crate) fn digamma(x: f64) -> f64 {
     const P1: [f64; 9] = [
         4.5104681245762934160e-03, 5.4932855833000385356e+00, 3.7646693175929276856e+02, 7.9525490849151998065e+03, 7.1451595818951933210e+04,
         3.0655976301987365674e+05, 6.3606997788964458797e+05, 5.8041312783537569993e+05, 1.6585695029761022321e+05,
@@ -760,7 +760,7 @@ fn sinpi_cospi(a: f64) -> (f64, f64) {
     ((PI * r).sin(), (PI * r).cos())
 }
 
-fn gammaincinv(y: f64, a: f64, upper: bool) -> f64 {
+pub(crate) fn gammaincinv(y: f64, a: f64, upper: bool) -> f64 {
     if y.is_nan() || a.is_nan() {
         return NAN;
     }
@@ -911,7 +911,7 @@ fn betacf(x: f64, a: f64, b: f64) -> f64 {
 }
 
 /// (lower, upper) regularized incomplete beta at x, one of them computed directly.
-fn betainc_pair(x: f64, a: f64, b: f64) -> (f64, f64) {
+pub(crate) fn betainc_pair(x: f64, a: f64, b: f64) -> (f64, f64) {
     if x == 0.0 {
         return (0.0, 1.0);
     }
@@ -938,7 +938,7 @@ fn betainc_pair(x: f64, a: f64, b: f64) -> (f64, f64) {
     }
 }
 
-fn betaincinv(yv: f64, a: f64, b: f64, upper: bool) -> f64 {
+pub(crate) fn betaincinv(yv: f64, a: f64, b: f64, upper: bool) -> f64 {
     if yv.is_nan() || a.is_nan() || b.is_nan() {
         return NAN;
     }
