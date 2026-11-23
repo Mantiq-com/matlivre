@@ -782,7 +782,8 @@ fn computed(it: &mut Interpreter, id: u64, t: Target, name: &str) -> R<Option<Va
                 // A legend is a child of the figure, listed before its axes. Then the axes that are
                 // not in a tiled layout, in front, then the layout.
                 let order: Vec<usize> = it.figures[f].stacking().into_iter().filter(|&a| it.figures[f].axes[a].tile.is_none()).collect();
-                let mut ids: Vec<u64> = order.iter().rev().filter(|&&a| it.figures[f].axes[a].legend.is_some()).map(|&a| axes_id(it, f, a) + Part::Legend as u64).collect();
+                let with_legend: Vec<usize> = order.iter().rev().copied().filter(|&a| it.figures[f].axes[a].legend.is_some()).collect();
+                let mut ids: Vec<u64> = with_legend.into_iter().map(|a| axes_id(it, f, a) + Part::Legend as u64).collect();
                 ids.extend(order.into_iter().rev().map(|a| axes_id(it, f, a)));
                 ids.extend(it.figures[f].objects.iter().filter(|o| o.kind == graphics::FigObjKind::Layout).map(|o| o.id));
                 handles(it, &ids)
@@ -1835,7 +1836,8 @@ pub(crate) fn descendants(it: &mut Interpreter, id: u64, out: &mut Vec<u64>) {
         Some(Target::Figure(f)) => {
             let order = if it.figures[f].has_axes() { it.figures[f].stacking() } else { Vec::new() };
             // The legends are children of the figure, listed before the axes.
-            for &a in order.iter().rev().filter(|&&a| it.figures[f].axes[a].legend.is_some()) {
+            let with_legend: Vec<usize> = order.iter().rev().copied().filter(|&a| it.figures[f].axes[a].legend.is_some()).collect();
+            for a in with_legend {
                 let legend = axes_id(it, f, a) + Part::Legend as u64;
                 out.push(legend);
             }
