@@ -1,0 +1,20 @@
+{
+  "header": {
+    "release": "2023b",
+    "version": "23.2.0.2409890 (R2023b) Update 3",
+    "computer": "PCWIN64",
+    "recorded": "2026-11-24"
+  },
+  "log": "bar([1 2 3])                             XLim=[-0.2 4.2] YLim=[0 3]\nbar([1 2 3],0.5)                         XLim=[-0.05 4.05] YLim=[0 3]\nbar([1 2 3],1)                           XLim=[-0.3 4.3] YLim=[0 3]\nbar([1 5 9],[1 2 3])                     XLim=[-3.8 13.8] YLim=[0 3]\nbar([2 4 6],[1 2 3])                     XLim=[-0.4 8.4] YLim=[0 3]\nbar([1 2;3 4])                           XLim=[0.5142857143 2.485714286] YLim=[0 4]\nbar([1 2;3 4],'stacked')                 XLim=[-0.2 3.2] YLim=[0 7]\nbar([1 2 3;4 5 6;7 8 10])                XLim=[0.5111111111 3.488888889] YLim=[0 10]\nbar([1 2 3;4 5 6;7 8 10],'stacked')      XLim=[-0.2 4.2] YLim=[0 25]\nbar([5 6 7],'BarWidth',0.3)              XLim=[0.05 3.95] YLim=[0 7]\nbar(1)                                   XLim=[-0.2 2.2] YLim=[0 1]\nbar([1 2 3]')                            XLim=[-0.2 4.2] YLim=[0 3]\nbar(1:10)                                XLim=[-0.2 11.2] YLim=[0 10]\nbar([10 20 30],[1 2 3])                  XLim=[-2 42] YLim=[0 3]\nbar([1.5 2.5 4],[3 1 2])                 XLim=[0.3 5.2] YLim=[0 3]\nbar([-2 -1 0 1],[1 2 3 4])               XLim=[-3.2 2.2] YLim=[0 4]\nbarh([1 2 3])                            XLim=[0 3] YLim=[-0.2 4.2]\nbarh([1 5 9],[1 2 3])                    XLim=[0 3] YLim=[-3.8 13.8]\nbarh([10 20 30],[1 2 3])                 XLim=[0 3] YLim=[-2 42]\nbarh(1)                                  XLim=[0 1] YLim=[-0.2 2.2]\n",
+  "error": {
+    "identifier": "",
+    "message": ""
+  },
+  "lastwarn": {
+    "message": "",
+    "identifier": ""
+  },
+  "variables": {},
+  "figures": [],
+  "nfigures": 0
+}

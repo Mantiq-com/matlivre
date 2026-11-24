@@ -80,6 +80,7 @@ impl Parser {
     fn unexpected(&self, wanted: &str) -> LangError {
         let found = match self.peek() {
             Tok::Num(n) => format!("number {n}"),
+            Tok::Int(n, _) => format!("number {n}"),
             Tok::Imag(n) => format!("number {n}i"),
             Tok::Chars(s) => format!("'{s}'"),
             Tok::Str(s) => format!("\"{s}\""),
@@ -728,6 +729,8 @@ impl Parser {
     fn primary(&mut self) -> PResult<Expr> {
         match self.bump() {
             Tok::Num(n) => Ok(self.literal(Expr::Num(n))),
+            // An integer literal is the conversion of its value to its class.
+            Tok::Int(n, class) => Ok(self.literal(Expr::Index(Box::new(Expr::Ident(class.to_string())), vec![Expr::Num(n)]))),
             Tok::Imag(n) => Ok(self.literal(Expr::Imag(n))),
             Tok::Chars(s) => Ok(Expr::Chars(s)),
             Tok::Str(s) => Ok(Expr::Str(s)),

@@ -456,20 +456,31 @@ pub fn call(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) ->
             handles_out(it, &[label], nargout)
         }
         "legend" => {
+            // A leading vector of plotted objects picks the ones the legend lists, in that order.
+            let mut args: &[Value] = a;
+            let mut picked: Vec<u64> = Vec::new();
+            if let Some(ids) = args.first().and_then(crate::gfx::ids_of) {
+                if !ids.is_empty() && ids.iter().all(|&id| matches!(crate::gfx::resolve(it, id), Some(crate::gfx::Target::Series(..)))) {
+                    picked = ids;
+                    args = &args[1..];
+                }
+            }
             let mut names: Vec<String> = Vec::new();
             let mut show = true;
+            let mut hide = false;
             let mut options: Vec<(String, Value)> = Vec::new();
-            for (k, v) in a.iter().enumerate() {
+            for (k, v) in args.iter().enumerate() {
                 match v {
                     Value::Cell(_) | Value::Str(_) if !v.is_text() => names.extend(text_of(v)?.split('\n').map(String::from)),
                     other => {
                         let t = other.text()?;
                         match t.as_str() {
                             "off" => show = false,
+                            "hide" => hide = true,
                             "show" | "boxoff" | "boxon" => {}
                             // The rest are name-value pairs for the legend.
                             "Location" | "location" | "Orientation" | "NumColumns" => {
-                                let mut pairs = a[k..].chunks(2);
+                                let mut pairs = args[k..].chunks(2);
                                 while let Some([n, val]) = pairs.next() {
                                     options.push((n.text()?, val.clone()));
                                 }
@@ -481,8 +492,35 @@ pub fn call(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) ->
                 }
             }
             let ax = it.current_figure().axes_mut();
+            if hide {
+                // The legend stays an object of the figure, only not shown.
+                if ax.legend.is_some() {
+                    ax.legend_hidden = true;
+                }
+                return none();
+            }
+            ax.legend_hidden = false;
+            ax.legend_ids.clear();
             if !show {
                 ax.legend = None;
+            } else if !picked.is_empty() {
+                let at: Vec<usize> = picked.iter().filter_map(|id| ax.series.iter().position(|s| s.id == *id)).collect();
+                for (&i, n) in at.iter().zip(&names) {
+                    ax.series[i].name = Some(n.clone());
+                }
+                // Unnamed objects are numbered among themselves (data1, data2, ...).
+                let mut unnamed = 0;
+                ax.legend = Some(
+                    at.iter()
+                        .map(|&i| {
+                            ax.series[i].name.clone().unwrap_or_else(|| {
+                                unnamed += 1;
+                                format!("data{unnamed}")
+                            })
+                        })
+                        .collect(),
+                );
+                ax.legend_ids = at.iter().map(|&i| ax.series[i].id).collect();
             } else if names.is_empty() {
                 ax.legend = Some(
                     ax.series
@@ -671,12 +709,16 @@ pub fn call(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) ->
             // scatter(x, y, sz, c): numeric size/color arguments after x, y.
             let mut args2: Vec<Value> = a.to_vec();
             let mut size = None;
+            let mut size_vec: Option<Matrix> = None;
             let filled = kind == SeriesKind::Scatter && a.iter().any(|v| v.is_text() && v.text().map(|t| t == "filled").unwrap_or(false));
             if kind == SeriesKind::Scatter {
                 if args2.len() >= 3 && !args2[2].is_text() {
                     let s = args2.remove(2);
                     if s.numel() >= 1 {
                         size = Some(s.scalar()?);
+                        if s.numel() > 1 {
+                            size_vec = Some(s.to_matrix()?);
+                        }
                     }
                 }
                 if args2.len() >= 3 && !args2[2].is_text() {
@@ -689,6 +731,16 @@ pub fn call(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) ->
             if kind == SeriesKind::Bar {
                 if let Some(k) = args2.iter().position(|v| v.text().is_ok_and(|t| matches!(t.to_lowercase().as_str(), "grouped" | "stacked" | "hist" | "histc"))) {
                     layout = args2.remove(k).text()?.to_lowercase();
+                }
+            }
+            // bar(y, width) and bar(x, y, width): the width of a bar as a fraction of the spacing.
+            let mut width_rel: Option<f64> = None;
+            if kind == SeriesKind::Bar {
+                let lead = args2.iter().take_while(|v| !v.is_text()).count();
+                if lead == 3 && args2[2].numel() == 1 {
+                    width_rel = Some(args2.remove(2).scalar()?);
+                } else if lead == 2 && args2[1].numel() == 1 && args2[0].numel() > 1 {
+                    width_rel = Some(args2.remove(1).scalar()?);
                 }
             }
             let (mut series, x_kind, props) = plot_series(&args2, kind)?;
@@ -710,7 +762,14 @@ pub fn call(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) ->
                     for (k, s) in series.iter_mut().enumerate() {
                         let off = (k as f64 - (m as f64 - 1.0) / 2.0) * d;
                         s.dx = vec![off; s.x.len()];
-                        s.bar_width = Some(d * 0.8);
+                        s.bar_width = Some(d * width_rel.unwrap_or(0.8));
+                    }
+                }
+            }
+            if let (SeriesKind::Bar, Some(w)) = (kind, width_rel) {
+                if series.len() == 1 || layout == "stacked" {
+                    for s in series.iter_mut() {
+                        s.bar_width = Some(w * graphics::bar_spacing(&s.x));
                     }
                 }
             }
@@ -718,6 +777,9 @@ pub fn call(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) ->
                 for s in series.iter_mut() {
                     s.marker_size = (sz.sqrt() as f32).max(2.0);
                     s.size_data = Some(sz);
+                    if let Some(m) = &size_vec {
+                        s.size_vec = m.data.clone();
+                    }
                 }
             }
             let ends: Vec<(Vec<f64>, Vec<f64>)> = series

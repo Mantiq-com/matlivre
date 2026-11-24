@@ -3247,9 +3247,30 @@ fn call_dense_inner(it: &mut Interpreter, name: &str, args: &[Value], nargout: u
             none()
         }
         "display" => {
-            let v = arg(a, 0, name)?;
-            let text = crate::display::display_value("ans", v, it.format);
-            it.emit(OutputKind::Value { name: "ans".into(), text });
+            // `display(x)` of a variable shows `x = ...`; of any other expression, as `disp` does.
+            let v = arg(a, 0, name)?.clone();
+            let var = std::mem::take(&mut it.arg_names).into_iter().next().flatten();
+            match var {
+                Some(n) if a.len() == 1 => it.show(&n, &v)?,
+                _ => {
+                    // Logical, integer and single values show their class above the value, as
+                    // `x = ...` does, without the name.
+                    if let Value::Num(m) = &v {
+                        if !matches!(m.kind, crate::value::Kind::Double | crate::value::Kind::Char) && !m.is_empty() && !m.sparse {
+                            let named = if it.command_window { crate::display::display_value_cw("x", &v, it.format) } else { None };
+                            if let Some(rest) = named.as_deref().and_then(|t| t.strip_prefix("\nx =\n\n")) {
+                                let mut text = rest.to_string();
+                                if !text.ends_with("\n\n") {
+                                    text.push('\n');
+                                }
+                                it.emit(OutputKind::Text(text));
+                                return none();
+                            }
+                        }
+                    }
+                    it.call_function("disp", vec![v], 0)?;
+                }
+            }
             none()
         }
         "error" => {

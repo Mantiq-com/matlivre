@@ -1,0 +1,194 @@
+{
+  "header": {
+    "release": "2023b",
+    "version": "23.2.0.2409890 (R2023b) Update 3",
+    "computer": "PCWIN64",
+    "recorded": "2026-11-24"
+  },
+  "log": "\nx =\n\n     7\n\n     7\n\n     8\n\n     1     2     3\n\nabc\n\ny =\n\n    'hi'\n\n\nz =\n\n  1x2 cell array\n\n    {[1]}    {'a'}\n\n\nm =\n\n     8     1     6\n     3     5     7\n     4     9     2\n\n\ns = \n\n  struct with fields:\n\n    a: 1\n\n\ne =\n\n     []\n\nafter\n     3     5     7\n\n  logical\n\n   1\n\n\nl =\n\n  logical\n\n   1\n\n",
+  "error": {
+    "identifier": "",
+    "message": ""
+  },
+  "lastwarn": {
+    "message": "",
+    "identifier": ""
+  },
+  "variables": {
+    "e": {
+      "class": "double",
+      "size": [
+        0,
+        0
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          0,
+          0
+        ],
+        "real": []
+      },
+      "display": "\ne =\n\n     []\n\n"
+    },
+    "l": {
+      "class": "logical",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "logical",
+        "size": [
+          1,
+          1
+        ],
+        "data": 1
+      },
+      "display": "\nl =\n\n  <a href=\"matlab:helpPopup logical\" style=\"font-weight:bold\">logical</a>\n\n   1\n\n"
+    },
+    "m": {
+      "class": "double",
+      "size": [
+        3,
+        3
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          3,
+          3
+        ],
+        "real": [
+          "4020000000000000",
+          "4008000000000000",
+          "4010000000000000",
+          "3ff0000000000000",
+          "4014000000000000",
+          "4022000000000000",
+          "4018000000000000",
+          "401c000000000000",
+          "4000000000000000"
+        ]
+      },
+      "display": "\nm =\n\n     8     1     6\n     3     5     7\n     4     9     2\n\n"
+    },
+    "s": {
+      "class": "struct",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "struct",
+        "size": [
+          1,
+          1
+        ],
+        "fields": [
+          "a"
+        ],
+        "elements": [
+          {
+            "a": {
+              "kind": "numeric",
+              "class": "double",
+              "sparse": false,
+              "size": [
+                1,
+                1
+              ],
+              "real": [
+                "3ff0000000000000"
+              ]
+            }
+          }
+        ]
+      },
+      "display": "\ns = \n\n  <a href=\"matlab:helpPopup struct\" style=\"font-weight:bold\">struct</a> with fields:\n\n    a: 1\n\n"
+    },
+    "x": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "401c000000000000"
+        ]
+      },
+      "display": "\nx =\n\n     7\n\n"
+    },
+    "y": {
+      "class": "char",
+      "size": [
+        1,
+        2
+      ],
+      "value": {
+        "kind": "char",
+        "size": [
+          1,
+          2
+        ],
+        "rows": [
+          "hi"
+        ]
+      },
+      "display": "\ny =\n\n    'hi'\n\n"
+    },
+    "z": {
+      "class": "cell",
+      "size": [
+        1,
+        2
+      ],
+      "value": {
+        "kind": "cell",
+        "size": [
+          1,
+          2
+        ],
+        "items": [
+          {
+            "kind": "numeric",
+            "class": "double",
+            "sparse": false,
+            "size": [
+              1,
+              1
+            ],
+            "real": [
+              "3ff0000000000000"
+            ]
+          },
+          {
+            "kind": "char",
+            "size": [
+              1,
+              1
+            ],
+            "rows": [
+              "a"
+            ]
+          }
+        ]
+      },
+      "display": "\nz =\n\n  1x2 <a href=\"matlab:helpPopup cell\" style=\"font-weight:bold\">cell</a> array\n\n    {[1]}    {'a'}\n\n"
+    }
+  },
+  "figures": [],
+  "nfigures": 0
+}

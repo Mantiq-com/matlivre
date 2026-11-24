@@ -970,6 +970,7 @@ fn computed(it: &mut Interpreter, id: u64, t: Target, name: &str) -> R<Option<Va
                 "LineWidth" => Value::num(s.line_width as f64),
                 "Marker" => Value::chars(marker_name(s.marker)),
                 "MarkerSize" => Value::num(s.marker_size as f64),
+                "SizeData" if !s.size_vec.is_empty() => Value::Num(if s.size_col { Matrix::new(s.size_vec.len(), 1, s.size_vec.clone()) } else { Matrix::row(s.size_vec.clone()) }),
                 "SizeData" if s.size_data.is_some() => Value::num(s.size_data.unwrap_or(36.0)),
                 "DisplayName" => Value::chars(s.name.as_deref().unwrap_or("")),
                 "Visible" => on_off_value(s.visible),
@@ -1029,6 +1030,7 @@ fn computed(it: &mut Interpreter, id: u64, t: Target, name: &str) -> R<Option<Va
                 (Part::YSecondary, "String") => Value::chars(&ax.secondary[1]),
                 (Part::ZSecondary, "String") => Value::chars(&ax.secondary[2]),
                 (Part::XSecondary | Part::YSecondary | Part::ZSecondary, "Type") => Value::chars("text"),
+                (Part::Legend, "Visible") => on_off_value(!ax.legend_hidden),
                 (Part::Legend, "String") => {
                     let names = ax.legend.clone().unwrap_or_default();
                     Value::Cell(CellArray::row(names.iter().map(|n| Value::chars(n)).collect()))
@@ -1366,6 +1368,9 @@ pub(crate) fn set_prop(it: &mut Interpreter, id: u64, name: &str, v: Value) -> R
                 "SizeData" => {
                     s.marker_size = (v.scalar()?.sqrt() as f32).max(2.0);
                     s.size_data = Some(v.scalar()?);
+                    let m = v.to_matrix()?;
+                    s.size_vec = if m.data.len() > 1 { m.data.clone() } else { Vec::new() };
+                    s.size_col = m.data.len() > 1 && m.cols() == 1;
                 }
                 "DisplayName" => s.name = Some(v.text()?),
                 "Visible" => s.visible = on_off(&v)?,
@@ -1437,8 +1442,8 @@ pub(crate) fn set_prop(it: &mut Interpreter, id: u64, name: &str, v: Value) -> R
                     ax.switch_side(active.unwrap());
                 }
                 keep = !r?;
-            } else if p == Part::Legend && name == "Visible" && !on_off(&v)? {
-                it.figures[f].axes[a].legend = None;
+            } else if p == Part::Legend && name == "Visible" {
+                it.figures[f].axes[a].legend_hidden = !on_off(&v)?;
                 keep = false;
             }
         }

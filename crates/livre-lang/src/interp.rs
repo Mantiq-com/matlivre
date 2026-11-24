@@ -1774,10 +1774,16 @@ If you want to design a new filter with different specifications, use the design
                 if matches!(start, Value::Sym(_)) || matches!(stop, Value::Sym(_)) {
                     return rt("Colon operands must be real numeric scalars.");
                 }
-                let kind = match &start {
-                    Value::Num(m) if m.kind.is_int() || m.kind == Kind::Single => m.kind,
-                    _ => Kind::Double,
-                };
+                // An integer operand (the stop of `1:0x4`, say) makes an integer range; else a single one.
+                let kinds: Vec<Kind> = [Some(&start), step_v.as_ref(), Some(&stop)]
+                    .into_iter()
+                    .flatten()
+                    .filter_map(|v| match v {
+                        Value::Num(m) if m.kind.is_int() || m.kind == Kind::Single => Some(m.kind),
+                        _ => None,
+                    })
+                    .collect();
+                let kind = kinds.iter().copied().find(|k| k.is_int()).or_else(|| kinds.first().copied()).unwrap_or(Kind::Double);
                 let start = start.scalar()?;
                 let step = match step_v {
                     Some(s) => s.scalar()?,
@@ -1966,8 +1972,13 @@ If you want to design a new filter with different specifications, use the design
                 }
                 match base.as_ref() {
                     Expr::Ident(name) if self.get_var(name).is_none() => {
-                        if name == "table" || crate::table_ops::wants_arg_names(name) {
+                        if name == "table" || name == "display" || crate::table_ops::wants_arg_names(name) {
                             self.arg_names = args.iter().map(|a| if let Expr::Ident(n) = a { Some(n.clone()) } else { None }).collect();
+                            if name == "display" {
+                                // Only a variable is shown under its name (not `true`, `pi`, ...).
+                                let names = std::mem::take(&mut self.arg_names);
+                                self.arg_names = names.into_iter().map(|n| n.filter(|v| self.get_var(v).is_some())).collect();
+                            }
                         }
                         if let Some(r) = self.call_lending(name, args, nargout)? {
                             return Ok(r);

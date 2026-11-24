@@ -1,0 +1,208 @@
+{
+  "header": {
+    "release": "2023b",
+    "version": "23.2.0.2409890 (R2023b) Update 3",
+    "computer": "PCWIN64",
+    "recorded": "2026-11-24"
+  },
+  "log": "",
+  "error": {
+    "identifier": "",
+    "message": ""
+  },
+  "lastwarn": {
+    "message": "",
+    "identifier": ""
+  },
+  "variables": {
+    "a": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "fff8000000000000"
+        ]
+      },
+      "display": "\na =\n\n   NaN\n\n"
+    },
+    "b": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "fff8000000000000"
+        ]
+      },
+      "display": "\nb =\n\n   NaN\n\n"
+    },
+    "c": {
+      "class": "double",
+      "size": [
+        1,
+        3
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          3
+        ],
+        "real": [
+          "3ff0000000000000",
+          "fff8000000000000",
+          "4008000000000000"
+        ]
+      },
+      "display": "\nc =\n\n     1   NaN     3\n\n"
+    },
+    "d": {
+      "class": "single",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "single",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "ffc00000"
+        ]
+      },
+      "display": "\nd =\n\n  <a href=\"matlab:helpPopup single\" style=\"font-weight:bold\">single</a>\n\n   NaN\n\n"
+    },
+    "e": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "fff8000000000000"
+        ]
+      },
+      "display": "\ne =\n\n   NaN\n\n"
+    },
+    "f": {
+      "class": "double",
+      "size": [
+        2,
+        2
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          2,
+          2
+        ],
+        "real": [
+          "fff8000000000000",
+          "fff8000000000000",
+          "fff8000000000000",
+          "fff8000000000000"
+        ]
+      },
+      "display": "\nf =\n\n   NaN   NaN\n   NaN   NaN\n\n"
+    },
+    "h": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "7ff8000000000000"
+        ]
+      },
+      "display": "\nh =\n\n   NaN\n\n"
+    },
+    "k": {
+      "class": "double",
+      "size": [
+        1,
+        3
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          3
+        ],
+        "real": [
+          "fff8000000000000",
+          "7ff0000000000000",
+          "fff0000000000000"
+        ]
+      },
+      "display": "\nk =\n\n   NaN   Inf  -Inf\n\n"
+    },
+    "n": {
+      "class": "double",
+      "size": [
+        1,
+        1
+      ],
+      "value": {
+        "kind": "numeric",
+        "class": "double",
+        "sparse": false,
+        "size": [
+          1,
+          1
+        ],
+        "real": [
+          "fff8000000000000"
+        ]
+      },
+      "display": "\nn =\n\n   NaN\n\n"
+    }
+  },
+  "figures": [],
+  "nfigures": 0
+}

@@ -85,6 +85,10 @@ pub struct Series {
     pub marker_size: f32,
     /// `SizeData` of a scatter as given (marker area, points squared); `marker_size` is its root.
     pub size_data: Option<f64>,
+    /// `SizeData` when it is a vector (a size for each point); empty for a scalar.
+    pub size_vec: Vec<f64>,
+    /// The vector `SizeData` was given as a column.
+    pub size_col: bool,
     pub name: Option<String>,
     /// Bar width in x units (histograms); `None` = 0.8 of the spacing.
     pub bar_width: Option<f64>,
@@ -149,6 +153,8 @@ impl Series {
             line_width: 0.5,
             marker_size: 6.0,
             size_data: None,
+            size_vec: Vec::new(),
+            size_col: false,
             name: None,
             bar_width: None,
             id: 0,
@@ -202,6 +208,11 @@ pub struct Axes {
     pub ygrid_only: bool,
     pub hold: bool,
     pub legend: Option<Vec<String>>,
+    /// Handles of the plotted objects the legend lists, in its order (`legend([p2 p1], ...)`);
+    /// empty = every plotted object, in the order they were drawn.
+    pub legend_ids: Vec<u64>,
+    /// The legend is kept but not shown (`legend hide`, `Visible` off).
+    pub legend_hidden: bool,
     pub series: Vec<Series>,
     pub xlim: Option<(f64, f64)>,
     pub ylim: Option<(f64, f64)>,
@@ -389,10 +400,7 @@ impl Axes {
                     ys.extend(&s.x);
                     xs.extend(&s.y);
                     xs.push(0.0);
-                    let dy = bar_spacing(&s.x);
-                    if let (Some(lo), Some(hi)) = (s.x.iter().cloned().reduce(f64::min), s.x.iter().cloned().reduce(f64::max)) {
-                        ys.extend([lo - dy * 0.6, hi + dy * 0.6]);
-                    }
+                    ys.extend(bar_extent(s).into_iter().flatten());
                     continue;
                 }
                 _ => {}
@@ -422,11 +430,8 @@ impl Axes {
             if matches!(s.kind, SeriesKind::Bar | SeriesKind::Area | SeriesKind::Stem) {
                 ys.push(0.0);
             }
-            if s.kind == SeriesKind::Bar && !s.x.is_empty() {
-                let dx = s.bar_width.map(|w| w / 0.8).unwrap_or_else(|| bar_spacing(&s.x));
-                if let (Some(lo), Some(hi)) = (s.x.iter().cloned().reduce(f64::min), s.x.iter().cloned().reduce(f64::max)) {
-                    xs.extend([lo - dx * 0.6, hi + dx * 0.6]);
-                }
+            if s.kind == SeriesKind::Bar {
+                xs.extend(bar_extent(s).into_iter().flatten());
             }
         }
         xs.iter().for_each(|&v| grow_x(v));
@@ -482,6 +487,9 @@ impl Axes {
     /// out to ticks.
     pub fn limits(&self) -> ((f64, f64), (f64, f64)) {
         let ((x0, x1), (y0, y1)) = self.bounds();
+        // The category axis of bars is padded, not rounded out to ticks.
+        let shown = || self.series.iter().filter(|s| s.visible);
+        let (pad_x, pad_y) = (shown().any(|s| s.kind == SeriesKind::Bar && !s.x.is_empty()), shown().any(|s| s.kind == SeriesKind::BarH && !s.x.is_empty()));
         let round = |lo: f64, hi: f64, set: bool| {
             if set {
                 return (lo, hi);
@@ -489,7 +497,7 @@ impl Axes {
             let step = nice_step(hi - lo, 5.0);
             ((lo / step + 1e-9).floor() * step, (hi / step - 1e-9).ceil() * step)
         };
-        (round(x0, x1, self.xlim.is_some()), round(y0, y1, self.ylim.is_some()))
+        (round(x0, x1, self.xlim.is_some() || pad_x), round(y0, y1, self.ylim.is_some() || pad_y))
     }
 }
 
@@ -711,6 +719,19 @@ pub fn map_color(map: &[[f64; 3]], lim: (f64, f64), v: f64) -> Option<[f64; 3]> 
     let f = if lim.1 > lim.0 { (v - lim.0) / (lim.1 - lim.0) } else { 0.5 };
     let i = ((f * n as f64).floor() as i64).clamp(0, n as i64 - 1) as usize;
     Some(map[i])
+}
+
+/// The extent MATLAB gives the category axis of a bar series (`XLimitMethod` padded): from the
+/// outermost bar centre out by 0.8 of the distance between bars plus half a bar width.
+/// The bars of a group are `bar_width / 0.8` apart; those of a single series, a bar spacing.
+fn bar_extent(s: &Series) -> Option<[f64; 2]> {
+    let centres: Vec<f64> = s.x.iter().enumerate().map(|(i, x)| x + s.dx.get(i).copied().unwrap_or(0.0)).filter(|c| c.is_finite()).collect();
+    let lo = centres.iter().copied().reduce(f64::min)?;
+    let hi = centres.iter().copied().reduce(f64::max)?;
+    let unit = if s.dx.is_empty() { bar_spacing(&s.x) } else { s.bar_width.map_or_else(|| bar_spacing(&s.x), |w| w / 0.8) };
+    let width = s.bar_width.unwrap_or(0.8 * unit);
+    let pad = 0.8 * unit + width / 2.0;
+    Some([lo - pad, hi + pad])
 }
 
 /// Smallest positive spacing between successive x values (1 when there is none).

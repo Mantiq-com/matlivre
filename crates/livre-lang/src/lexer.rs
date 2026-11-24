@@ -7,6 +7,8 @@ use crate::error::LangError;
 #[derive(Debug, Clone, PartialEq)]
 pub enum Tok {
     Num(f64),
+    /// Integer literal in hex or binary (`0x1F`, `0b101u8`): the value and its class.
+    Int(f64, &'static str),
     /// Imaginary literal such as `3i`.
     Imag(f64),
     /// Single-quoted char array.
@@ -130,7 +132,7 @@ impl<'a> Lexer<'a> {
             return false;
         }
         match self.out.last().map(|t| &t.tok) {
-            Some(Tok::Num(_)) | Some(Tok::Imag(_)) | Some(Tok::Chars(_)) | Some(Tok::Str(_)) | Some(Tok::Ident(_)) => true,
+            Some(Tok::Num(_)) | Some(Tok::Int(..)) | Some(Tok::Imag(_)) | Some(Tok::Chars(_)) | Some(Tok::Str(_)) | Some(Tok::Ident(_)) => true,
             Some(Tok::Kw(Kw::End)) => !self.brackets.is_empty(),
             Some(Tok::Op(op)) => matches!(*op, ")" | "]" | "}" | "'" | ".'"),
             _ => false,
@@ -203,6 +205,14 @@ impl<'a> Lexer<'a> {
                 self.push(Tok::Sep(false), true);
             }
 
+            if c == b'0' {
+                let start = self.i;
+                if let Some((n, class)) = self.radix_literal()? {
+                    self.num_text = Some(self.src[start..self.i].to_string());
+                    self.push(Tok::Int(n, class), space);
+                    continue;
+                }
+            }
             if c.is_ascii_digit() || (c == b'.' && self.peek(1).is_ascii_digit()) {
                 let start = self.i;
                 let n = self.number()?;
@@ -377,6 +387,65 @@ impl<'a> Lexer<'a> {
                 return;
             }
         }
+    }
+
+    /// `0x1F` and `0b101`, with an optional suffix `u8`, `u16`, `u32`, `u64`, `s8`, `s16`, `s32`
+    /// or `s64`: an integer of that class, or without a suffix of the smallest unsigned class that
+    /// holds the value. Advances past the literal; `None` (and no move) when this is no such literal.
+    fn radix_literal(&mut self) -> Result<Option<(f64, &'static str)>, LangError> {
+        let radix = match self.peek(1) {
+            b'x' | b'X' if self.peek(2).is_ascii_hexdigit() => 16,
+            b'b' | b'B' if matches!(self.peek(2), b'0' | b'1') => 2,
+            _ => return Ok(None),
+        };
+        let mut end = self.i + 2;
+        while self.s.get(end).is_some_and(|&c| if radix == 16 { c.is_ascii_hexdigit() } else { matches!(c, b'0' | b'1') }) {
+            end += 1;
+        }
+        let value = u64::from_str_radix(&self.src[self.i + 2..end], radix).map_err(|_| self.err("Invalid number."))?;
+        let mut suffix: Option<(bool, u32)> = None;
+        if let Some(&k @ (b'u' | b's')) = self.s.get(end) {
+            let rest = &self.src[end + 1..];
+            for bits in [8u32, 16, 32, 64] {
+                let digits = bits.to_string();
+                let after = rest.as_bytes().get(digits.len()).copied().unwrap_or(0);
+                if rest.starts_with(&digits) && !(after.is_ascii_alphanumeric() || after == b'_') {
+                    suffix = Some((k == b's', bits));
+                    end += 1 + digits.len();
+                    break;
+                }
+            }
+        }
+        let after = self.s.get(end).copied().unwrap_or(0);
+        if after.is_ascii_alphanumeric() || after == b'_' {
+            return Err(self.err("Invalid number."));
+        }
+        let class = match suffix {
+            None => match value {
+                0..=0xFF => "uint8",
+                0x100..=0xFFFF => "uint16",
+                0x1_0000..=0xFFFF_FFFF => "uint32",
+                _ => "uint64",
+            },
+            Some((signed, bits)) => {
+                let top = if signed { (1u64 << (bits - 1)) - 1 } else if bits == 64 { u64::MAX } else { (1u64 << bits) - 1 };
+                if value > top {
+                    return Err(self.err("Invalid number."));
+                }
+                match (signed, bits) {
+                    (false, 8) => "uint8",
+                    (false, 16) => "uint16",
+                    (false, 32) => "uint32",
+                    (false, _) => "uint64",
+                    (true, 8) => "int8",
+                    (true, 16) => "int16",
+                    (true, 32) => "int32",
+                    (true, _) => "int64",
+                }
+            }
+        };
+        self.i = end;
+        Ok(Some((value as f64, class)))
     }
 
     fn number(&mut self) -> Result<f64, LangError> {
