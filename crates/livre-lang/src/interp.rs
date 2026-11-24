@@ -943,6 +943,14 @@ impl Interpreter {
 {t}") });
                 return Ok(());
             }
+            if let Some(t) = crate::stats::cvpart::object_text(o) {
+                self.emit(OutputKind::Value { name: name.to_string(), text: format!("
+{name} = 
+
+{t}
+") });
+                return Ok(());
+            }
             if let Some(t) = crate::tiff::object_text(o) {
                 self.emit(OutputKind::Value { name: name.to_string(), text: format!("{name} = 
 
@@ -1551,6 +1559,9 @@ impl Interpreter {
                     }
                     if o.class.name == "GeneralizedLinearModel" {
                         return rt(format!("The {f} property for class GeneralizedLinearModel is read-only."));
+                    }
+                    if o.class.name == "cvpartition" {
+                        return rt(format!("Unable to set the '{f}' property of class ''cvpartition'' because it is read-only."));
                     }
                     if o.class.name == "LinearModel" {
                         return rt(format!("The {f} property for class LinearModel is read-only."));

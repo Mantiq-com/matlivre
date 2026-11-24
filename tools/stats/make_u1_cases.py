@@ -538,6 +538,72 @@ for c in ["lhsdesign()", "lhsdesign(5)", "lhsdesign(5.5,2)", "lhsdesign(-1,2)", 
     L21.append((lh % 1).replace("{c}", c))
 L += L21
 
+P12 = "gA=[1 1 1 1 2 2 2 2 2 3 3 3]'; gB={'a';'b';'a';'c';'b';'a';'c';'c';'b';'a'}; gC=[3 1 1 2 3 3 1 2 2 3 1 1]'; gD=[1 1 NaN 2 2 1 2 NaN 1 2]'; gE=['aa';'bb';'aa';'bb';'aa';'bb';'aa';'bb']; gF=logical([1 0 1 1 0 0 1 0 1 1])'; "
+L22 = []
+cvr = "rng(%d); c_ = {c}; r = {c_.NumObservations, c_.NumTestSets, c_.TrainSize, c_.TestSize, c_.Type, c_.IsCustom, class(c_), double(training(c_,%s)), double(test(c_,%s))};"
+cvh = "rng(%d); c_ = {c}; r = {c_.NumObservations, c_.NumTestSets, c_.TrainSize, c_.TestSize, c_.Type, double(training(c_)), double(test(c_)), double(training(c_,1)), double(test(c_,1))};"
+sd = 0
+for c in ["cvpartition(10,'KFold',3)", "cvpartition(10,'KFold',5)", "cvpartition(10,'KFold',2)", "cvpartition(10,'KFold')", "cvpartition(25,'KFold',4)", "cvpartition(7,'KFold',7)", "cvpartition(7,'KFold',3)", "cvpartition(20,'KFold',6)",
+          "cvpartition(12,'k',3)", "cvpartition(12,'KF',4)", "cvpartition(12,'kfold',[])", "cvpartition(15,'KFold',15)", "cvpartition(5,'KFold',9)", "cvpartition(2,'KFold',2)", "cvpartition(30,'KFold',11)",
+          "cvpartition(gA,'KFold',3)", "cvpartition(gA,'KFold',4)", "cvpartition(gA,'KFold',2)", "cvpartition(gA,'KFold')", "cvpartition(gB,'KFold',3)", "cvpartition(gB,'KFold',2)", "cvpartition(gC,'KFold',3)", "cvpartition(gC,'KFold',5)",
+          "cvpartition(gD,'KFold',3)", "cvpartition(gD,'KFold',2)", "cvpartition(gE,'KFold',2)", "cvpartition(gE,'KFold',3)", "cvpartition(gF,'KFold',3)", "cvpartition(gA,'KFold',3,'Stratify',false)", "cvpartition(gB,'KFold',3,'Stratify',true)",
+          "cvpartition(gA,'KFold',12)", "cvpartition(gA,'KFold',20)", "cvpartition({'x','y','z','x','y','z'},'KFold',3)", "cvpartition(categorical(gB),'KFold',3)", "cvpartition(string(gB),'KFold',3)", "cvpartition(gD,'KFold',3,'Stratify',false)",
+          "cvpartition(10,'KFold',3,'Stratify',false)", "cvpartition(gA,'kfold',3,'strat',true)"]:
+    sd += 1
+    L22.append(P12 + (cvr % (sd, "1", "1")).replace("{c}", c))
+    L22.append(P12 + (cvr % (sd + 100, "'all'", "[2 1]")).replace("{c}", c))
+for c in ["cvpartition(10,'HoldOut')", "cvpartition(10,'HoldOut',0.3)", "cvpartition(10,'Holdout',3)", "cvpartition(10,'holdout',0.5)", "cvpartition(20,'h',0.25)", "cvpartition(20,'HoldOut',0.1)", "cvpartition(9,'HoldOut',0.34)", "cvpartition(9,'HoldOut',8)",
+          "cvpartition(50,'HoldOut',0.2)", "cvpartition(2,'HoldOut',1)", "cvpartition(10,'HoldOut',[])",
+          "cvpartition(gA,'HoldOut',0.25)", "cvpartition(gA,'HoldOut',0.5)", "cvpartition(gA,'HoldOut',3)", "cvpartition(gA,'HoldOut',6)", "cvpartition(gA,'HoldOut')", "cvpartition(gA,'HoldOut',0.2)", "cvpartition(gB,'HoldOut',0.3)", "cvpartition(gB,'HoldOut',0.5)",
+          "cvpartition(gC,'HoldOut',0.4)", "cvpartition(gC,'HoldOut',2)", "cvpartition(gD,'HoldOut',0.3)", "cvpartition(gD,'HoldOut',0.5)", "cvpartition(gE,'HoldOut',0.25)", "cvpartition(gF,'HoldOut',0.3)", "cvpartition(gA,'HoldOut',0.3,'Stratify',false)",
+          "cvpartition(gA,'HoldOut',0.05)", "cvpartition(gA,'HoldOut',0.9)", "cvpartition(gB,'HoldOut',0.7)", "cvpartition(gC,'HoldOut',0.8)"]:
+    sd += 1
+    L22.append(P12 + (cvh % sd).replace("{c}", c))
+for c in ["cvpartition(5,'LeaveOut')", "cvpartition(8,'LeaveOut')", "cvpartition(2,'LeaveOut')", "cvpartition(12,'Leave')", "cvpartition(gA,'LeaveOut')", "cvpartition(gB,'LeaveOut')", "cvpartition(gD,'LeaveOut')", "cvpartition(6,'LeaveOut',1)", "cvpartition(6,'LeaveOut',2)",
+          "cvpartition(gE,'LeaveOut')"]:
+    sd += 1
+    L22.append(P12 + (cvr % (sd, "1", "[3 1]")).replace("{c}", c))
+for c in ["cvpartition(10,'Resubstitution')", "cvpartition(4,'Resub')", "cvpartition(gA,'Resubstitution')", "cvpartition(gD,'Resubstitution')", "cvpartition(gB,'r')", "cvpartition(3,'Resubstitution')"]:
+    sd += 1
+    L22.append(P12 + (cvh % sd).replace("{c}", c))
+# repartition draws a new partition from the stream that follows
+rp = "rng(%d); c_ = {c}; d_ = repartition(c_); e_ = repartition(d_); r = {c_.TrainSize, c_.TestSize, double(test(c_,1)), d_.TrainSize, d_.TestSize, double(test(d_,1)), double(test(e_,1)), class(d_), d_.NumObservations, d_.Type};"
+for c in ["cvpartition(10,'KFold',3)", "cvpartition(12,'KFold',4)", "cvpartition(gA,'KFold',3)", "cvpartition(gD,'KFold',2)", "cvpartition(10,'HoldOut',0.3)", "cvpartition(gA,'HoldOut',0.25)", "cvpartition(6,'LeaveOut')", "cvpartition(gB,'KFold',3)"]:
+    sd += 1
+    L22.append(P12 + (rp % sd).replace("{c}", c))
+rp2 = "rng(%d); c_ = {c}; d_ = repartition(c_); r = {double(training(d_)), double(test(d_)), d_.TrainSize};"
+for c in ["cvpartition(5,'Resubstitution')"]:
+    sd += 1
+    L22.append(P12 + (rp2 % sd).replace("{c}", c))
+# the stream continues after a partition: draws after cvpartition match
+L22.append(P12 + "rng(5); c_ = cvpartition(10,'KFold',3); r = {rand(1,3)};")
+L22.append(P12 + "rng(5); c_ = cvpartition(gA,'HoldOut',0.25); r = {rand(1,3)};")
+L22.append(P12 + "rng(5); c_ = cvpartition(gA,'KFold',3); r = {rand(1,3)};")
+L22.append(P12 + "rng(5); c_ = cvpartition(6,'LeaveOut'); r = {rand(1,3)};")
+# properties and methods
+L22.append(P12 + "rng(1); c_ = cvpartition(10,'KFold',3); r = {numel(c_), size(c_), isobject(c_), isa(c_,'cvpartition'), ismethod(c_,'training'), isprop(c_,'TrainSize'), isequal(training(c_,'all'), [training(c_,1) training(c_,2) training(c_,3)])};")
+L22.append(P12 + "rng(1); c_ = cvpartition(10,'KFold',3); r = {size(training(c_,[3 1])), size(test(c_,2)), class(training(c_,1)), class(test(c_,'all')), all(sum(test(c_,'all'),2)==1), all(training(c_,1) + test(c_,1) == 1)};")
+L22.append(P12 + "rng(1); c_ = cvpartition(10,'KFold',3); r = {c_.training(2), c_.test(3)};")
+L22.append(P12 + "rng(1); c_ = cvpartition(10,'KFold',3); d_ = gather(c_); r = {class(d_), d_.TestSize};")
+L22.append(P12 + "rng(1); c_ = cvpartition(gD,'KFold',3); r = {c_.NumObservations, double(training(c_,1)'), double(test(c_,1)')};")
+L22.append(P12 + "rng(1); c_ = cvpartition(10,'KFold',3); c_.TrainSize = 5; r = {c_.TrainSize};")
+for c in ["cvpartition()", "cvpartition(10)", "cvpartition(10,'Foo')", "cvpartition(10,5)", "cvpartition(10,'KFold',1)", "cvpartition(10,'KFold',2.5)", "cvpartition(10,'KFold',0)", "cvpartition(10,'KFold',-3)", "cvpartition(10,'KFold',[2 3])", "cvpartition(10,'KFold','a')",
+          "cvpartition(1,'KFold',2)", "cvpartition(0,'KFold',2)", "cvpartition(2.5,'KFold',2)", "cvpartition(-4,'KFold',2)", "cvpartition(Inf,'KFold',2)", "cvpartition(NaN,'KFold',2)", "cvpartition('a','KFold',2)", "cvpartition(true,'KFold',2)", "cvpartition({'a'},'KFold',2)",
+          "cvpartition(10,'HoldOut',0)", "cvpartition(10,'HoldOut',1.5)", "cvpartition(10,'HoldOut',-1)", "cvpartition(10,'HoldOut',10)", "cvpartition(10,'HoldOut',11)", "cvpartition(10,'HoldOut',0.01)", "cvpartition(10,'HoldOut',[0.2 0.3])", "cvpartition(10,'HoldOut','x')",
+          "cvpartition(gA,'HoldOut',12)", "cvpartition(gA,'HoldOut',0.01)", "cvpartition(gD,'HoldOut',10)", "cvpartition([1;NaN],'KFold',2)", "cvpartition([NaN;NaN;1],'KFold',2)",
+          "cvpartition(10,'LeaveOut',2)", "cvpartition(10,'Resubstitution',3)", "cvpartition(10,'KFold',3,'Stratify')", "cvpartition(10,'KFold',3,'Foo',true)", "cvpartition(10,'KFold',3,'Stratify',1)", "cvpartition(10,'KFold',3,'Stratify',true)",
+          "cvpartition(10,'HoldOut',0.3,'Stratify',true)", "cvpartition(gA,'LeaveOut',1,'Stratify',false)", "cvpartition(gA,'Resubstitution','Stratify',false)", "cvpartition(gA,'LeaveOut','Stratify',true)", "cvpartition(10,'KFold',3,5)", "cvpartition(10,'KFold',3,'Stratify',true,1)",
+          "cvpartition(10,{'KFold'})", "cvpartition(10,\"KFold\",3)", "cvpartition(10,['KFold';'KFold'])", "cvpartition(10,'')", "cvpartition(10,'K',3)"]:
+    sd += 1
+    L22.append(P12 + ("rng(%d); c_ = {c}; r = {c_.NumTestSets, c_.TrainSize};" % sd).replace("{c}", c))
+for c in ["training(cvpartition(10,'KFold',3))", "training(cvpartition(10,'KFold',3),4)", "training(cvpartition(10,'KFold',3),0)", "training(cvpartition(10,'KFold',3),1.5)", "training(cvpartition(10,'KFold',3),[1 1])", "training(cvpartition(10,'KFold',3),'foo')", "training(cvpartition(10,'KFold',3),[1 2;3 1])",
+          "test(cvpartition(10,'KFold',3))", "test(cvpartition(10,'KFold',3),4)", "test(cvpartition(10,'KFold',3),{1})", "training(cvpartition(10,'HoldOut',0.3),2)", "test(cvpartition(10,'HoldOut',0.3),0)", "training(cvpartition(10,'Resubstitution'),2)", "test(cvpartition(10,'Resubstitution'),3)", "training(cvpartition(10,'LeaveOut'),11)",
+          "repartition(cvpartition(10,'KFold',3),1)", "repartition(cvpartition(10,'KFold',3),1,2)", "training(cvpartition(10,'KFold',3),'a')", "training(cvpartition(10,'KFold',3),'al')", "test(cvpartition(10,'KFold',3),'ALL')", "training(cvpartition(10,'KFold',3),true)", "training(cvpartition(10,'KFold',3),int8(2))",
+          "training(cvpartition(10,'KFold',3),[])", "training(cvpartition(10,'HoldOut',0.3),'all')", "training(cvpartition(10,'HoldOut',0.3),true)", "training(cvpartition(10,'Resubstitution'),1,2)"]:
+    sd += 1
+    L22.append(P12 + ("rng(%d); r = {double({c})};" % sd).replace("{c}", c))
+L += L22
+
 with open(os.path.join(here, "cases_u1.txt"), "w", encoding="utf-8", newline="\n") as f:
     f.write("\n".join(L) + "\n")
 print(len(L) - 1)
