@@ -89,9 +89,39 @@ fn only_call_stack_lines_are_dropped() {
     assert_eq!(normalize_text("Warning: careful\n> In f (line 2)\nIn the loop\n"), "Warning: careful\nIn the loop\n");
 }
 
+/// A number's hex bit pattern (`num2hex`, 16 digits for a double, 8 for a single) with the sign
+/// bit of a NaN cleared. MATLAB's NaN has it set (`FFF8...`) and MatLivre's does not (`7FF8...`);
+/// nothing but `num2hex`, `typecast` and file output can see the difference, so it is not
+/// compared.
+fn without_nan_sign(s: &str) -> String {
+    let lower = s.to_ascii_lowercase();
+    match lower.len() {
+        16 => match u64::from_str_radix(&lower, 16) {
+            Ok(b) if f64::from_bits(b).is_nan() => format!("{:016x}", b & !(1u64 << 63)),
+            _ => lower,
+        },
+        8 => match u32::from_str_radix(&lower, 16) {
+            Ok(b) if f32::from_bits(b).is_nan() => format!("{:08x}", b & !(1u32 << 31)),
+            _ => lower,
+        },
+        _ => s.to_string(),
+    }
+}
+
+#[test]
+fn nan_sign_is_not_compared() {
+    assert_eq!(without_nan_sign("FFF8000000000000"), "7ff8000000000000");
+    assert_eq!(without_nan_sign("7ff8000000000000"), "7ff8000000000000");
+    assert_eq!(without_nan_sign("fff0000000000000"), "fff0000000000000"); // -Inf stays
+    assert_eq!(without_nan_sign("bff0000000000000"), "bff0000000000000");
+    assert_eq!(without_nan_sign("ffc00000"), "7fc00000");
+    assert_eq!(without_nan_sign("ff800000"), "ff800000"); // single -Inf
+}
+
 fn normalize(v: &mut J, key: &str) {
     match v {
         J::String(s) if key == "log" || key == "display" => *s = normalize_text(s),
+        J::String(s) if key == "real" || key == "imag" => *s = without_nan_sign(s),
         J::Object(m) => {
             for (k, x) in m.iter_mut() {
                 normalize(x, k);
@@ -108,7 +138,7 @@ fn normalize(v: &mut J, key: &str) {
 
 fn short(v: &J) -> String {
     let s = v.to_string();
-    if s.chars().count() > 140 { format!("{}...", s.chars().take(140).collect::<String>()) } else { s }
+    if s.chars().count() > 140 && std::env::var_os("MATLIVRE_DIFFTEST_ALL").is_none() { format!("{}...", s.chars().take(140).collect::<String>()) } else { s }
 }
 
 fn diff(path: &str, ours: &J, matlab: &J, out: &mut Vec<String>) {
@@ -202,8 +232,10 @@ fn cases_match_matlab_snapshots() {
         if diffs.is_empty() {
             passed += 1;
         } else {
-            let more = diffs.len().saturating_sub(12);
-            diffs.truncate(12);
+            // MATLIVRE_DIFFTEST_ALL=1 lists every difference, whole, not the first 12 cut short.
+            let limit = if std::env::var_os("MATLIVRE_DIFFTEST_ALL").is_some() { usize::MAX } else { 12 };
+            let more = diffs.len().saturating_sub(limit);
+            diffs.truncate(limit);
             let mut msg = format!("{rel}:\n  {}", diffs.join("\n  "));
             if more > 0 {
                 msg.push_str(&format!("\n  ... and {more} more"));

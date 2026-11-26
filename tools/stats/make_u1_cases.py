@@ -194,6 +194,416 @@ for c in ["ccdesign(1)", "ccdesign(27)", "ccdesign(2.5)", "ccdesign([2 3])", "cc
     L10.append(cc.replace("{c}", c))
 L += L10
 
+PM = ("xa=x(1:30)'; ga=repmat((1:5)',6,1); gu=[ones(8,1);2*ones(5,1);3*ones(12,1);4*ones(5,1)]; xu=x(1:30)'+0.8*gu; "
+      "gnm=repmat({'ab','cd','e'},1,10)'; xn=y(1:30)'; "
+      "[~,~,s1]=anova1(xa,ga,'off'); [~,~,s1u]=anova1(xu,gu,'off'); [~,~,s1n]=anova1(xn,gnm,'off'); [~,~,s1s]=anova1(single(xa),ga,'off'); "
+      "[~,~,sk]=kruskalwallis(xa,ga,'off'); [~,~,sk2]=kruskalwallis(round(xa*3),ga,'off'); "
+      "[~,~,s2]=anova2(reshape(x(1:30),6,5),1,'off'); [~,~,s2r]=anova2(reshape(x(1:60),12,5)+repmat([0;0;0;2;2;2;0;0;0;1;1;1],1,5),3,'off'); "
+      "[~,~,sf]=friedman(reshape(x(1:30),6,5),1,'off'); [~,~,s2g]=anova1(x(1:2*12*1)',repmat((1:12)',2,1),'off'); "
+      "[~,~,s1t]=anova1([x(1:3) 5 6]',[1 1 1 2 2]','off'); [~,~,s1b]=anova1(reshape(x(1:60),6,10),[],'off'); [~,~,s1k]=anova1(x(1:9)',[1 1 1 2 2 2 3 3 3]','off'); ")
+mc = "[c_,m_,h_,g_] = {c}; r = {c_,m_,g_};"
+mc2 = "[c_,m_] = {c}; r = {c_,m_}; close all;"
+L11 = []
+good = []
+for s_ in ["s1", "s1u", "s1n", "s1s", "sk", "sk2", "s2", "s2r", "sf", "s2g", "s1t", "s1b", "s1k"]:
+    good.append("multcompare(%s,'Display','off')" % s_)
+for s_ in ["s1", "s1u", "sk", "s2r", "sf"]:
+    for ct in ["tukey-kramer", "hsd", "dunn-sidak", "bonferroni", "lsd", "scheffe", "t", "d", "b", "s", "h", "l", "lsd bonferroni", "tukey-kramer lsd scheffe", "bonferroni dunn-sidak"]:
+        good.append("multcompare(%s,'Display','off','CType','%s')" % (s_, ct))
+    for al in [0.01, 0.1, 0.5, 0.001, 1e-6, 0.999, 0.0123]:
+        good.append("multcompare(%s,'Display','off','Alpha',%g)" % (s_, al))
+good += ["multcompare(s1,'Display','off','CriticalValueType','lsd')", "multcompare(s1,'Display','off','C','lsd')", "multcompare(s1,'display','off','ALPHA',0.2,'ctype','bonferroni')",
+         "multcompare(s1,0.05,'off')", "multcompare(s1,0.01,'off','lsd')", "multcompare(s2,0.05,'off','bonferroni','row')", "multcompare(s2,0.05,'off','bonferroni','column')",
+         "multcompare(s2r,'Display','off','Estimate','row')", "multcompare(s2r,'Display','off','Estimate','r')", "multcompare(s2r,'Display','off','Estimate','column')",
+         "multcompare(s2r,'Display','off','Estimate','co','CType','lsd')", "multcompare(s2,'Display','off','Estimate','row','Alpha',0.01)", "multcompare(s2r,0.05,'off','scheffe','row')",
+         "multcompare(s1,'Display','off','Estimate','row')", "multcompare(s1,'Display','off','Dimension',2)", "multcompare(s1,'Display','off','Alpha',0.05,'Alpha',0.1)",
+         "multcompare(s1,'Display','off','Approximate',true)", "multcompare(s1,'Display','off','Approximate',0)", "multcompare(s1,'Display','off','Approximate',[])",
+         "multcompare(s1,'Display','off','Alternative','notequal')", "multcompare(s1,'Display','off','Alternative','')", "multcompare(s1,'Display','off','Alternative',[])",
+         "multcompare(s1,'Display','off','CType',\"lsd\")", "multcompare(s1,\"Display\",\"off\",\"Alpha\",0.1)", "multcompare(s1,'Display','off','CType','')", "multcompare(s1,'Display','off','CType',[])",
+         "multcompare(s1,'dis','off','cr','lsd','al',0.2)", "multcompare(s1,'Display','off','Alpha',single(0.1))", "multcompare(s1,'Display','off','Alpha',0.05,'Estimate','')",
+         "multcompare(s1k,'Display','off','CType','dunnett')", "multcompare(s1t,'Display','off','CType','dunnett')", "multcompare(s1t,'Display','off','CType','dunnett','Alternative','less')",
+         "multcompare(s1t,'Display','off','CType','dunnett','Alternative','greater')", "multcompare(s1t,'Display','off','CType','dunnett','Alternative','g','Alpha',0.1)",
+         "multcompare(s1t,'Display','off','CType','dunnett','ControlGroup',2)"]
+for c in good:
+    L11.append(PM + mc.replace("{c}", c))
+for c in ["multcompare(s1)", "multcompare(sk)", "multcompare(s2r)", "multcompare(sf)", "multcompare(s2)", "multcompare(s1,'Alpha',0.1)"]:
+    L11.append(PM + mc2.replace("{c}", c))
+for c in ["multcompare(5)", "multcompare(struct('a',1))", "multcompare(s1,'Alpha',0)", "multcompare(s1,'Alpha',1.5)", "multcompare(s1,'Alpha',[0.1 0.2])", "multcompare(s1,'Alpha','a')", "multcompare(s1,'Alpha',NaN)",
+          "multcompare(s1,'Alpha',1)", "multcompare(s1,'Alpha',int8(1))", "multcompare(s1,'Alpha',true)",
+          "multcompare(s1,'Display','x')", "multcompare(s1,'Display',1)", "multcompare(s1,'Display')", "multcompare(s1,'Display','ON')", "multcompare(s1,'Display','of')",
+          "multcompare(s1,'Display','off','ControlGroup',1)", "multcompare(s1,'Display','off','Alternative','less')", "multcompare(s1,'Display','off','Alternative','foo','CType','dunnett')",
+          "multcompare(s1,'Display','off','Alternative',3,'CType','dunnett')", "multcompare(s1,'Display','off','CType','foo')", "multcompare(s1,'Display','off','CType',3)", "multcompare(s1,'Display','off','CType','LSD')",
+          "multcompare(s1,'Display','off','CType','dunnett lsd')", "multcompare(s1,'Display','off','CType','x')", "multcompare(s1,'bogus',1)", "multcompare(s1,'Display','off','a',0.1)", "multcompare(s1,'Display','off','d',2)",
+          "multcompare(s1,'Display','off','Approximate',5)", "multcompare(s1,'Display','off','Approximate',-1)", "multcompare(s1,'Display','off','Approximate',0.5)", "multcompare(s1,'Display','off','Approximate',[1 1])", "multcompare(s1,'Display','off','Approximate','a')",
+          "multcompare(s1,'Display','off','Approximate',2)", "multcompare(s2,'Display','off','Estimate','foo')", "multcompare(s2,'Display','off','Estimate',3)", "multcompare(s2,'Display','off','Estimate','x')",
+          "multcompare(s1,'Display','off','CType','dunnett','ControlGroup',7)", "multcompare(s1t,'Display','off','CType','dunnett','ControlGroup',7)", "multcompare(s1t,'Display','off','CType','dunnett','ControlGroup',[1 2])",
+          "multcompare(s1,'Display','off','Alpha')", "multcompare()", "multcompare(s1,0.05)", "multcompare(s1,0.05,'maybe')", "multcompare(s1,{1},'off')", "multcompare(rmfield(s1,'source'))", "multcompare(rmfield(s1,'n'),'Display','off')",
+          "multcompare(setfield(s1,'source','zzz'),'Display','off')", "multcompare(setfield(s1,'source',3),'Display','off')", "multcompare(s1,'Display','off',3,4)", "multcompare(s1,'Display','off','CType','lsd',1)"]:
+    L11.append(PM + mc.replace("{c}", c))
+L += L11
+
+PA = ("ya=x(1:24)'; a1=repmat((1:4)',6,1); a2=repmat([1;1;2;2;3;3],4,1); "
+      "yu=x(1:12)'; u1=[1 1 1 2 2 2 2 3 3 3 3 3]'; u2=[1 2 1 2 1 2 1 2 1 2 1 2]'; "
+      "y3=y(1:36)'; f1=repmat((1:3)',12,1); f2=repmat([1;1;1;2;2;2],6,1); f3=repmat([1;1;1;1;1;1;2;2;2;2;2;2],3,1); "
+      "cn=(1:24)'/5+0.3*sin((1:24)'); sg=repmat({'lo','mid','hi'},1,8)'; "
+      "yn=ya; yn(5)=NaN; an=a1; an(9)=NaN; ")
+ac = "[p_,t_,s_,te_] = {c}; r = {p_,t_,te_,s_.source,s_.resid,s_.coeffs,s_.dfe,s_.mse,s_.terms,s_.nlevels,s_.continuous,s_.vmeans,s_.termcols,s_.coeffnames,s_.vars,s_.varnames,s_.grpnames};"
+ac3 = "[p_,t_,te_] = {c}; r = {p_,t_,te_};"
+ac1 = "p_ = {c}; r = {p_};"
+L12 = []
+good = ["anovan(ya,{a1,a2},'display','off')", "anovan(ya,{a1,a2},'model','interaction','display','off')", "anovan(ya,{a1,a2},'model','full','display','off')",
+        "anovan(ya,{a1,a2},'model',2,'display','off')", "anovan(ya,{a1,a2},'model',1,'display','off')", "anovan(ya,{a1,a2},'model','linear','display','off')", "anovan(ya,{a1,a2},'model','i','display','off')",
+        "anovan(ya,{a1,a2},'model',[1 0;0 1;1 1],'display','off')", "anovan(ya,{a1,a2},'model',[1 1],'display','off')", "anovan(ya,{a1,a2},'model',[0 1;1 0],'display','off')",
+        "anovan(yu,{u1,u2},'display','off')", "anovan(yu,{u1,u2},'model','interaction','display','off')", "anovan(yu,{u1,u2},'model','interaction','sstype',1,'display','off')",
+        "anovan(yu,{u1,u2},'model','interaction','sstype',2,'display','off')", "anovan(yu,{u1,u2},'model','interaction','sstype',3,'display','off')", "anovan(yu,{u1,u2},'model','interaction','sstype','h','display','off')",
+        "anovan(yu,{u1,u2},'model','interaction','sstype','one','display','off')", "anovan(yu,{u1,u2},'sstype','two','display','off')", "anovan(yu,{u1,u2},'sstype','hierarchical','display','off')",
+        "anovan(y3,{f1,f2,f3},'display','off')", "anovan(y3,{f1,f2,f3},'model','interaction','display','off')", "anovan(y3,{f1,f2,f3},'model','full','display','off')", "anovan(y3,{f1,f2,f3},'model',2,'display','off')",
+        "anovan(y3,{f1,f2,f3},'model','full','sstype',1,'display','off')", "anovan(y3,{f1,f2,f3},'model','full','sstype',2,'display','off')", "anovan(y3,{f1,f2,f3},'model',3,'varnames',{'A','B','C'},'display','off')",
+        "anovan(y3,{f1,f2,f3},'varnames',['aa';'bb';'cc'],'display','off')", "anovan(y3,{f1,f2,f3},'model',[1 0 0;0 1 0;0 0 1;1 0 1],'display','off')", "anovan(y3,{f1,f2,f3},'model',[0 0 1;1 1 0],'display','off')",
+        "anovan(ya,{a1,cn},'continuous',2,'display','off')", "anovan(ya,{a1,cn},'continuous',2,'model','interaction','display','off')", "anovan(ya,{a1,cn},'continuous',2,'model','interaction','sstype',1,'display','off')",
+        "anovan(ya,{a1,cn},'continuous',2,'model','interaction','sstype',2,'display','off')", "anovan(ya,{a1,cn},'continuous',2,'model','interaction','sstype','h','display','off')",
+        "anovan(ya,{a1,cn},'continuous',[2],'model',[1 0;0 1;0 2],'display','off')", "anovan(ya,{a1,cn},'continuous',[false true],'display','off')", "anovan(ya,{a1,cn,a2},'continuous',2,'model','interaction','display','off')",
+        "anovan(ya,{cn,cn.^2},'continuous',[1 2],'display','off')", "anovan(ya,{cn,a1},'continuous',1,'model','interaction','display','off')",
+        "anovan(ya,{sg,a2},'display','off')", "anovan(ya,{sg,a2},'model','interaction','display','off')", "anovan(ya,[a1 a2],'display','off')", "anovan(ya,a1,'display','off')", "anovan(ya,{a1},'display','off')",
+        "anovan(ya',{a1,a2},'display','off')", "anovan(ya,{a1',a2'},'display','off')", "anovan(single(ya),{a1,a2},'display','off')",
+        "anovan(yn,{a1,a2},'display','off')", "anovan(ya,{an,a2},'display','off')", "anovan(yn,{an,a2},'model','interaction','display','off')",
+        "anovan(ya,{a1,a2},'alpha',0.1,'display','off')", "anovan(ya,{a1,a2},'Display','off','SSType',3)", "anovan(ya,{a1,a2},'dis','off','mod','i')", "anovan(ya,{a1,a2},'varnames',{'Row','Col'},'display','off')",
+        "anovan(ya,{a1,a2},'varnames',{'Row';'Col'},'display','off')", "anovan(ya,{a1,a2},'varnames',[],'display','off')",
+        "anovan(ya,{a1,a1},'display','off')", "anovan(ya(1:8),{a1(1:8),a2(1:8)},'model','interaction','display','off')", "anovan(ya(1:6),{a1(1:6),a2(1:6)},'display','off')",
+        "anovan(ya(1:5),{a1(1:5),a2(1:5)},'display','off')", "anovan(ya(1:4),{a1(1:4),a2(1:4)},'display','off')", "anovan(ya(1:12),{a1(1:12),a2(1:12)},'model','interaction','display','off')",
+        "anovan(ya(1:7),{a1(1:7),a2(1:7)},'model','interaction','display','off')", "anovan(ya(1:6),{[1 1 1 2 2 2]',[1 2 1 2 1 2]'},'model','interaction','display','off')",
+        "anovan(ya,{[ones(12,1);2*ones(12,1)],[ones(6,1);2*ones(6,1);ones(6,1);2*ones(6,1)]},'display','off')", "anovan(ya(1:10),{[1 1 1 1 1 2 2 2 2 2]',[1 1 1 1 1 1 1 2 2 2]'},'model','interaction','display','off')",
+        "anovan(zeros(12,1),{u1,u2},'display','off')", "anovan(ones(12,1)+0*yu,{u1,u2},'display','off')", "anovan(yu,{u1,u2},'model','interaction','alpha',0.2,'display','off')"]
+for c in good:
+    L12.append(PA + ac.replace("{c}", c))
+for c in good[:10] + good[19:22] + good[30:34]:
+    L12.append(PA + ac3.replace("{c}", c))
+for c in ["anovan(ya,{a1,a2},'display','off')", "anovan(ya,{a1,a2},'model','interaction')", "anovan(ya,{a1,a2})"]:
+    L12.append(PA + ac1.replace("{c}", c) + " close all;")
+errs = ["anovan()", "anovan(ya)", "anovan(ya,{a1,a2},'display')", "anovan('abc',{a1,a2},'display','off')", "anovan(ya,5,'display','off')", "anovan(ya,{a1(1:5),a2},'display','off')", "anovan(ya,{a1,a2},'bogus',1)",
+        "anovan(ya,{a1,a2},'model','foo','display','off')", "anovan(ya,{a1,a2},'model',[1 2 3],'display','off')", "anovan(ya,{a1,a2},'model',[1 0 0;0 1 0],'display','off')", "anovan(ya,{a1,a2},'model',[1 1.5;0 1],'display','off')",
+        "anovan(ya,{a1,a2},'model',[-1 0;0 1],'display','off')", "anovan(ya,{a1,a2},'model',0,'display','off')", "anovan(ya,{a1,a2},'model',[0 0;0 0],'display','off')", "anovan(ya,{a1,a2},'model',[2 0;0 1],'display','off')",
+        "anovan(ya,{a1,a2},'sstype',4,'display','off')", "anovan(ya,{a1,a2},'sstype','foo','display','off')", "anovan(ya,{a1,a2},'sstype',[1 2],'display','off')", "anovan(ya,{a1,a2},'varnames',{'A'},'display','off')",
+        "anovan(ya,{a1,a2},'varnames',{1,2},'display','off')", "anovan(ya,{a1,a2},'varnames',5,'display','off')", "anovan(ya,{a1,a2},'continuous',3,'display','off')", "anovan(ya,{a1,a2},'continuous',[1 0 1],'display','off')",
+        "anovan(ya,{a1,a2},'alpha',0,'display','off')", "anovan(ya,{a1,a2},'alpha',[0.1 0.2],'display','off')", "anovan(ya,{a1,a2},'alpha',1.5,'display','off')", "anovan(ya,{sg,a2},'continuous',1,'display','off')",
+        "anovan(ya,{a1,a2},'random',3,'display','off')", "anovan(ya,{a1,a2},'random',1,'display','off')", "anovan(ya,{a1,a2},'nested',[0 1;0 0],'display','off')", "anovan(ya,{a1,a2},'nested',[0 1;1 0],'display','off')",
+        "anovan(ya,{a1,a2},'nested',[0 1],'display','off')", "anovan(ya,{a1,a2},'continuous',1,'random',1,'display','off')", "anovan(ya,{a1,a2},'d','off')", "anovan(ya,{a1,a2},'m','i','display','off')",
+        "anovan(ya,{a1,a2},3,'display','off')", "anovan(ya,{a1,a2,sg(1:12)},'display','off')", "anovan(ya,{a1,a2(1:5)},'display','off')", "anovan(ya,ones(5,2),'display','off')", "anovan([ya ya],{a1,a2},'display','off')",
+        "anovan(int8(ya),{a1,a2},'display','off')", "anovan(complex(ya,1),{a1,a2},'display','off')", "anovan(ya,{a1,{1,2}},'display','off')", "anovan(ya,{a1,[a2 a2]},'display','off')", "anovan(ya,{a1,a2},'model','full','continuous',2,'sstype',4,'display','off')"]
+for c in errs:
+    L12.append(PA + ac3.replace("{c}", c))
+L += L12
+
+L += ["r = tcdf(1.2,Inf);", "r = tcdf([-2 0 0.5 3],Inf);", "r = tinv([0.1 0.5 0.975],Inf);", "r = fcdf(2.3,4,Inf);", "r = fcdf(2.3,4,Inf,'upper');", "r = fcdf(2.3,Inf,5);", "r = fcdf(2.3,Inf,5,'upper');",
+      "r = fcdf([0.5 1 2],Inf,Inf);", "r = finv(0.95,4,Inf);", "r = finv(0.95,Inf,10);", "r = finv([0.1 0.9],Inf,Inf);", "r = tcdf(1.2,Inf,'upper');"]
+
+PAN = (PA + "[~,~,sn1]=anovan(ya,{a1,a2},'display','off'); [~,~,sn2]=anovan(ya,{a1,a2},'model','interaction','display','off'); "
+       "[~,~,sn3]=anovan(y3,{f1,f2,f3},'model','interaction','display','off'); [~,~,sn4]=anovan(yu,{u1,u2},'display','off'); "
+       "[~,~,sn5]=anovan(ya,{a1,cn},'continuous',2,'display','off'); [~,~,sn6]=anovan(ya,{sg,a2},'varnames',{'S','T'},'display','off'); "
+       "[~,~,sn7]=anovan(yu,{u1,u2},'model','interaction','display','off'); [~,~,sn8]=anovan(ya,{a1,cn},'continuous',2,'model','interaction','display','off'); ")
+mca = "[c_,m_,h_,g_] = {c}; r = {c_,m_,g_};"
+L14 = []
+mgood = ["multcompare(sn1,'Display','off')", "multcompare(sn1,'Display','off','Dimension',2)", "multcompare(sn1,'Display','off','Dimension',[1 2])", "multcompare(sn2,'Display','off')", "multcompare(sn2,'Display','off','Dimension',2)",
+         "multcompare(sn2,'Display','off','Dimension',[1 2])", "multcompare(sn3,'Display','off')", "multcompare(sn3,'Display','off','Dimension',3)", "multcompare(sn3,'Display','off','Dimension',[2 3])",
+         "multcompare(sn3,'Display','off','Dimension',[1 3],'CType','bonferroni')", "multcompare(sn4,'Display','off')", "multcompare(sn4,'Display','off','Dimension',2)", "multcompare(sn7,'Display','off')", "multcompare(sn7,'Display','off','Dimension',[1 2])",
+         "multcompare(sn5,'Display','off')", "multcompare(sn6,'Display','off')", "multcompare(sn6,'Display','off','Dimension',[1 2])", "multcompare(sn8,'Display','off')",
+         "multcompare(sn1,'Display','off','CType','lsd')", "multcompare(sn1,'Display','off','CType','scheffe')", "multcompare(sn1,'Display','off','CType','dunn-sidak')", "multcompare(sn1,'Display','off','Alpha',0.01)",
+         "multcompare(sn1,'Display','off','CType','lsd bonferroni')", "multcompare(sn4,'Display','off','CType','lsd','Alpha',0.2)", "multcompare(sn1,0.05,'off')", "multcompare(sn1,'Display','off','Dimension',1)",
+         "multcompare(sn1,'Display','off','CType','dunnett')", "multcompare(sn1,'Display','off','CType','dunnett','ControlGroup',2)"]
+for c in mgood:
+    L14.append(PAN + mca.replace("{c}", c))
+for c in ["multcompare(sn1,'Display','off','Dimension',0)", "multcompare(sn1,'Display','off','Dimension',3)", "multcompare(sn1,'Display','off','Dimension',1.5)", "multcompare(sn1,'Display','off','Dimension',[1 1 2])",
+          "multcompare(sn1,'Display','off','Dimension','a')", "multcompare(sn1,'Display','off','Dimension',[])", "multcompare(sn5,'Display','off','Dimension',2)", "multcompare(sn1,'Display','off','Dimension',-1)"]:
+    L14.append(PAN + mca.replace("{c}", c))
+L += L14
+
+PD = ("xe=exp(x(1:40)'*1.5); xk=norminv(((1:30)'-0.5)/30); xw=abs(y(1:50)')+0.2; xg=[x(1:25) 100*x(26:30)]'; xn1=x(1:30)'; xn1([4 9])=NaN; xs=x(1:4)'; ")
+ad = "lastwarn(''); [h_,p_,a_,c_] = {c}; r = {h_,p_,a_,c_,lastwarn};"
+ad1 = "lastwarn(''); [h_,p_] = {c}; r = {h_,p_,lastwarn};"
+L15 = []
+good = ["adtest(x(1:40)')", "adtest(x(1:40))", "adtest(y(1:60)')", "adtest(xe)", "adtest(xk)", "adtest(xg)", "adtest(xs)", "adtest(x(1:5)')", "adtest(x(1:10)')", "adtest(x')", "adtest(cumsum(x(1:300))')", "adtest(xn1)",
+        "adtest(xe,'Distribution','exponential')", "adtest(xw,'Distribution','exponential')", "adtest(xw,'Distribution','exp')", "adtest(xw,'Distribution','ev')", "adtest(xw,'Distribution','extreme value')", "adtest(xe,'Distribution','lognormal')",
+        "adtest(xe,'Distribution','logn')", "adtest(xw,'Distribution','weibull')", "adtest(xw,'Distribution','w')", "adtest(x(1:40)','Distribution','normal')", "adtest(x(1:40)','Distribution','NORMAL')", "adtest(x(1:40)','dist','norm')",
+        "adtest(xe,'Distribution','ev')", "adtest(xe,'Distribution','weibull')", "adtest(x(1:40)','Distribution','lognormal')", "adtest(x(1:40)','Distribution','weibull')", "adtest(x(1:40)','Distribution','exponential')",
+        "adtest(xk,'Distribution','exponential')", "adtest(xk,'Distribution','ev')", "adtest(abs(xk)+0.1,'Distribution','exponential')", "adtest(abs(xk)+0.1,'Distribution','weibull')",
+        "adtest(x(1:40)','Alpha',0.01)", "adtest(x(1:40)','Alpha',0.001)", "adtest(x(1:40)','Alpha',0.0005)", "adtest(x(1:40)','Alpha',0.0001)", "adtest(x(1:40)','Alpha',0.99)", "adtest(x(1:40)','Alpha',0.995)", "adtest(x(1:40)','Alpha',0.5)",
+        "adtest(x(1:40)','Alpha',0.1,'Distribution','ev')", "adtest(xe,'Alpha',0.2)", "adtest(xe,'Alpha',0.0001,'Distribution','exp')", "adtest(single(x(1:40)'))", "adtest(x(1:40)','Alpha',single(0.1))", "adtest(xe,'MCTol',[])",
+        "adtest(xe,'Asymptotic',false)", "adtest(x(1:40)','Alpha',0.0123)", "adtest(x(1:40)','Alpha',0.077)", "adtest([x(1:40) x(1:40)*0+1])", "adtest(ones(10,1))", "adtest([1 2 3 4])", "adtest([1 1 1 2])", "adtest(round(x(1:60)'*3))"]
+for c in good:
+    L15.append(PD + ad.replace("{c}", c))
+for c in good[:6]:
+    L15.append(PD + ad1.replace("{c}", c))
+for c in ["adtest()", "adtest(x(1:3))", "adtest(ones(3,3))", "adtest(complex(x(1:20),1))", "adtest('abcdef')", "adtest(x(1:40),'Alpha',0)", "adtest(x(1:40),'Alpha',1)", "adtest(x(1:40),'Alpha',[0.1 0.2])", "adtest(x(1:40),'Alpha','a')",
+          "adtest(x(1:40),'MCTol',-1)", "adtest(x(1:40),'MCTol',[1 2])", "adtest(x(1:40),'Distribution','foo')", "adtest(x(1:40),'Distribution','e')", "adtest(x(1:40),'Distribution',3)", "adtest(x(1:40),'bogus',1)",
+          "adtest(x(1:40),'Alpha')", "adtest(x(1:40),'Asymptotic',true)", "adtest(x(1:40),'Distribution','ex')", "adtest({1,2,3,4})", "adtest(x(1:40),3,4)", "adtest([])", "adtest(NaN(1,10))", "adtest([1 2 NaN 4 5 NaN])"]:
+    L15.append(PD + ad.replace("{c}", c))
+L += L15
+
+P6 = ("hb=[1.25 0.06 0.04 0.11 1.2]; hx=[470 300 10;285 80 10;470 300 120;470 80 120;470 80 10;100 190 10;100 80 65;470 190 65;100 300 54;100 300 120;100 80 120;285 300 10;285 190 120]; "
+      "ef=(0:30)'/30; ex=sort(x(1:30)'); ex=[ex(1); ex]; "
+      "yt=round(2+1.5*sin(0.9*(1:80)')+0.4*cos((1:80)')); h1=round(2+1.4*sin(0.9*(1:80)'+0.2)+0.4*cos((1:80)')); h2=round(2+1.2*sin(0.9*(1:80)'+0.5)+0.5*cos((1:80)')); "
+      "bt=(x(1:60)'>0)+1; b1=(x(1:60)'+0.3*y(1:60)'>0)+1; b2=(x(1:60)'+0.8*y(1:60)'>0.2)+1; "
+      "ix=(1:10)'; iy=2*ix+0.7*sin(2*ix); "
+      "pX=[x(1:30)' y(1:30)' x(31:60)'.^2]; pY=[x(61:90)'+y(1:30)' y(31:60)'.^2+0.3*x(1:30)']; pZ=[cos(1:30)' (1:30)'/10]; ")
+L16 = []
+hf = "r = {c};"
+for c in ["hougen(hb,hx)", "hougen(hb',hx)", "hougen(single(hb),hx)", "hougen(hb,single(hx))", "hougen([1 2 3 4 5],[1 2 3])", "hougen([1 2 3 4 5],[1 2 3;4 5 6])", "hougen(hb,hx(:,1:2))", "hougen([1 2 3 4],hx)",
+          "hougen(hb)", "hougen()", "hougen(hb,[])", "hougen(hb,hx(1,:))", "hougen(2*ones(1,5),hx(1:3,:))"]:
+    L16.append(P6 + hf.replace("{c}", c))
+ec = "lastwarn(''); [n_,c_] = {c}; r = {n_,c_,lastwarn};"
+for c in ["ecdfhist(ef,ex)", "ecdfhist(ef,ex,5)", "ecdfhist(ef,ex,20)", "ecdfhist(ef,ex,'nbins',7)", "ecdfhist(ef,ex,-1:0.5:1)", "ecdfhist(ef,ex,'ctrs',[-0.9 -0.3 0.3 0.9])", "ecdfhist(ef,ex,'edges',[-2 -1 0 1 2])",
+          "ecdfhist(ef,ex,'edges',[-0.5 0 0.5])", "ecdfhist(ef,ex,'edges',[-1 -0.5 0.1 0.8 1.5])", "ecdfhist(ef,ex,'edges',[-1 -0.5 0 0.5 1 2 4])", "ecdfhist(1-ef,ex)", "ecdfhist(1-ef,ex,6)", "ecdfhist(ef',ex')",
+          "ecdfhist(ef,ex,1)", "ecdfhist([0 0.5 1],[0 1 2])", "ecdfhist([0 1],[0 1])", "ecdfhist([0 0.2 0.2 1],[1 2 2 3],3)", "ecdfhist(ef,ex,'ctrs',[-1 0 2])", "ecdfhist(ef(1:11),ex(1:11),4)",
+          "ecdfhist(ef,ex,'edges',[-1.0 -0.4 0.1 0.6 1.1])", "ecdfhist(single(ef),ex,4)", "ecdfhist(ef,ex,'nbins',3)", "ecdfhist(ef,ex,[-1.5 -0.5 0.5 1.5])"]:
+    L16.append(P6 + ec.replace("{c}", c))
+ec1 = "lastwarn(''); n_ = {c}; r = {n_,lastwarn};"
+for c in ["ecdfhist(ef,ex)", "ecdfhist(ef,ex,'ctrs',[-0.9 -0.3 0.3 0.9])"]:
+    L16.append(P6 + ec1.replace("{c}", c))
+for c in ["ecdfhist()", "ecdfhist(ef)", "ecdfhist('a',ex)", "ecdfhist(ef,'ab')", "ecdfhist(ef(1:3),ex(1:4))", "ecdfhist(ones(3,3),ex(1:9))", "ecdfhist(ef(1),ex(1))", "ecdfhist(ef,flipud(ex))", "ecdfhist([0 1 0.5],[0 1 2])", "ecdfhist([1 0.2 0.5],[0 1 2])",
+          "ecdfhist(ef,ex,'foo',3)", "ecdfhist(ef,ex,'edges',[1 0 2])", "ecdfhist(ef,ex,[2 1 3])", "ecdfhist(ef,ex,'ctrs',[1 1 2])"]:
+    L16.append(P6 + ec.replace("{c}", c))
+tc = "lastwarn(''); [h_,p_,e1_,e2_] = {c}; r = {h_,p_,e1_,e2_,lastwarn};"
+tc2 = "[h_,p_] = {c}; r = {h_,p_};"
+for c in ["testcholdout(b1,b2,bt)", "testcholdout(b1,b2,bt,'Test','asymptotic')", "testcholdout(b1,b2,bt,'Test','exact')", "testcholdout(b1,b2,bt,'Test','midp')", "testcholdout(b1,b2,bt,'Alternative','less')",
+          "testcholdout(b1,b2,bt,'Alternative','greater')", "testcholdout(b1,b2,bt,'Alternative','less','Test','exact')", "testcholdout(b1,b2,bt,'Alternative','greater','Test','asymptotic')", "testcholdout(b1,b2,bt,'Alpha',0.5)",
+          "testcholdout(b1,b2,bt,'Alpha',0.0001)", "testcholdout(b2,b1,bt)", "testcholdout(yt,h1,h2)", "testcholdout(h1,h2,yt)", "testcholdout(h1,h2,yt,'Test','exact','Alternative','less')", "testcholdout(h1',h2',yt')",
+          "testcholdout(num2cell(h1),num2cell(h2),num2cell(yt))", "testcholdout(cellstr(num2str(h1)),cellstr(num2str(h2)),cellstr(num2str(yt)))", "testcholdout(b1,b1,bt)", "testcholdout(b1,b2,bt,'ClassNames',[1 2])", "testcholdout(h1,h2,yt,'ClassNames',[1 2 3])",
+          "testcholdout(b1,b2,bt,'Cost',[0 1;2 0])", "testcholdout(b1,b2,bt,'Cost',[0 1;1 0])", "testcholdout(b1,b2,bt,'Cost',[0 3;1 0])", "testcholdout(b1,b2,bt,'Cost',[0 1;2 0],'CostTest','likelihood')", "testcholdout(h1,h2,yt,'Cost',[0 1 2 3 4;1 0 1 2 3;2 1 0 1 2;3 2 1 0 1;4 3 2 1 0])",
+          "testcholdout(b1,b2,bt,'Cost',[0 0;0 0])", "testcholdout(b1,b2,bt,'Cost',[0 1;2 0],'Test','asymptotic','Alternative','unequal')", "testcholdout(single(b1),b2,bt)", "testcholdout(b1==2,b2==2,bt==2)",
+          "testcholdout(['a';'b';'a';'b'],['a';'a';'a';'b'],['a';'b';'b';'b'])", "testcholdout({'a','b','a','b','b','a'},{'a','a','a','b','a','b'},{'a','b','b','b','a','a'})", "testcholdout(b1,b2,[bt(1:20);NaN(40,1)])",
+          "testcholdout(b1,b2,bt,'alt','less')", "testcholdout(b1,b2,bt,'test','ex')", "testcholdout(b1,b2,bt,'ALPHA',0.2)"]:
+    L16.append(P6 + tc.replace("{c}", c))
+for c in ["testcholdout(b1,b2,bt)", "testcholdout(b1,b1,bt)", "testcholdout(b1,b2,bt,'Alternative','less')"]:
+    L16.append(P6 + tc2.replace("{c}", c))
+for c in ["testcholdout()", "testcholdout(b1,b2)", "testcholdout(b1(1:10),b2,bt)", "testcholdout(b1,b2(1:10),bt)", "testcholdout(b1,b2,bt,'Alpha',0)", "testcholdout(b1,b2,bt,'Alpha',1)", "testcholdout(b1,b2,bt,'Alpha','a')", "testcholdout(b1,b2,bt,'Alpha',[0.1 0.2])",
+          "testcholdout(b1,b2,bt,'Alternative','foo')", "testcholdout(b1,b2,bt,'Test','foo')", "testcholdout(b1,b2,bt,'CostTest','foo')", "testcholdout(b1,b2,bt,'Cost',[0 1;2 0],'Test','exact')", "testcholdout(b1,b2,bt,'Cost',[0 1;2 0],'Alternative','less')",
+          "testcholdout(b1,b2,bt,'Cost',[1 1;2 0])", "testcholdout(b1,b2,bt,'Cost',[0 -1;2 0])", "testcholdout(b1,b2,bt,'Cost',[0 1 2;2 0 1])", "testcholdout(b1,b2,bt,'Cost',5)", "testcholdout(b1,b2,NaN(60,1))", "testcholdout(b1,b2,bt,'ClassNames',[7 8])",
+          "testcholdout(b1,b2,bt,'bogus',1)", "testcholdout(b1,b2,bt,'Alpha')", "testcholdout(b1,b2,bt,'Cost',[0 1;2 0],'CostTest','chisquare')", "testcholdout({1,2},b2(1:2),bt(1:2))"]:
+    L16.append(P6 + tc.replace("{c}", c))
+ip = "[x0_,dl_,du_] = {c}; r = {x0_,dl_,du_};"
+for c in ["invpred(ix,iy,10)", "invpred(ix,iy,[5 10 15])", "invpred(ix',iy',10)", "invpred(ix,iy,[5 10;15 20])", "invpred(ix,iy,10,'Alpha',0.1)", "invpred(ix,iy,10,'PredOpt','curve')", "invpred(ix,iy,10,'PredOpt','observation')",
+          "invpred(ix,iy,10,'PredOpt','c','Alpha',0.01)", "invpred(ix,iy,30)", "invpred(ix,iy,-5)", "invpred(ix,iy,1.0)", "invpred(ix,iy,[0 1 2 22 23])", "invpred([ix;NaN],[iy;3],10)", "invpred(ix,[iy(1:9);NaN],10)",
+          "invpred(ix(1:3),iy(1:3),4)", "invpred(ix(1:2),iy(1:2),4)", "invpred(ix,0*iy+1,1)", "invpred(ix,0*iy+1,2)", "invpred(ix,iy,10,'Alpha',0.9)", "invpred(ix,iy+3*sin(3*ix).^2,10)", "invpred(ix,iy+5*sin(7*ix),10,'PredOpt','curve')",
+          "invpred(single(ix),iy,10)", "invpred(ix,iy,single(10))", "invpred(1:10,iy,10)", "invpred(ix,iy,10,'alpha',0.2)", "invpred(ix,iy,10,'pred','curve')", "invpred(ix,-iy,-10)", "invpred(ix,iy,[])"]:
+    L16.append(P6 + ip.replace("{c}", c))
+for c in ["invpred()", "invpred(ix,iy)", "invpred(ones(3,3),iy,1)", "invpred(ix,ones(3,3),1)", "invpred(ix,iy(1:5),1)", "invpred(complex(ix,1),iy,1)", "invpred(ix,iy,complex(1,2))", "invpred(ix,iy,10,'Alpha',0)", "invpred(ix,iy,10,'Alpha',2)",
+          "invpred(ix,iy,10,'PredOpt','foo')", "invpred(ix,iy,10,'PredOpt','')", "invpred(ix,iy,10,'bogus',1)", "invpred(ones(10,1),iy,10)", "invpred(ix,iy,10,'Alpha')", "invpred(ix,iy,10,'PredOpt',3)", "invpred('abcdefghij',iy,10)"]:
+    L16.append(P6 + ip.replace("{c}", c))
+pc = "lastwarn(''); [c_,p_] = {c}; r = {c_,p_,lastwarn};"
+pc1 = "c_ = {c}; r = {c_};"
+for c in ["partialcorri(pY,pX)", "partialcorri(pY(:,1),pX)", "partialcorri(pY,pX(:,1))", "partialcorri(pY,pX,pZ)", "partialcorri(pY(:,2),pX,pZ(:,1))", "partialcorri(pY,pX,'Type','Spearman')", "partialcorri(pY,pX,pZ,'Type','Spearman')",
+          "partialcorri(pY,pX,'Tail','right')", "partialcorri(pY,pX,'Tail','left')", "partialcorri(pY,pX,'Tail','gt')", "partialcorri(pY,pX,'Tail','lt')", "partialcorri(pY,pX,'Tail','ne')", "partialcorri(pY,pX,'Tail','b')",
+          "partialcorri(pY,pX,'Rows','complete')", "partialcorri(pY,pX,'Rows','pairwise')", "partialcorri([pY(1:28,:);NaN NaN;pY(30,:)],pX,'Rows','pairwise')", "partialcorri([pY(1:28,:);NaN NaN;pY(30,:)],pX,'Rows','complete')",
+          "partialcorri([pY(1:28,:);NaN NaN;pY(30,:)],pX)", "partialcorri([pY(1:28,:);NaN 1;pY(30,:)],pX,'Rows','pairwise')", "partialcorri(pY,[pX(1:5,:);NaN 1 2;pX(7:30,:)],'Rows','complete')", "partialcorri(pY,[pX(1:5,:);NaN 1 2;pX(7:30,:)])",
+          "partialcorri(pY,[pX(1:5,:);NaN 1 2;pX(7:30,:)],'Rows','pairwise')", "partialcorri(pY,pX,pZ,'Rows','complete','Tail','right')", "partialcorri(pY,[pX pX(:,1)+pX(:,2)])", "partialcorri(pY,[pX(:,1) pX(:,1)])",
+          "partialcorri(pY(1:5,:),pX(1:5,:))", "partialcorri(pY(1:4,:),pX(1:4,:))", "partialcorri(pY(1:3,:),pX(1:3,:))", "partialcorri(pY,pX,'type','pearson')", "partialcorri(pY,pX,'TYPE','s')", "partialcorri(pY,pX,'rows','all','tail','both')",
+          "partialcorri(pY(:,1),pX(:,1))", "partialcorri(pY(:,1),pX(:,1),pZ)", "partialcorri(pY,pX,pZ,'Rows','pairwise')", "partialcorri(pY,pX,[pZ pX(:,1)])", "partialcorri(pY+1000,pX+500)", "partialcorri(pY(:,1),pX(:,2:3)+pX(:,1)*0.01)"]:
+    L16.append(P6 + pc.replace("{c}", c))
+for c in ["partialcorri(pY,pX)", "partialcorri(pY,pX,pZ)"]:
+    L16.append(P6 + pc1.replace("{c}", c))
+for c in ["partialcorri()", "partialcorri(pY)", "partialcorri(pY,pX(1:10,:))", "partialcorri(pY,pX,pZ(1:10,:))", "partialcorri('abc',pX)", "partialcorri(pY,pX,'Type','kendall')", "partialcorri(pY,pX,'Type','foo')", "partialcorri(pY,pX,'Tail','foo')",
+          "partialcorri(pY,pX,'Tail',3)", "partialcorri(pY,pX,'Rows','foo')", "partialcorri(pY,pX,'bogus',1)", "partialcorri([],[])", "partialcorri(zeros(0,2),zeros(0,2))", "partialcorri(pY,pX,'Tail')", "partialcorri(cat(3,pY,pY),pX)",
+          "partialcorri(pY,pX,'Type','k')", "partialcorri(pY,pX,'Rows','c','Rows','a')", "partialcorri(pY,pX,'Tail','l')"]:
+    L16.append(P6 + pc.replace("{c}", c))
+L += L16
+
+P7 = ("rX=[x(1:30)' y(1:30)' x(31:60)'.*y(31:60)' (1:30)'/10]; rY=1+2*rX(:,1)-rX(:,2)+0.5*rX(:,3)+0.3*sin(3*(1:30)')+0.1*cos(7*(1:30)'); rXn=rX; rXn(5,2)=NaN; rYn=rY; rYn(9)=NaN; "
+      "sX=[rX(:,1) rX(:,2) rX(:,3) rX(:,4) rX(:,1)+rX(:,2)]; sY=rY+0.5*rX(:,4); sN=sX; sN(3,1)=NaN; ")
+L17 = []
+rs = "s_ = {c}; fn_ = fieldnames(s_); r = cell(1,numel(fn_)); for k_=1:numel(fn_), v_=s_.(fn_{k_}); if isstruct(v_), v_ = struct2cell(v_); end, r{k_} = v_; end; r = [{fn_}, r];"
+for c in ["regstats(rY,rX)", "regstats(rY,rX,'linear')", "regstats(rY,rX,'interaction')", "regstats(rY,rX(:,1:2),'quadratic')", "regstats(rY,rX(:,1:2),'purequadratic')", "regstats(rY,rX(:,1:2),[0 0;1 0;0 1;1 1;2 0])",
+          "regstats(rY,rX,'linear','beta')", "regstats(rY,rX,'linear',{'beta','rsquare','mse'})", "regstats(rY,rX,'linear',{'leverage','cookd','dffits'})", "regstats(rY,rX,'linear','tstat')", "regstats(rY,rX,'linear','fstat')",
+          "regstats(rY,rX,'linear','dwstat')", "regstats(rY,rX,'linear',{'Q','R'})", "regstats(rY,rX,'linear',{'hatmat'})", "regstats(rY,rX,'linear',{'beta_i','dfbetas'})", "regstats(rY,rX,'linear',{'s2_i','standres','studres','covratio','dffit','adjrsquare','covb','yhat','r'})",
+          "regstats(rYn,rX)", "regstats(rY,rXn)", "regstats(rYn,rXn,'linear',{'hatmat','beta_i','dfbetas','yhat','leverage'})", "regstats(rY',rX)", "regstats(rY,rX(:,1))", "regstats(rY,rX(:,1)')", "regstats(rY,rX,[])", "regstats(rY,rX,'linear',[])",
+          "regstats(rY(1:10),rX(1:10,:),'interaction')", "regstats(single(rY),rX)", "regstats(rY,single(rX),'linear','beta')", "regstats(rY,rX,'linear','all')", "regstats(rY,rX,'linear',{'all'})", "regstats(rY,rX,'linear',{})"]:
+    L17.append(P7 + rs.replace("{c}", c))
+for c in ["regstats()", "regstats(rY)", "regstats(rY(1:5),rX)", "regstats([rY rY],rX)", "regstats(rY,rX,'linear','foo')", "regstats(rY,rX,'linear',{'beta','foo'})", "regstats(rY,rX,'linear',3)", "regstats(rY(1:3),rX(1:3,:))", "regstats(rY,rX,'foo')",
+          "regstats(rY,rX,3)", "regstats(rY,rX,'linear',{1,2})"]:
+    L17.append(P7 + rs.replace("{c}", c))
+sw = "lastwarn(''); [b_,se_,p_,in_,st_,nx_,h_] = {c}; r = {b_,se_,p_,in_,st_.dfe,st_.df0,st_.SStotal,st_.SSresid,st_.fstat,st_.pval,st_.rmse,st_.xr,st_.yr,st_.B,st_.SE,st_.TSTAT,st_.PVAL,st_.covb,st_.intercept,st_.wasnan,nx_,h_.B,h_.rmse,h_.df0,h_.in,lastwarn};"
+sw1 = "lastwarn(''); [b_,se_,p_,in_] = {c}; r = {b_,se_,p_,in_,lastwarn};"
+for c in ["stepwisefit(sX,sY,'display','off')", "stepwisefit(rX,rY,'display','off')", "stepwisefit(rX,rY,'display','off','penter',0.01,'premove',0.05)", "stepwisefit(rX,rY,'display','off','penter',0.3)", "stepwisefit(rX,rY,'display','off','premove',0.02)",
+          "stepwisefit(rX,rY,'display','off','inmodel',[1 2])", "stepwisefit(rX,rY,'display','off','inmodel',logical([1 1 1 1]))", "stepwisefit(rX,rY,'display','off','inmodel',[1 2 3 4])", "stepwisefit(rX,rY,'display','off','inmodel',[1 2 3 4],'premove',0.001,'penter',0.0001)",
+          "stepwisefit(rX,rY,'display','off','keep',[4])", "stepwisefit(rX,rY,'display','off','keep',logical([0 0 0 1]),'inmodel',4)", "stepwisefit(rX,rY,'display','off','maxiter',1)", "stepwisefit(rX,rY,'display','off','maxiter',0)", "stepwisefit(rX,rY,'display','off','maxiter',2)",
+          "stepwisefit(rX,rY,'display','off','scale','on')", "stepwisefit(sX,sY,'display','off','scale','on')", "stepwisefit(sX,sY,'display','off','inmodel',[1 2 5])", "stepwisefit(sN,sY,'display','off')", "stepwisefit(sX,[sY(1:9);NaN;sY(11:30)],'display','off')",
+          "stepwisefit(rX(:,1:2),rY,'display','off')", "stepwisefit(rX(:,1),rY,'display','off')", "stepwisefit(rX(1:5,:),rY(1:5),'display','off')", "stepwisefit(rX(1:4,:),rY(1:4),'display','off')", "stepwisefit(rX(1:3,:),rY(1:3),'display','off','inmodel',[1 2])",
+          "stepwisefit([rX 0*rY],rY,'display','off')", "stepwisefit([rX ones(30,1)],rY,'display','off')", "stepwisefit(rX,rY,'display','off','penter',0.5,'premove',0.5)", "stepwisefit(single(rX),single(rY),'display','off')",
+          "stepwisefit(rX,rY,'dis','off','pent',0.2)", "stepwisefit(rX,rY,'Display','off','InModel',[])", "stepwisefit(rX,rY,'display','off','Keep',[])", "stepwisefit(rX,rY,'display','off','maxiter',Inf)", "stepwisefit(rX*1000,rY,'display','off')", "stepwisefit(rX,rY*1e6,'display','off')"]:
+    L17.append(P7 + sw.replace("{c}", c))
+for c in ["stepwisefit(sX,sY,'display','off')", "stepwisefit(rX,rY,'display','off','inmodel',[1 2])", "stepwisefit(rX,rY,'display','on')", "stepwisefit(rX,rY,'inmodel',[1 4])", "stepwisefit(rX,rY)"]:
+    L17.append(P7 + sw1.replace("{c}", c))
+for c in ["stepwisefit()", "stepwisefit(rX)", "stepwisefit(rX,rY,'display')", "stepwisefit(rX,rY,'display','off','inmodel',[1 2 9])", "stepwisefit(rX,rY,'display','off','inmodel',logical([1 0]))", "stepwisefit(rX,rY,'display','off','keep',7)",
+          "stepwisefit(rX,rY,'display','off','keep',logical([1 0]))", "stepwisefit(rX,rY,'display','off','penter',0)", "stepwisefit(rX,rY,'display','off','penter',1)", "stepwisefit(rX,rY,'display','off','penter',[0.1 0.2])", "stepwisefit(rX,rY,'display','off','premove',1.5)",
+          "stepwisefit(rX,rY,'display','off','penter',0.2,'premove',0.1)", "stepwisefit(rX,[rY rY],'display','off')", "stepwisefit(rX,rY(1:10),'display','off')", "stepwisefit(complex(rX,1),rY,'display','off')", "stepwisefit(rX,rY,'display','off','bogus',1)",
+          "stepwisefit(rX,rY,'display','off','penter','a')", "stepwisefit(rX,rY','display','off')", "stepwisefit(rX,rY,3,4)"]:
+    L17.append(P7 + sw.replace("{c}", c))
+L += L17
+
+P8 = ("pX=[x(1:30)' y(1:30)' x(31:60)'.*y(31:60)' (1:30)'/10 sin((1:30)'/3)]; pY=[1+2*pX(:,1)-pX(:,2)+0.3*sin(3*(1:30)') pX(:,3)-0.5*pX(:,4)+0.2*cos(5*(1:30)')]; pY1=pY(:,1); "
+      "pX2=pX(1:6,1:3); pY2=pY(1:6,:); ")
+L18 = []
+pl8 = "[a1_,a2_,a3_,a4_,a5_,a6_,a7_,s_] = {c}; r = {abs(a1_),abs(a2_),abs(a3_),abs(a4_),a5_,a6_,a7_,abs(s_.W),s_.T2,s_.Xresiduals,s_.Yresiduals};"
+pl8raw = "[a1_,a2_,a3_,a4_,a5_,a6_,a7_,s_] = {c}; r = {a1_,a2_,a3_,a4_,s_.W};"
+pl4 = "[a1_,a2_,a3_,a4_] = {c}; r = {abs(a1_),abs(a2_),abs(a3_),abs(a4_)};"
+pl2 = "[a1_,a2_] = {c}; r = {abs(a1_),abs(a2_)};"
+pl5 = "[a1_,a2_,a3_,a4_,a5_] = {c}; r = {abs(a1_),abs(a2_),abs(a3_),abs(a4_),a5_};"
+for c in ["plsregress(pX,pY,2)", "plsregress(pX,pY,1)", "plsregress(pX,pY,3)", "plsregress(pX,pY,4)", "plsregress(pX,pY)", "plsregress(pX,pY1,2)", "plsregress(pX,pY1,5)", "plsregress(pX,pY,2,'Intercept',false)",
+          "plsregress(pX,pY,3,'Intercept','off')", "plsregress(pX,pY,3,'intercept',true)", "plsregress(pX,pY,2,'cv','resubstitution')", "plsregress(pX,pY,2,'CV','resubstitution','MCReps',1)", "plsregress(pX2,pY2,2)", "plsregress(pX2,pY2)",
+          "plsregress(single(pX),pY,2)", "plsregress(pX,single(pY),2)", "plsregress(pX(:,1:2),pY,1)", "plsregress(pX(:,1:2),pY,2)", "plsregress(pX(:,1),pY,1)", "plsregress(pX,pY,2,'int',0)"]:
+    L18.append(P8 + pl8.replace("{c}", c))
+for c in ["plsregress(pX,pY,2)", "plsregress(pX,pY1,3)", "plsregress(pX,pY,3,'Intercept',false)"]:
+    L18.append(P8 + pl4.replace("{c}", c))
+    L18.append(P8 + pl2.replace("{c}", c))
+    L18.append(P8 + pl5.replace("{c}", c))
+for c in ["plsregress(pX,pY,2)", "plsregress(pX,pY1,3)", "plsregress(pX,pY,3,'Intercept',false)"]:
+    L18.append(P8 + pl8raw.replace("{c}", c))
+for c in ["plsregress()", "plsregress(pX)", "plsregress(pX,pY(1:10,:),2)", "plsregress(pX,pY,0)", "plsregress(pX,pY,1.5)", "plsregress(pX,pY,[1 2])", "plsregress(pX,pY,'a')", "plsregress(pX,pY,30)", "plsregress(pX,pY,6)",
+          "plsregress(pX,pY,2,'cv','foo')", "plsregress(pX,pY,2,'cv',0)", "plsregress(pX,pY,2,'cv',100)", "plsregress(pX,pY,2,'MCReps',0)", "plsregress(pX,pY,2,'MCReps',2)", "plsregress(pX,pY,2,'MCReps',1.5)", "plsregress(pX,pY,2,'Intercept','maybe')",
+          "plsregress(pX,pY,2,'bogus',1)", "plsregress(pX,pY,2,'cv')"]:
+    L18.append(P8 + pl8.replace("{c}", c))
+L += L18
+
+P9 = ("hT=[0.9 0.1;0.2 0.8]; hE=[0.5 0.3 0.2;0.2 0.3 0.5]; hS=mod(floor(3*abs(sin((1:60)*0.37)+0.3*cos((1:60)*1.3))),3)+1; hS2=mod(floor(3*abs(sin((1:40)*0.81))),3)+1; hM=[hS(1:40);hS2]; "
+      "hC={hS(1:30),hS2,hS(31:60)}; h3T=[0.5 0.3 0.2;0.2 0.6 0.2;0.1 0.3 0.6]; h3E=[0.6 0.4;0.3 0.7;0.1 0.9]; hB=mod(floor(2*abs(sin((1:50)*0.9))),2)+1; hAB=char('a'+hB-1); ")
+L19 = []
+ht = "lastwarn(''); [tr_,e_,ll_] = {c}; r = {tr_,e_,ll_,lastwarn};"
+ht2 = "[tr_,e_] = {c}; r = {tr_,e_};"
+for c in ["hmmtrain(hS,hT,hE)", "hmmtrain(hS,hT,hE,'Tolerance',1e-3)", "hmmtrain(hS,hT,hE,'Tolerance',1e-9)", "hmmtrain(hS,hT,hE,'Maxiterations',5)", "hmmtrain(hS,hT,hE,'Maxiterations',1)", "hmmtrain(hS,hT,hE,'Algorithm','Viterbi')",
+          "hmmtrain(hS,hT,hE,'Algorithm','BaumWelch')", "hmmtrain(hS,hT,hE,'Algorithm','v','Maxiterations',20)", "hmmtrain(hM,hT,hE)", "hmmtrain(hC,hT,hE)", "hmmtrain(hC,hT,hE,'Tolerance',1e-4)", "hmmtrain(hB,h3T,h3E)", "hmmtrain(hB,h3T,h3E,'Tolerance',1e-5)",
+          "hmmtrain(hB,[0.5 0.5;0.5 0.5],[0.5 0.5;0.5 0.5])", "hmmtrain(hS,hT,hE,'Pseudoemissions',[1 1 1;1 1 1])", "hmmtrain(hS,hT,hE,'Pseudotransitions',[1 1;1 1])", "hmmtrain(hS,hT,hE,'Pseudoemissions',[1 1 1;1 1 1],'Pseudotransitions',[1 2;2 1])",
+          "hmmtrain(hS,hT,hE,'Algorithm','viterbi','Pseudoemissions',[1 1 1;1 1 1],'Pseudotransitions',[1 1;1 1])", "hmmtrain(hB,[1 0;0 1],[0.5 0.5;0.5 0.5])", "hmmtrain(hAB,hT,[0.5 0.5 0;0.5 0.5 0],'Symbols','abc')",
+          "hmmtrain(hAB,[0.9 0.1;0.1 0.9],[0.7 0.3;0.4 0.6],'Symbols','ab')", "hmmtrain(hAB,[0.9 0.1;0.1 0.9],[0.7 0.3;0.4 0.6],'Symbols',{'a','b'})", "hmmtrain(hB,[0.9 0.1;0.1 0.9],[0.7 0.3;0.4 0.6],'Symbols',[1 2])",
+          "hmmtrain(hS,hT,hE,'tol',1e-2)", "hmmtrain(hS,hT,hE,'Tolerance',1e-3,'trtol',1e-1,'etol',1e-1)", "hmmtrain(hS,hT,hE,'Verbose',false)", "hmmtrain(hS,hT,hE,'Verbose','on','Maxiterations',3)", "hmmtrain(hS,hT,hE,'Tolerance',[])",
+          "hmmtrain(hS,hT,hE,'Maxiterations',2,'Tolerance',1e-12)", "hmmtrain(hS(1:5),hT,hE)", "hmmtrain(hS(1:2),hT,hE,'Maxiterations',50)", "hmmtrain([],[],[])", "hmmtrain(hS,zeros(0,0),zeros(0,3))", "hmmtrain(hS,hT,[0.5 0.5 0;0.5 0.5 0])"]:
+    L19.append(P9 + ht.replace("{c}", c))
+for c in ["hmmtrain(hS,hT,hE)", "hmmtrain(hS,hT,hE,'Algorithm','viterbi')", "hmmtrain(hC,hT,hE)"]:
+    L19.append(P9 + ht2.replace("{c}", c))
+for c in ["hmmtrain()", "hmmtrain(hS)", "hmmtrain(hS,hT)", "hmmtrain(hS,[0.9 0.1 0;0.2 0.8 0],hE)", "hmmtrain(hS,hT,[0.5 0.3 0.2])", "hmmtrain(hS,hT,hE,'Symbols')", "hmmtrain(hS,hT,hE,'Symbols',[1 2])", "hmmtrain(hS,hT,hE,'Symbols',[4 5 6])",
+          "hmmtrain(hS,hT,hE,'Pseudoemissions',[1 1;1 1])", "hmmtrain(hS,hT,hE,'Pseudoemissions',[1 1 1])", "hmmtrain(hS,hT,hE,'Pseudotransitions',[1 1 1;1 1 1])", "hmmtrain(hS,hT,hE,'Pseudotransitions',1)", "hmmtrain(hS,hT,hE,'Algorithm','foo')",
+          "hmmtrain(hS,hT,hE,'bogus',1)", "hmmtrain({1},hT,hE)", "hmmtrain('abc',hT,hE)", "hmmtrain(hS,hT,hE,3,4)", "hmmtrain(hS+5,hT,hE)", "hmmtrain(hS,hT,hE,'Tolerance','a')"]:
+    L19.append(P9 + ht.replace("{c}", c))
+L += L19
+
+P10 = ("bd=x(1:25)'; bd2=[x(1:25)' y(1:25)']; bw=y(1:25); bz=y(1:25)'; ")
+L20 = []
+bs = "rng(7); [b_,s_] = {c}; r = {b_,s_};"
+bs1 = "rng(3); b_ = {c}; r = {b_};"
+for c in ["bootstrp(10,@mean,bd)", "bootstrp(50,@std,bd)", "bootstrp(5,@(v) [mean(v) median(v)],bd)", "bootstrp(8,@mean,bd2)", "bootstrp(8,@(v) corr(v(:,1),v(:,2)),bd2)", "bootstrp(8,@corr,bd,bz)", "bootstrp(8,@(a,b) mean(a)-mean(b),bd,bz)",
+          "bootstrp(8,@(a,b,c) mean(a)+c,bd,bz,10)", "bootstrp(8,@mean,bw)", "bootstrp(8,'mean',bd)", "bootstrp(8,'mean',bd2)", "bootstrp(1,@mean,bd)", "bootstrp(3,@(v) v,bd(1:4))", "bootstrp(4,@(v) v(1:2),bd)", "bootstrp(6,@median,bd,'options',[])",
+          "bootstrp(4,[],bd)", "bootstrp(6,@numel,bd)", "bootstrp(5,@(v) max(v)-min(v),bd2)", "bootstrp(10,@var,bd)", "bootstrp(20,@(a,b) polyfit(a,b,1),bd,bz)"]:
+    L20.append(P10 + bs.replace("{c}", c))
+    L20.append(P10 + bs1.replace("{c}", c))
+for c in ["bootstrp(10,@mean,bd,'Weights',ones(25,1))"]:
+    L20.append(P10 + bs.replace("{c}", c))
+for c in ["bootstrp()", "bootstrp(10)", "bootstrp(0,@mean,bd)", "bootstrp(2.5,@mean,bd)", "bootstrp(-3,@mean,bd)", "bootstrp(10,@mean)", "bootstrp(10,@mean,5)", "bootstrp(10,@mean,bd,bz(1:10))", "bootstrp(5,@(v) error('boom'),bd)",
+          "bootstrp(5,@(v) v(100),bd)", "bootstrp(5,'nosuchfunction',bd)", "bootstrp(5,@mean,bd,'bogus',1)", "bootstrp(5,@(v) ones(1,mod(numel(v),3)+1),bd)", "bootstrp(5,@mean,{1,2,3})", "bootstrp(5,@mean,bd,'options')"]:
+    L20.append(P10 + bs.replace("{c}", c))
+cg = "[x_,f_] = {c}; r = {x_,f_};"
+cg1 = "x_ = {c}; r = {x_};"
+for c in ["candgen(2)", "candgen(3)", "candgen(2,'linear')", "candgen(2,'interaction')", "candgen(2,'quadratic')", "candgen(2,'purequadratic')", "candgen(3,'quadratic')", "candgen(2,'additive')", "candgen(1)", "candgen(1,'quadratic')",
+          "candgen(2,[0 0;1 0;0 1;1 1;2 0])", "candgen(3,[0 0 0;1 0 0;0 1 0;0 0 1;0 0 3])", "candgen(2,'linear','levels',3)", "candgen(2,'linear','levels',[2 4])", "candgen(2,'linear','bounds',[0 10;5 20])", "candgen(2,'linear','bounds',[0 0;1 1],'levels',3)",
+          "candgen(2,'linear','categorical',2)", "candgen(2,'linear','categorical',[1 2])", "candgen(3,'quadratic','categorical',3)", "candgen(2,'linear','categorical',2,'levels',[2 3])", "candgen(2,'quadratic','bounds',{[1 2 5],[10 20 30 40]})",
+          "candgen(2,'linear','bounds',{[1 2 5],[10 20 30 40]})", "candgen(2,'linear','bounds',{[1 2],[3 4]})", "candgen(2,'quadratic','levels',4)", "candgen(2,'full')", "candgen(2,'foo')", "candgen(3,'interaction','levels',[2 2 3],'categorical',3)",
+          "candgen(2,[],'levels',2)", "candgen(2,'lin')", "candgen(2,'quad')", "candgen(2,'linear','Bounds',[-2 -2;2 2],'Levels',5)"]:
+    L20.append(cg.replace("{c}", c))
+    L20.append(cg1.replace("{c}", c))
+for c in ["candgen()", "candgen(0)", "candgen(2.5)", "candgen(2,'linear','bounds',[0 1])", "candgen(2,'linear','bounds',{[1 2]})", "candgen(2,'linear','bounds',{1,[1 2]})", "candgen(2,'linear','bounds',3)",
+          "candgen(2,'linear','levels',1)", "candgen(2,'linear','levels',[2 3 4])", "candgen(2,'linear','levels',2.5)", "candgen(2,'linear','categorical',3)", "candgen(2,[0 0 1;1 0 0])", "candgen(2,'linear','bogus',1)", "candgen(2,'linear','levels')",
+          "candgen(2,'linear','bounds',{[1 2 3],[1 2]},'levels',[2 2])"]:
+    L20.append(cg.replace("{c}", c))
+L += L20
+
+P11 = ("bd=x(1:25)'; bd2=[x(1:25)' y(1:25)']; bz=y(1:25)'; ")
+L21 = []
+bc = "rng(11); [cb_,bs_] = {c}; r = {cb_,bs_};"
+bc1 = "rng(11); cb_ = {c}; r = {cb_};"
+for c in ["bootci(100,@mean,bd)", "bootci(100,{@mean,bd})", "bootci(100,{@mean,bd},'type','bca')", "bootci(100,{@mean,bd},'type','norm')", "bootci(100,{@mean,bd},'type','normal')", "bootci(100,{@mean,bd},'type','per')", "bootci(100,{@mean,bd},'type','percentile')",
+          "bootci(100,{@mean,bd},'type','cper')", "bootci(100,{@mean,bd},'type','corrected percentile')", "bootci(30,{@mean,bd},'type','stud','nbootstd',10)", "bootci(100,{@mean,bd},'type','stud','stderr',@(v) std(v)/sqrt(numel(v)))", "bootci(100,{@mean,bd},'type','student','nbootstd',5)",
+          "bootci(100,{@mean,bd},'alpha',0.1)", "bootci(100,{@mean,bd},'alpha',0.01,'type','per')", "bootci(100,{@median,bd})", "bootci(100,{@std,bd},'type','per')", "bootci(100,{@(a,b) corr(a,b),bd,bz})", "bootci(100,{@corr,bd,bz},'type','norm')",
+          "bootci(100,{@(v) [mean(v) median(v)],bd})", "bootci(100,{@(v) [mean(v) std(v)],bd},'type','cper')", "bootci(100,{@mean,bd2})", "bootci(100,{@mean,bd2},'type','per')", "bootci(100,{@(v) cov(v),bd2},'type','per')", "bootci(50,{@(v) cov(v),bd2})",
+          "bootci(100,@(a,b) mean(a)-mean(b),bd,bz)", "bootci(100,{@(v) mean(v)+1,bd'})", "bootci(1,{@mean,bd},'type','per')", "bootci(100,{@(v) var(v),bd},'type','bca','alpha',0.2)", "bootci(100,{@mean,bd},'Type','PER')", "bootci(100,{@mean,bd},'ty','per','al',0.3)",
+          "bootci(100,{@mean,bd},'Weights',[])", "bootci(100,{@(v) max(v),bd},'type','bca')", "bootci(100,{@(v) 5,bd})", "bootci(100,{@(v) 5,bd},'type','cper')", "bootci(100,{@(v) 5,bd},'type','per')"]:
+    L21.append(P11 + bc.replace("{c}", c))
+    L21.append(P11 + bc1.replace("{c}", c))
+for c in ["bootci()", "bootci(10)", "bootci(0,@mean,bd)", "bootci(2.5,@mean,bd)", "bootci(10,{@mean,bd},'type','foo')", "bootci(10,{@(v) NaN,bd})", "bootci(10,{@(v) Inf,bd},'type','per')", "bootci(10,{@(v) error('x'),bd})", "bootci(10,{@mean,bd},'bogus',1)",
+          "bootci(10,{@mean,bd},'type')", "bootci(10,{@mean,bd},'type','stud','nbootstd',0)", "bootci(10,{@mean,bd},'type','stud','stderr',@(v) NaN)", "bootci(10,{@mean,bd},'type','stud','stderr',@(v) [1 2])", "bootci(10,{@mean,bd},'type','stud','stderr',@(v) error('y'))"]:
+    L21.append(P11 + bc.replace("{c}", c))
+lh = "rng(%d); X_ = {c}; r = {X_};"
+for sd, c in [(1, "lhsdesign(5,2)"), (2, "lhsdesign(10,3)"), (3, "lhsdesign(8,2,'smooth','off')"), (4, "lhsdesign(8,2,'criterion','none')"), (5, "lhsdesign(8,3,'criterion','correlation')"), (6, "lhsdesign(8,3,'iterations',20)"),
+              (7, "lhsdesign(8,3,'criterion','correlation','iterations',10)"), (8, "lhsdesign(20,4,'criterion','maximin','iterations',3)"), (9, "lhsdesign(1,3)"), (10, "lhsdesign(2,2)"), (11, "lhsdesign(6,1)"), (12, "lhsdesign(6,1,'criterion','correlation')"),
+              (13, "lhsdesign(5,2,'iterations',0)"), (14, "lhsdesign(5,2,'iterations',1)"), (15, "lhsdesign(5,2,'Criterion','Corr')"), (16, "lhsdesign(5,2,'crit','max','smooth','off')"), (17, "lhsdesign(0,2)"), (18, "lhsdesign(4,0)"), (19, "lhsdesign(15,5,'smooth','on')"),
+              (20, "lhsdesign(30,2,'criterion','correlation','iterations',50)")]:
+    L21.append((lh % sd).replace("{c}", c))
+for c in ["lhsdesign()", "lhsdesign(5)", "lhsdesign(5.5,2)", "lhsdesign(-1,2)", "lhsdesign(5,2,'criterion','foo')", "lhsdesign(5,2,'smooth','maybe')", "lhsdesign(5,2,'iterations',-1)", "lhsdesign(5,2,'iterations',[1 2])", "lhsdesign(5,2,'bogus',1)", "lhsdesign(5,2,'smooth')", "lhsdesign([5 6],2)"]:
+    L21.append((lh % 1).replace("{c}", c))
+L += L21
+
+P12 = "gA=[1 1 1 1 2 2 2 2 2 3 3 3]'; gB={'a';'b';'a';'c';'b';'a';'c';'c';'b';'a'}; gC=[3 1 1 2 3 3 1 2 2 3 1 1]'; gD=[1 1 NaN 2 2 1 2 NaN 1 2]'; gE=['aa';'bb';'aa';'bb';'aa';'bb';'aa';'bb']; gF=logical([1 0 1 1 0 0 1 0 1 1])'; "
+L22 = []
+cvr = "rng(%d); c_ = {c}; r = {c_.NumObservations, c_.NumTestSets, c_.TrainSize, c_.TestSize, c_.Type, c_.IsCustom, class(c_), double(training(c_,%s)), double(test(c_,%s))};"
+cvh = "rng(%d); c_ = {c}; r = {c_.NumObservations, c_.NumTestSets, c_.TrainSize, c_.TestSize, c_.Type, double(training(c_)), double(test(c_)), double(training(c_,1)), double(test(c_,1))};"
+sd = 0
+for c in ["cvpartition(10,'KFold',3)", "cvpartition(10,'KFold',5)", "cvpartition(10,'KFold',2)", "cvpartition(10,'KFold')", "cvpartition(25,'KFold',4)", "cvpartition(7,'KFold',7)", "cvpartition(7,'KFold',3)", "cvpartition(20,'KFold',6)",
+          "cvpartition(12,'k',3)", "cvpartition(12,'KF',4)", "cvpartition(12,'kfold',[])", "cvpartition(15,'KFold',15)", "cvpartition(5,'KFold',9)", "cvpartition(2,'KFold',2)", "cvpartition(30,'KFold',11)",
+          "cvpartition(gA,'KFold',3)", "cvpartition(gA,'KFold',4)", "cvpartition(gA,'KFold',2)", "cvpartition(gA,'KFold')", "cvpartition(gB,'KFold',3)", "cvpartition(gB,'KFold',2)", "cvpartition(gC,'KFold',3)", "cvpartition(gC,'KFold',5)",
+          "cvpartition(gD,'KFold',3)", "cvpartition(gD,'KFold',2)", "cvpartition(gE,'KFold',2)", "cvpartition(gE,'KFold',3)", "cvpartition(gF,'KFold',3)", "cvpartition(gA,'KFold',3,'Stratify',false)", "cvpartition(gB,'KFold',3,'Stratify',true)",
+          "cvpartition(gA,'KFold',12)", "cvpartition(gA,'KFold',20)", "cvpartition({'x','y','z','x','y','z'},'KFold',3)", "cvpartition(categorical(gB),'KFold',3)", "cvpartition(string(gB),'KFold',3)", "cvpartition(gD,'KFold',3,'Stratify',false)",
+          "cvpartition(10,'KFold',3,'Stratify',false)", "cvpartition(gA,'kfold',3,'strat',true)"]:
+    sd += 1
+    L22.append(P12 + (cvr % (sd, "1", "1")).replace("{c}", c))
+    L22.append(P12 + (cvr % (sd + 100, "'all'", "[2 1]")).replace("{c}", c))
+for c in ["cvpartition(10,'HoldOut')", "cvpartition(10,'HoldOut',0.3)", "cvpartition(10,'Holdout',3)", "cvpartition(10,'holdout',0.5)", "cvpartition(20,'h',0.25)", "cvpartition(20,'HoldOut',0.1)", "cvpartition(9,'HoldOut',0.34)", "cvpartition(9,'HoldOut',8)",
+          "cvpartition(50,'HoldOut',0.2)", "cvpartition(2,'HoldOut',1)", "cvpartition(10,'HoldOut',[])",
+          "cvpartition(gA,'HoldOut',0.25)", "cvpartition(gA,'HoldOut',0.5)", "cvpartition(gA,'HoldOut',3)", "cvpartition(gA,'HoldOut',6)", "cvpartition(gA,'HoldOut')", "cvpartition(gA,'HoldOut',0.2)", "cvpartition(gB,'HoldOut',0.3)", "cvpartition(gB,'HoldOut',0.5)",
+          "cvpartition(gC,'HoldOut',0.4)", "cvpartition(gC,'HoldOut',2)", "cvpartition(gD,'HoldOut',0.3)", "cvpartition(gD,'HoldOut',0.5)", "cvpartition(gE,'HoldOut',0.25)", "cvpartition(gF,'HoldOut',0.3)", "cvpartition(gA,'HoldOut',0.3,'Stratify',false)",
+          "cvpartition(gA,'HoldOut',0.05)", "cvpartition(gA,'HoldOut',0.9)", "cvpartition(gB,'HoldOut',0.7)", "cvpartition(gC,'HoldOut',0.8)"]:
+    sd += 1
+    L22.append(P12 + (cvh % sd).replace("{c}", c))
+for c in ["cvpartition(5,'LeaveOut')", "cvpartition(8,'LeaveOut')", "cvpartition(2,'LeaveOut')", "cvpartition(12,'Leave')", "cvpartition(gA,'LeaveOut')", "cvpartition(gB,'LeaveOut')", "cvpartition(gD,'LeaveOut')", "cvpartition(6,'LeaveOut',1)", "cvpartition(6,'LeaveOut',2)",
+          "cvpartition(gE,'LeaveOut')"]:
+    sd += 1
+    L22.append(P12 + (cvr % (sd, "1", "[3 1]")).replace("{c}", c))
+for c in ["cvpartition(10,'Resubstitution')", "cvpartition(4,'Resub')", "cvpartition(gA,'Resubstitution')", "cvpartition(gD,'Resubstitution')", "cvpartition(gB,'r')", "cvpartition(3,'Resubstitution')"]:
+    sd += 1
+    L22.append(P12 + (cvh % sd).replace("{c}", c))
+# repartition draws a new partition from the stream that follows
+rp = "rng(%d); c_ = {c}; d_ = repartition(c_); e_ = repartition(d_); r = {c_.TrainSize, c_.TestSize, double(test(c_,1)), d_.TrainSize, d_.TestSize, double(test(d_,1)), double(test(e_,1)), class(d_), d_.NumObservations, d_.Type};"
+for c in ["cvpartition(10,'KFold',3)", "cvpartition(12,'KFold',4)", "cvpartition(gA,'KFold',3)", "cvpartition(gD,'KFold',2)", "cvpartition(10,'HoldOut',0.3)", "cvpartition(gA,'HoldOut',0.25)", "cvpartition(6,'LeaveOut')", "cvpartition(gB,'KFold',3)"]:
+    sd += 1
+    L22.append(P12 + (rp % sd).replace("{c}", c))
+rp2 = "rng(%d); c_ = {c}; d_ = repartition(c_); r = {double(training(d_)), double(test(d_)), d_.TrainSize};"
+for c in ["cvpartition(5,'Resubstitution')"]:
+    sd += 1
+    L22.append(P12 + (rp2 % sd).replace("{c}", c))
+# the stream continues after a partition: draws after cvpartition match
+L22.append(P12 + "rng(5); c_ = cvpartition(10,'KFold',3); r = {rand(1,3)};")
+L22.append(P12 + "rng(5); c_ = cvpartition(gA,'HoldOut',0.25); r = {rand(1,3)};")
+L22.append(P12 + "rng(5); c_ = cvpartition(gA,'KFold',3); r = {rand(1,3)};")
+L22.append(P12 + "rng(5); c_ = cvpartition(6,'LeaveOut'); r = {rand(1,3)};")
+# properties and methods
+L22.append(P12 + "rng(1); c_ = cvpartition(10,'KFold',3); r = {numel(c_), size(c_), isobject(c_), isa(c_,'cvpartition'), ismethod(c_,'training'), isprop(c_,'TrainSize'), isequal(training(c_,'all'), [training(c_,1) training(c_,2) training(c_,3)])};")
+L22.append(P12 + "rng(1); c_ = cvpartition(10,'KFold',3); r = {size(training(c_,[3 1])), size(test(c_,2)), class(training(c_,1)), class(test(c_,'all')), all(sum(test(c_,'all'),2)==1), all(training(c_,1) + test(c_,1) == 1)};")
+L22.append(P12 + "rng(1); c_ = cvpartition(10,'KFold',3); r = {c_.training(2), c_.test(3)};")
+L22.append(P12 + "rng(1); c_ = cvpartition(10,'KFold',3); d_ = gather(c_); r = {class(d_), d_.TestSize};")
+L22.append(P12 + "rng(1); c_ = cvpartition(gD,'KFold',3); r = {c_.NumObservations, double(training(c_,1)'), double(test(c_,1)')};")
+L22.append(P12 + "rng(1); c_ = cvpartition(10,'KFold',3); c_.TrainSize = 5; r = {c_.TrainSize};")
+for c in ["cvpartition()", "cvpartition(10)", "cvpartition(10,'Foo')", "cvpartition(10,5)", "cvpartition(10,'KFold',1)", "cvpartition(10,'KFold',2.5)", "cvpartition(10,'KFold',0)", "cvpartition(10,'KFold',-3)", "cvpartition(10,'KFold',[2 3])", "cvpartition(10,'KFold','a')",
+          "cvpartition(1,'KFold',2)", "cvpartition(0,'KFold',2)", "cvpartition(2.5,'KFold',2)", "cvpartition(-4,'KFold',2)", "cvpartition(Inf,'KFold',2)", "cvpartition(NaN,'KFold',2)", "cvpartition('a','KFold',2)", "cvpartition(true,'KFold',2)", "cvpartition({'a'},'KFold',2)",
+          "cvpartition(10,'HoldOut',0)", "cvpartition(10,'HoldOut',1.5)", "cvpartition(10,'HoldOut',-1)", "cvpartition(10,'HoldOut',10)", "cvpartition(10,'HoldOut',11)", "cvpartition(10,'HoldOut',0.01)", "cvpartition(10,'HoldOut',[0.2 0.3])", "cvpartition(10,'HoldOut','x')",
+          "cvpartition(gA,'HoldOut',12)", "cvpartition(gA,'HoldOut',0.01)", "cvpartition(gD,'HoldOut',10)", "cvpartition([1;NaN],'KFold',2)", "cvpartition([NaN;NaN;1],'KFold',2)",
+          "cvpartition(10,'LeaveOut',2)", "cvpartition(10,'Resubstitution',3)", "cvpartition(10,'KFold',3,'Stratify')", "cvpartition(10,'KFold',3,'Foo',true)", "cvpartition(10,'KFold',3,'Stratify',1)", "cvpartition(10,'KFold',3,'Stratify',true)",
+          "cvpartition(10,'HoldOut',0.3,'Stratify',true)", "cvpartition(gA,'LeaveOut',1,'Stratify',false)", "cvpartition(gA,'Resubstitution','Stratify',false)", "cvpartition(gA,'LeaveOut','Stratify',true)", "cvpartition(10,'KFold',3,5)", "cvpartition(10,'KFold',3,'Stratify',true,1)",
+          "cvpartition(10,{'KFold'})", "cvpartition(10,\"KFold\",3)", "cvpartition(10,['KFold';'KFold'])", "cvpartition(10,'')", "cvpartition(10,'K',3)"]:
+    sd += 1
+    L22.append(P12 + ("rng(%d); c_ = {c}; r = {c_.NumTestSets, c_.TrainSize};" % sd).replace("{c}", c))
+for c in ["training(cvpartition(10,'KFold',3))", "training(cvpartition(10,'KFold',3),4)", "training(cvpartition(10,'KFold',3),0)", "training(cvpartition(10,'KFold',3),1.5)", "training(cvpartition(10,'KFold',3),[1 1])", "training(cvpartition(10,'KFold',3),'foo')", "training(cvpartition(10,'KFold',3),[1 2;3 1])",
+          "test(cvpartition(10,'KFold',3))", "test(cvpartition(10,'KFold',3),4)", "test(cvpartition(10,'KFold',3),{1})", "training(cvpartition(10,'HoldOut',0.3),2)", "test(cvpartition(10,'HoldOut',0.3),0)", "training(cvpartition(10,'Resubstitution'),2)", "test(cvpartition(10,'Resubstitution'),3)", "training(cvpartition(10,'LeaveOut'),11)",
+          "repartition(cvpartition(10,'KFold',3),1)", "repartition(cvpartition(10,'KFold',3),1,2)", "training(cvpartition(10,'KFold',3),'a')", "training(cvpartition(10,'KFold',3),'al')", "test(cvpartition(10,'KFold',3),'ALL')", "training(cvpartition(10,'KFold',3),true)", "training(cvpartition(10,'KFold',3),int8(2))",
+          "training(cvpartition(10,'KFold',3),[])", "training(cvpartition(10,'HoldOut',0.3),'all')", "training(cvpartition(10,'HoldOut',0.3),true)", "training(cvpartition(10,'Resubstitution'),1,2)"]:
+    sd += 1
+    L22.append(P12 + ("rng(%d); r = {double({c})};" % sd).replace("{c}", c))
+L += L22
+
 with open(os.path.join(here, "cases_u1.txt"), "w", encoding="utf-8", newline="\n") as f:
     f.write("\n".join(L) + "\n")
 print(len(L) - 1)

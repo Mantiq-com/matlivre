@@ -252,6 +252,9 @@ fn t_inv(q: f64, p: P) -> f64 {
     if q == 1.0 {
         return f64::INFINITY;
     }
+    if v == f64::INFINITY {
+        return norm_inv(q);
+    }
     let (lo, neg) = if q < 0.5 { (q, true) } else { (1.0 - q, false) };
     // lo = 0.5 * I_{v/(v+t^2)}(v/2, 1/2)
     let z = betaincinv(2.0 * lo, v / 2.0, 0.5, false);
@@ -284,6 +287,16 @@ fn f_cdf(x: f64, p: P, upper: bool) -> f64 {
     if x.is_infinite() {
         return if upper { 0.0 } else { 1.0 };
     }
+    if p[0].is_infinite() && p[1].is_infinite() {
+        let lower = if x < 1.0 { 0.0 } else { 1.0 };
+        return if upper { 1.0 - lower } else { lower };
+    }
+    if p[1].is_infinite() {
+        return chi2_cdf(p[0] * x, &[p[0]], upper);
+    }
+    if p[0].is_infinite() {
+        return chi2_cdf(p[1] / x, &[p[1]], !upper);
+    }
     let z = p[0] * x / (p[0] * x + p[1]);
     if z.is_nan() {
         return f64::NAN;
@@ -297,6 +310,15 @@ fn f_inv(q: f64, p: P) -> f64 {
     }
     if q == 1.0 {
         return f64::INFINITY;
+    }
+    if p[0].is_infinite() && p[1].is_infinite() {
+        return 1.0;
+    }
+    if p[1].is_infinite() {
+        return chi2_inv(q, &[p[0]]) / p[0];
+    }
+    if p[0].is_infinite() {
+        return p[1] / chi2_inv(1.0 - q, &[p[1]]);
     }
     let z = betaincinv(q, p[0] / 2.0, p[1] / 2.0, false);
     p[1] * z / (p[0] * (1.0 - z))

@@ -105,6 +105,9 @@ pub struct Interpreter {
     /// Class whose method is executing (for `obj@Super` and `method@Super`).
     class_stack: Vec<Rc<ClassDef>>,
     pub format: NumFormat,
+    /// > 0 while `evalc` captures output: MATLAB's captured text has the hyperlinks of an
+    /// interactive session (`Show all properties`), where the batch log has plain text.
+    pub(crate) capturing: u32,
     /// Show statement results the way MATLAB's command window does (`x =`, blank line, value)
     /// instead of the Live Editor style (`x = 5`). Used to compare with `matlab -batch`.
     pub command_window: bool,
@@ -194,6 +197,7 @@ impl Interpreter {
             not_on_path: HashSet::new(),
             class_stack: Vec::new(),
             format: NumFormat::Short,
+            capturing: 0,
             command_window: false,
             figures: Vec::new(),
             current_figure: None,
@@ -764,7 +768,9 @@ impl Interpreter {
         let diary_on = self.diary.0;
         self.diary.0 = false;
         let start = self.pending.len();
+        self.capturing += 1;
         let r = f(self);
+        self.capturing -= 1;
         self.diary.0 = diary_on;
         let produced: Vec<Output> = self.pending.drain(start..).collect();
         self.flush = flush;
@@ -958,6 +964,14 @@ impl Interpreter {
             if let Some(t) = crate::decomp::object_text(o).or_else(|| crate::ode_objects::object_text(o)) {
                 self.emit(OutputKind::Value { name: name.to_string(), text: format!("{name} = 
 {t}") });
+                return Ok(());
+            }
+            if let Some(t) = crate::stats::cvpart::object_text(o) {
+                self.emit(OutputKind::Value { name: name.to_string(), text: format!("
+{name} = 
+
+{t}
+") });
                 return Ok(());
             }
             if let Some(t) = crate::tiff::object_text(o) {
@@ -1569,6 +1583,9 @@ impl Interpreter {
                     if o.class.name == "GeneralizedLinearModel" {
                         return rt(format!("The {f} property for class GeneralizedLinearModel is read-only."));
                     }
+                    if o.class.name == "cvpartition" {
+                        return rt(format!("Unable to set the '{f}' property of class ''cvpartition'' because it is read-only."));
+                    }
                     if o.class.name == "LinearModel" {
                         return rt(format!("The {f} property for class LinearModel is read-only."));
                     }
@@ -1791,10 +1808,16 @@ If you want to design a new filter with different specifications, use the design
                 if matches!(start, Value::Sym(_)) || matches!(stop, Value::Sym(_)) {
                     return rt("Colon operands must be real numeric scalars.");
                 }
-                let kind = match &start {
-                    Value::Num(m) if m.kind.is_int() || m.kind == Kind::Single => m.kind,
-                    _ => Kind::Double,
-                };
+                // An integer operand (the stop of `1:0x4`, say) makes an integer range; else a single one.
+                let kinds: Vec<Kind> = [Some(&start), step_v.as_ref(), Some(&stop)]
+                    .into_iter()
+                    .flatten()
+                    .filter_map(|v| match v {
+                        Value::Num(m) if m.kind.is_int() || m.kind == Kind::Single => Some(m.kind),
+                        _ => None,
+                    })
+                    .collect();
+                let kind = kinds.iter().copied().find(|k| k.is_int()).or_else(|| kinds.first().copied()).unwrap_or(Kind::Double);
                 let start = start.scalar()?;
                 let step = match step_v {
                     Some(s) => s.scalar()?,
@@ -1810,6 +1833,7 @@ If you want to design a new filter with different specifications, use the design
             },
             Expr::Colon => Ok(Value::chars(":")),
             Expr::Tilde => rt("'~' is only valid on the left side of an assignment."),
+            Expr::Paren(e) | Expr::Lit(e, _) => self.eval(e),
             Expr::Matrix(rows) => self.eval_matrix(rows),
             Expr::Cell(rows) => self.eval_cell(rows),
             Expr::AnonFn(f) => {
@@ -1982,8 +2006,13 @@ If you want to design a new filter with different specifications, use the design
                 }
                 match base.as_ref() {
                     Expr::Ident(name) if self.get_var(name).is_none() => {
-                        if name == "table" || crate::table_ops::wants_arg_names(name) {
+                        if name == "table" || name == "display" || crate::table_ops::wants_arg_names(name) {
                             self.arg_names = args.iter().map(|a| if let Expr::Ident(n) = a { Some(n.clone()) } else { None }).collect();
+                            if name == "display" {
+                                // Only a variable is shown under its name (not `true`, `pi`, ...).
+                                let names = std::mem::take(&mut self.arg_names);
+                                self.arg_names = names.into_iter().map(|n| n.filter(|v| self.get_var(v).is_some())).collect();
+                            }
                         }
                         if let Some(r) = self.call_lending(name, args, nargout)? {
                             return Ok(r);

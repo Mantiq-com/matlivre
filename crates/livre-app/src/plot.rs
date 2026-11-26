@@ -869,7 +869,7 @@ fn draw_axes_3d(c: &mut dyn Canvas, t: &Tokens, ax: &Axes, cs: &ColorScale, cell
         }
     }
     c.clip(None);
-    if let Some(names) = &ax.legend {
+    if let (Some(names), false) = (&ax.legend, ax.legend_hidden) {
         draw_legend(c, t, ax, names, plot);
     }
 }
@@ -1306,7 +1306,7 @@ fn draw_axes(c: &mut dyn Canvas, t: &Tokens, ax: &Axes, fig_map: Option<&[[f64; 
         let xstep = sx.step();
         for (i, &v) in sx.ticks.iter().enumerate() {
             let Some(x) = mx(v).filter(|x| (plot.left() - 0.5..=plot.right() + 0.5).contains(x)) else { continue };
-            if ax.grid {
+            if ax.grid && !ax.ygrid_only {
                 c.line(&[pos2(x, plot.top()), pos2(x, plot.bottom())], grid, &[]);
             }
             c.line(&[pos2(x, plot.bottom()), pos2(x, plot.bottom() - 4.0)], axis, &[]);
@@ -1518,14 +1518,18 @@ fn draw_axes(c: &mut dyn Canvas, t: &Tokens, ax: &Axes, fig_map: Option<&[[f64; 
                 }
             }
         } else if let (Some(mk), false) = (s.marker, matches!(s.kind, SeriesKind::Text | SeriesKind::ConstantLine | SeriesKind::Region | SeriesKind::Patch | SeriesKind::Rectangle | SeriesKind::Light)) {
-            for pt in pts.iter().flatten() {
-                draw_marker(c, mk, *pt, s.marker_size / 2.0 + 1.0, color, s.kind == SeriesKind::Scatter);
+            for (i, pt) in pts.iter().enumerate() {
+                if let Some(pt) = pt {
+                    // A vector SizeData gives each point its own marker area.
+                    let size = s.size_vec.get(i).map_or(s.marker_size, |v| (v.sqrt() as f32).max(2.0));
+                    draw_marker(c, mk, *pt, size / 2.0 + 1.0, color, s.kind == SeriesKind::Scatter);
+                }
             }
         }
     }
     c.clip(None);
 
-    if let Some(names) = &ax.legend {
+    if let (Some(names), false) = (&ax.legend, ax.legend_hidden) {
         draw_legend(c, t, ax, names, plot);
     }
 
@@ -1792,7 +1796,7 @@ fn draw_axes_polar(c: &mut dyn Canvas, t: &Tokens, ax: &Axes, cs: &ColorScale, c
             }
         }
     }
-    if let Some(names) = &ax.legend {
+    if let (Some(names), false) = (&ax.legend, ax.legend_hidden) {
         draw_legend(c, t, ax, names, plot);
     }
 }
@@ -1842,7 +1846,12 @@ fn draw_marker(c: &mut dyn Canvas, m: Marker, p: Pos2, r: f32, color: Color32, f
 }
 
 fn draw_legend(c: &mut dyn Canvas, t: &Tokens, ax: &Axes, names: &[String], plot: Rect) {
-    let rows: Vec<(&Series, Color32, &String)> = ax.series.iter().enumerate().filter(|(_, s)| in_legend(s) && s.visible).zip(names).map(|((k, s), n)| (s, t.color(s, k), n)).collect();
+    let rows: Vec<(&Series, Color32, &String)> = if ax.legend_ids.is_empty() {
+        ax.series.iter().enumerate().filter(|(_, s)| in_legend(s) && s.visible).zip(names).map(|((k, s), n)| (s, t.color(s, k), n)).collect()
+    } else {
+        // The objects the legend was given, in its order.
+        ax.legend_ids.iter().zip(names).filter_map(|(id, n)| ax.series.iter().enumerate().find(|(_, s)| s.id == *id && s.visible).map(|(k, s)| (s, t.color(s, k), n))).collect()
+    };
     if rows.is_empty() {
         return;
     }

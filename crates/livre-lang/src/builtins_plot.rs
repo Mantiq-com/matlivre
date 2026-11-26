@@ -339,7 +339,24 @@ pub fn call(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) ->
             one(crate::gfx::handle(it, id as u64))
         }
         "gca" => one(it.current_axes_handle()),
-        "box" => none(),
+        "box" => {
+            // `box on`, `box off`, or `box` to toggle the current axes.
+            // `box` makes the axes if the figure has none, as `gca` does.
+            it.current_axes_handle();
+            let f = it.current_figure_index();
+            let id = crate::gfx::axes_id(it, f, it.figures[f].current_axes);
+            let now = crate::gfx::get_prop_raw(it, id, "Box").ok().and_then(|v| v.text().ok()).is_some_and(|t| t == "on");
+            let on = match a.first() {
+                Some(v) => match v.text()?.to_lowercase().as_str() {
+                    "on" => true,
+                    "off" => false,
+                    _ => return rt("Invalid argument. Value must be 'on' or 'off'."),
+                },
+                None => !now,
+            };
+            crate::gfx::store(it, id, "Box", Value::chars(if on { "on" } else { "off" }));
+            none()
+        }
         "close" => {
             let all = a.iter().any(|v| v.text().map(|s| s == "all").unwrap_or(false));
             if all {
@@ -372,6 +389,9 @@ pub fn call(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) ->
                 Some("off") => false,
                 _ => !*flag,
             };
+            if name == "grid" {
+                ax.ygrid_only = false;
+            }
             none()
         }
         "ishold" => {
@@ -436,25 +456,71 @@ pub fn call(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) ->
             handles_out(it, &[label], nargout)
         }
         "legend" => {
+            // A leading vector of plotted objects picks the ones the legend lists, in that order.
+            let mut args: &[Value] = a;
+            let mut picked: Vec<u64> = Vec::new();
+            if let Some(ids) = args.first().and_then(crate::gfx::ids_of) {
+                if !ids.is_empty() && ids.iter().all(|&id| matches!(crate::gfx::resolve(it, id), Some(crate::gfx::Target::Series(..)))) {
+                    picked = ids;
+                    args = &args[1..];
+                }
+            }
             let mut names: Vec<String> = Vec::new();
             let mut show = true;
-            for v in a {
+            let mut hide = false;
+            let mut options: Vec<(String, Value)> = Vec::new();
+            for (k, v) in args.iter().enumerate() {
                 match v {
                     Value::Cell(_) | Value::Str(_) if !v.is_text() => names.extend(text_of(v)?.split('\n').map(String::from)),
                     other => {
                         let t = other.text()?;
                         match t.as_str() {
                             "off" => show = false,
+                            "hide" => hide = true,
                             "show" | "boxoff" | "boxon" => {}
-                            "Location" | "location" | "Orientation" | "NumColumns" => break,
+                            // The rest are name-value pairs for the legend.
+                            "Location" | "location" | "Orientation" | "NumColumns" => {
+                                let mut pairs = args[k..].chunks(2);
+                                while let Some([n, val]) = pairs.next() {
+                                    options.push((n.text()?, val.clone()));
+                                }
+                                break;
+                            }
                             _ => names.push(t),
                         }
                     }
                 }
             }
             let ax = it.current_figure().axes_mut();
+            if hide {
+                // The legend stays an object of the figure, only not shown.
+                if ax.legend.is_some() {
+                    ax.legend_hidden = true;
+                }
+                return none();
+            }
+            ax.legend_hidden = false;
+            ax.legend_ids.clear();
             if !show {
                 ax.legend = None;
+            } else if !picked.is_empty() {
+                let at: Vec<usize> = picked.iter().filter_map(|id| ax.series.iter().position(|s| s.id == *id)).collect();
+                for (&i, n) in at.iter().zip(&names) {
+                    ax.series[i].name = Some(n.clone());
+                }
+                // Unnamed objects are numbered among themselves (data1, data2, ...).
+                let mut unnamed = 0;
+                ax.legend = Some(
+                    at.iter()
+                        .map(|&i| {
+                            ax.series[i].name.clone().unwrap_or_else(|| {
+                                unnamed += 1;
+                                format!("data{unnamed}")
+                            })
+                        })
+                        .collect(),
+                );
+                ax.legend_ids = at.iter().map(|&i| ax.series[i].id).collect();
             } else if names.is_empty() {
                 ax.legend = Some(
                     ax.series
@@ -470,12 +536,26 @@ pub fn call(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) ->
                         .collect(),
                 );
             } else {
+                // The labels become the DisplayName of the plotted objects, in order.
+                let shown = ax.series.iter_mut().filter(|s| !matches!(s.kind, SeriesKind::Text | SeriesKind::ConstantLine | SeriesKind::Region) && s.visible);
+                for (s, n) in shown.zip(&names) {
+                    s.name = Some(n.clone());
+                }
                 ax.legend = Some(names);
             }
             if !show {
                 return none();
             }
             let legend = crate::gfx::ids_of(&it.current_axes_handle()).unwrap()[0] + crate::gfx::Part::Legend as u64;
+            for (n, v) in options {
+                let name = match n.to_lowercase().as_str() {
+                    "location" => "Location".to_string(),
+                    "orientation" => "Orientation".to_string(),
+                    "numcolumns" => "NumColumns".to_string(),
+                    _ => n,
+                };
+                crate::gfx::store(it, legend, &name, v);
+            }
             handles_out(it, &[legend], nargout)
         }
         "axis" | "xlim" | "ylim" => {
@@ -629,12 +709,16 @@ pub fn call(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) ->
             // scatter(x, y, sz, c): numeric size/color arguments after x, y.
             let mut args2: Vec<Value> = a.to_vec();
             let mut size = None;
+            let mut size_vec: Option<Matrix> = None;
             let filled = kind == SeriesKind::Scatter && a.iter().any(|v| v.is_text() && v.text().map(|t| t == "filled").unwrap_or(false));
             if kind == SeriesKind::Scatter {
                 if args2.len() >= 3 && !args2[2].is_text() {
                     let s = args2.remove(2);
                     if s.numel() >= 1 {
                         size = Some(s.scalar()?);
+                        if s.numel() > 1 {
+                            size_vec = Some(s.to_matrix()?);
+                        }
                     }
                 }
                 if args2.len() >= 3 && !args2[2].is_text() {
@@ -647,6 +731,16 @@ pub fn call(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) ->
             if kind == SeriesKind::Bar {
                 if let Some(k) = args2.iter().position(|v| v.text().is_ok_and(|t| matches!(t.to_lowercase().as_str(), "grouped" | "stacked" | "hist" | "histc"))) {
                     layout = args2.remove(k).text()?.to_lowercase();
+                }
+            }
+            // bar(y, width) and bar(x, y, width): the width of a bar as a fraction of the spacing.
+            let mut width_rel: Option<f64> = None;
+            if kind == SeriesKind::Bar {
+                let lead = args2.iter().take_while(|v| !v.is_text()).count();
+                if lead == 3 && args2[2].numel() == 1 {
+                    width_rel = Some(args2.remove(2).scalar()?);
+                } else if lead == 2 && args2[1].numel() == 1 && args2[0].numel() > 1 {
+                    width_rel = Some(args2.remove(1).scalar()?);
                 }
             }
             let (mut series, x_kind, props) = plot_series(&args2, kind)?;
@@ -668,13 +762,24 @@ pub fn call(it: &mut Interpreter, name: &str, args: &[Value], nargout: usize) ->
                     for (k, s) in series.iter_mut().enumerate() {
                         let off = (k as f64 - (m as f64 - 1.0) / 2.0) * d;
                         s.dx = vec![off; s.x.len()];
-                        s.bar_width = Some(d * 0.8);
+                        s.bar_width = Some(d * width_rel.unwrap_or(0.8));
+                    }
+                }
+            }
+            if let (SeriesKind::Bar, Some(w)) = (kind, width_rel) {
+                if series.len() == 1 || layout == "stacked" {
+                    for s in series.iter_mut() {
+                        s.bar_width = Some(w * graphics::bar_spacing(&s.x));
                     }
                 }
             }
             if let Some(sz) = size {
                 for s in series.iter_mut() {
                     s.marker_size = (sz.sqrt() as f32).max(2.0);
+                    s.size_data = Some(sz);
+                    if let Some(m) = &size_vec {
+                        s.size_vec = m.data.clone();
+                    }
                 }
             }
             let ends: Vec<(Vec<f64>, Vec<f64>)> = series

@@ -122,7 +122,7 @@ const LILLIE_C3: [[f64; 12]; 3] = [
 
 /// Shape-preserving cubic interpolation (the slopes of Fritsch and Carlson that MATLAB's `pchip`
 /// uses) of `(x, y)` at `q`; `x` increases strictly.
-fn pchip_at(x: &[f64], y: &[f64], q: f64) -> f64 {
+pub(crate) fn pchip_at(x: &[f64], y: &[f64], q: f64) -> f64 {
     let n = x.len();
     let h: Vec<f64> = (0..n - 1).map(|i| x[i + 1] - x[i]).collect();
     let del: Vec<f64> = (0..n - 1).map(|i| (y[i + 1] - y[i]) / h[i]).collect();
@@ -832,7 +832,7 @@ fn chi2gof(it: &mut Interpreter, a: &[Value], nargout: usize) -> Ret {
 
 /// MATLAB's matching of a value against a list of names: exact (any case) first, then a unique
 /// prefix. `what` is used as in "the {what} argument"; with `list` the valid values are named.
-fn param_val(v: &Value, choices: &[&str], what: &str, list: bool) -> Res<usize> {
+pub(crate) fn param_val(v: &Value, choices: &[&str], what: &str, list: bool) -> Res<usize> {
     if !v.is_text() {
         return rt(format!("Invalid '{}' data type. Argument must be a character vector or string scalar.", what.trim_matches('\'')));
     }

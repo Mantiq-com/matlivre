@@ -404,6 +404,10 @@ pub(crate) fn labels_of(v: &Value) -> Res<Labels> {
         Value::Num(m) if m.kind == Kind::Char => {
             if m.dims.len() == 2 && m.dims[0] == 1 {
                 Ok(Labels::Text(vec![Some(m.to_string_lossy())], false))
+            } else if m.dims.len() == 2 && m.dims[0] > 1 {
+                // The rows of a character matrix are the labels.
+                let (r, c) = (m.dims[0], m.dims[1]);
+                Ok(Labels::Text((0..r).map(|i| Some((0..c).map(|j| char::from_u32(m.data[j * r + i] as u32).unwrap_or(' ')).collect::<String>())).collect(), false))
             } else {
                 bad()
             }
@@ -486,6 +490,18 @@ fn grp2idx(a: &[Value]) -> Ret {
                 cell_col(u.clone())
             } else if matches!(v, Value::Str(_)) {
                 Value::Str(StrArray::col(u.clone()))
+            } else if matches!(v, Value::Num(m) if m.dims[0] > 1) {
+                // The unique rows as a character matrix.
+                let (r, w) = (u.len(), u.iter().map(|s| s.chars().count()).max().unwrap_or(0));
+                let mut data = vec![32.0; r * w];
+                for (i, s) in u.iter().enumerate() {
+                    for (j, ch) in s.chars().enumerate() {
+                        data[j * r + i] = ch as u32 as f64;
+                    }
+                }
+                let mut m = Matrix::from_dims(vec![r, w], data);
+                m.kind = Kind::Char;
+                Value::Num(m)
             } else {
                 Value::chars(&u[0])
             };

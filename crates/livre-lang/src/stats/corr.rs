@@ -49,6 +49,9 @@ pub fn t_cdf(x: f64, v: f64) -> f64 {
     if x == f64::NEG_INFINITY {
         return 0.0;
     }
+    if v == f64::INFINITY {
+        return super::dist::normcdf_std(x);
+    }
     let z = v / (v + x * x);
     let tail = 0.5 * betainc_pair(z, v / 2.0, 0.5).0;
     if x < 0.0 { tail } else { 1.0 - tail }
