@@ -10,14 +10,14 @@ figure export, which a browser does not give a program.
 
 ## Source and retained browser changes
 
-The upstream target is [`master` at `e099eee04472959ec5f40d0d441c75ab25cc209b`](https://github.com/campuslivre/matlivre/commit/e099eee04472959ec5f40d0d441c75ab25cc209b),
-retrieved on 2026-11-21. The latest stable release at retrieval is
-[v0.2.0](https://github.com/campuslivre/matlivre/releases/tag/v0.2.0), commit
-`29ed3a19f7f14a1e34aac8d7dbf1ff7e2cc9daa3`. This fork continues tracking
-the upstream default branch.
-The previous published browser release is `host-bridge-2` at
-`65799972e1abeeeac73162fa4901ee94ca3a424a`. That published tag contains changes beyond
-the older `web-host` branch and supplies the browser changes carried here.
+The upstream target is [`master` at `217e3fb20146596cc9eb77a1ae7016db769a66dc`](https://github.com/campuslivre/matlivre/commit/217e3fb20146596cc9eb77a1ae7016db769a66dc),
+retrieved on 2026-11-26 (`2026-11-26T18:56:09Z`). The latest stable release at retrieval is
+[v0.2.1](https://github.com/campuslivre/matlivre/releases/tag/v0.2.1), commit
+`d23a4643a4fb44e9a131907ba793244d04203af4` (an ancestor of the selected `master` commit).
+This fork continues tracking the upstream default branch.
+The previous published browser release is `host-bridge-3` at
+`735772695c5de2d150d30e8372a5fb941525a7d3` (branch `update/editor-forks-20261121` tip
+`850d0d20c8e0e970bb7661ad07de26082566536d`), based on upstream `e099eee0`.
 
 | Fork change | Required behavior | Selected upstream evidence | Decision |
 | --- | --- | --- | --- |
@@ -26,60 +26,69 @@ the older `web-host` branch and supplies the browser changes carried here.
 | `livre-app/src/lib.rs`, platform gates and `engine.rs` | Draw the same editor on desktop and in a browser, with a worker that can be stopped | Upstream provides a desktop binary and a thread-based engine | Keep the shared library and worker transport, including variable inspection |
 | `livre-app/src/host.rs` and `apps/matlivre-web` | Exchange MLX/M files, commands, dirty state and saved bytes with a same-origin parent | The upstream checkout has no browser application or parent protocol | Keep the host bridge and browser package |
 | `.github/workflows/web.yml` | Publish an immutable browser archive without replacing an existing release's bytes | Upstream release workflows package desktop applications | Keep the browser packaging workflow |
-| `signal_known_deviations.tsv`, case 6948 | Require the complex FIR callback result to match or track platform differences cleanly | Upstream now marks case 6948 `platform-dependent:` in `signal_known_deviations.tsv` and handles it in `signal_matlab.rs` | Removed the fork override; track upstream's file directly |
 
 An upstream replacement must provide these browser behaviors and pass the same hosted
 open, edit, save, reopen, export, worker-stop and host-validation checks. A desktop
 build or native interpreter test alone does not qualify a replacement.
 
-This upstream checkout still declares workspace version `0.1.6` even after the `v0.2.0`
+This upstream checkout still declares workspace version `0.1.6` even after the `v0.2.1`
 tag. The ready message therefore cannot identify this source revision on its own; identify
 an installed bundle by its source commit and archive checksum as well.
 
 ### Browser validation on the selected source
 
-The release package builds from source commit `735772695c5de2d150d30e8372a5fb941525a7d3`
-with Rust 1.99.1, Trunk 0.22.2 and wasm-bindgen 0.2.129. The local archive
-`matlivre-web-upstream-e099eee.tar.gz` has SHA-256
-`1479c77f5552a631e6c37252d30c737468d0985b8003c12a5b2a958d191cb677` and serves
-`matlivre-web-5b32c1c0e12b5093_bg.wasm`. The build reports 24 warnings in unchanged
-upstream `livre-lang` code.
+The release package builds from source commit `d4a8612ee3d7da08dd7f0a6b9b8693b49d99c7dc`
+with Rust `1.102.0-nightly (6c709eb42 2026-11-25)`, Trunk `0.22.2` and `wasm-bindgen`
+`0.2.129` (locked in `Cargo.lock`). The local archive
+`matlivre-web-upstream-217e3fb.tar.gz` has SHA-256
+`532db0e941c835c2c7e31230726c66b07a0a8a7c952ae1fbc1703533caed18b0` and serves
+`matlivre-web-ba416cbedca46f9d_bg.wasm` (SHA-256
+`99226bc9470530c8b22f9e7699d6b0fe344c5e1c27a23517891a4803aac312be`). The build reports
+28 warnings in unchanged upstream `livre-lang` code.
 
-Hosted MLX and M creation, editing, Save As, ordinary save, export, `ui.hostTheme`
-and reopening pass. Saved MLX packages (2,475 bytes) preserve their title, explanatory
-text and code blocks. Export keeps the source filename and its unsaved changes. The new
-bundle and the published `host-bridge-2` bundle read each other's saved MLX files with
-all blocks preserved.
+Hosted headless Chrome (`158.0.8127.36`, Linux) checks through the real parent-page
+bridge under a same-origin CSP blocking external requests passed MLX and M creation,
+opening, block edits, unknown-command rejection, `ui.hostTheme`, Save As (`2,499`-byte
+`.mlx`, `saveAs: true`), ordinary save (`2,527`-byte `.mlx`, `saveAs: false`), export
+(`keepSource: true` preserving filename `analysis.mlx` and dirty state), `file.new`,
+reopening and `.m` `text.replaceAll` round trips. The new bundle and the published
+`host-bridge-3` bundle read each other's saved MLX files with all blocks preserved.
 
 Three fresh workers start cleanly with no startup panic. In the hosted editor UI,
-running `disp(6 * 7);` returns `42`, running an infinite loop blocks concurrent host
-edits, pressing Stop terminates the worker and starts a replacement worker, and the
-replacement worker returns `56` and completes a 65,536-point FFT of ones with zero
-error. All observed runtime resources load from the host's own origin under a policy
-that blocks external connections, with zero console or page errors. The host rejects
-messages from another origin or source window; disposal unloads the iframe and rejects
-further requests. These synthetic checks do not qualify authenticated application
-storage, autosave acknowledgements or permissions.
+running `a = 6 * 7; c = cvpartition(10, "KFold", 5); y = fft(ones(65536, 1)); err = abs(y(1) - 65536) + max(abs(y(2:end))); disp([a, c.NumTestSets, err]);`
+prints `42 5 0` and populates the workspace panel; running `while true, end` blocks
+concurrent host edits (`The document is running; try again when it has finished.`),
+pressing Stop terminates the worker and clears the workspace, and the replacement worker
+prints `56` for `disp(7 * 8);`. All runtime resources load from the host's own origin
+with zero external requests, console errors or page exceptions. Origin and source spoofs
+are ignored; disposal clears the iframe `src` and rejects further requests. These
+synthetic checks do not qualify authenticated application storage, autosave
+acknowledgements or permissions.
 
-The native workspace test suite (`cargo test --locked --workspace -- --test-threads=2`)
-passes all unit and sample tests (`livre-app`: 39 passed, 4 ignored; `matlivre`: 2
-passed; `livre-doc`: 12 passed + 1 sample test; `livre-lang` lib: 17 passed) and finishes
-`livre-lang`'s integration suite without stack overflow: 412 passed, 2 failed, 2 ignored.
-The two failures are:
+Native checks on `d4a8612ee3d7da08dd7f0a6b9b8693b49d99c7dc`:
 
-- `signal_matlab::signal_functions_match_matlab` (`crates/livre-lang/tests/all/signal_matlab.rs:203`):
-  2 of 10,311 cases differ from MATLAB (9,765 match): case 2138 (`ellip(7,0.1,20,0.45,'high')`)
-  and case 8269 (`yulewalk(11,[0 .6 .65 1],[0.001 0.001 1 1])`).
-- `stats_matlab::stats_functions_match_matlab` (`crates/livre-lang/tests/all/stats_matlab.rs:204`):
-  1 of 4,672 cases differs from MATLAB (4,612 match): case 3862 (`gevfit(xg*5)`).
+- `cargo check --locked --target wasm32-unknown-unknown -p matlivre-web`,
+  `cargo build --locked --workspace --bins`, and `python3 tools/linux/smoke.py` pass.
+- Unit and sample suites pass (`livre-app`: 39 passed, 4 ignored; `matlivre`: 2 passed;
+  `livre-doc`: 12 passed + 1 sample test; `livre-lang --lib`: 18 passed).
+- `cargo test --locked -p livre-lang --test all -- --test-threads=8` aborts with a stack
+  overflow under the default 2 MiB thread stack; with `RUST_MIN_STACK=16777216` it
+  completes with 413 passed, 2 failed, 2 ignored:
+  - `signal_matlab::signal_functions_match_matlab` (`crates/livre-lang/tests/all/signal_matlab.rs:203`):
+    2 of 10,311 cases differ (9,765 match): case 2138 (`ellip(7,0.1,20,0.45,'high')`) and
+    case 8269 (`yulewalk(11,[0 .6 .65 1],[0.001 0.001 1 1])`).
+  - `stats_matlab::stats_functions_match_matlab` (`crates/livre-lang/tests/all/stats_matlab.rs:204`):
+    1 of 6,034 cases differs (5,941 match): case 3862 (`gevfit(xg*5)`).
+- An independent run on unmodified upstream `217e3fb20146596cc9eb77a1ae7016db769a66dc`
+  reproduces the exact same 2 failures, cases and counts (413 passed, 2 failed, 2 ignored).
+  All fixtures and assertions remain unchanged.
 
-An independent run on the unmodified selected upstream commit
-`e099eee04472959ec5f40d0d441c75ab25cc209b` reproduces both failures with the exact same
-cases and counts. All fixtures and assertions remain unchanged.
+### Previous validation on the 2026-11-21 master revision
 
-`cargo build --locked --workspace --bins` and `python3 tools/linux/smoke.py` pass,
-including CLI linear-system solving, failing script exit status and headless MCP PNG/SVG
-exports.
+The release package built from `735772695c5de2d150d30e8372a5fb941525a7d3` on upstream
+`e099eee04472959ec5f40d0d441c75ab25cc209b` (`matlivre-web-upstream-e099eee.tar.gz`,
+SHA-256 `1479c77f5552a631e6c37252d30c737468d0985b8003c12a5b2a958d191cb677`, published as
+`host-bridge-3`). Those checks do not qualify the `217e3fb2` source above.
 
 ### Previous validation on the 2026-11-17 master revision
 
